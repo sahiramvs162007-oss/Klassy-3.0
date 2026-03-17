@@ -64,3 +64,7 @@ klassy/
 | 11     | Boletines                | ⏳ Pendiente |
 | 12     | Dashboard y noticias     | ⏳ Pendiente |
 | 13     | Analítica académica      | ⏳ Pendiente |
+=======
+# Klassy-3.0
+desarrollo del proyecto alfa klassy v3.0
+>>>>>>> 58c6bc8c0635d7fe6e03f70b93e3af1cf814baf5
