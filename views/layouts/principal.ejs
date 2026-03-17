@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — <%= typeof titulo !== 'undefined' ? titulo : 'Panel' %></title>
+
+  <!-- Google Fonts: DM Sans para UI, Fraunces para marca -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+
+  <!-- Iconos Lucide -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <!-- Estilos principales -->
+  <link rel="stylesheet" href="/css/estilos.css" />
+</head>
+<body>
+
+  <!-- ─── Sidebar ──────────────────────────────────────────────────────────── -->
+  <%- include('../partials/sidebar') %>
+
+  <!-- ─── Contenedor principal ─────────────────────────────────────────────── -->
+  <div class="contenedor-principal">
+
+    <!-- Topbar -->
+    <%- include('../partials/topbar') %>
+
+    <!-- Contenido de la página -->
+    <main class="contenido">
+
+      <!-- Flash messages -->
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito">
+          <i data-lucide="check-circle"></i>
+          <span><%= mensajeExito %></span>
+        </div>
+      <% } %>
+
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error">
+          <i data-lucide="alert-circle"></i>
+          <span><%= mensajeError %></span>
+        </div>
+      <% } %>
+
+      <% if (mensajeInfo && mensajeInfo.length > 0) { %>
+        <div class="alerta alerta--info">
+          <i data-lucide="info"></i>
+          <span><%= mensajeInfo %></span>
+        </div>
+      <% } %>
+
+      <!-- Cabecera de la página -->
+      <% if (typeof titulo !== 'undefined') { %>
+        <div class="cabecera-pagina">
+          <h1 class="cabecera-pagina__titulo"><%= titulo %></h1>
+        </div>
+      <% } %>
+
+      <!-- Slot de contenido -->
+      <%- body %>
+
+    </main>
+  </div>
+
+  <!-- ─── Drawer lateral ───────────────────────────────────────────────────── -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer__cabecera">
+      <h2 class="drawer__titulo" id="drawerTitulo">Detalle</h2>
+      <button class="drawer__cerrar" onclick="cerrarDrawer()">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="drawer__cuerpo" id="drawerCuerpo">
+      <!-- El contenido se inyecta dinámicamente -->
+    </div>
+  </div>
+
+  <!-- ─── Scripts ──────────────────────────────────────────────────────────── -->
+  <script src="/js/drawer.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    // Activar iconos Lucide
+    lucide.createIcons();
+  </script>
+
+</body>
+</html>

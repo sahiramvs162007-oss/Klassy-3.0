@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Mis Actividades</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/actividades.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <!-- Flash -->
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <!-- Cabecera -->
+      <div class="cabecera-pagina">
+        <div>
+          <h1 class="cabecera-pagina__titulo">Mis Actividades</h1>
+          <% if (matricula) { %>
+            <p class="cabecera-pagina__subtitulo">
+              <i data-lucide="graduation-cap" style="width:14px;height:14px;vertical-align:middle;"></i>
+              <%= matricula.gradoId?.nombre %> — <%= new Date().getFullYear() %>
+            </p>
+          <% } %>
+        </div>
+      </div>
+
+      <% if (!matricula) { %>
+        <div class="estado-vacio">
+          <i data-lucide="file-x"></i>
+          <h3>Sin matrícula activa</h3>
+          <p>No tienes matrícula activa para el año <%= new Date().getFullYear() %>. Contacta al director.</p>
+        </div>
+      <% } else { %>
+
+        <!-- Filtros -->
+        <form method="GET" action="/actividades/estudiante" class="barra-filtros">
+          <div class="barra-filtros__grupo">
+            <select name="filtroMateria" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+              <option value="">Todas las materias</option>
+              <% materias.forEach(m => { %>
+                <option value="<%= m._id %>" <%= filtroMateria === m._id.toString() ? 'selected' : '' %>><%= m.nombre %></option>
+              <% }) %>
+            </select>
+            <select name="filtroPeriodo" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+              <option value="">Todos los periodos</option>
+              <% periodos.forEach(p => { %>
+                <option value="<%= p._id %>" <%= filtroPeriodo === p._id.toString() ? 'selected' : '' %>><%= p.nombre %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="barra-filtros__acciones">
+            <% if (filtroMateria || filtroPeriodo) { %>
+              <a href="/actividades/estudiante" class="btn btn--secundario btn--sm">
+                <i data-lucide="x"></i> Limpiar
+              </a>
+            <% } %>
+          </div>
+        </form>
+
+        <!-- Lista de actividades -->
+        <% if (actividades.length === 0) { %>
+          <div class="estado-vacio">
+            <i data-lucide="clipboard-list"></i>
+            <h3>Sin actividades</h3>
+            <p>Tus docentes aún no han publicado actividades.</p>
+          </div>
+        <% } else { %>
+          <div class="lista-actividades-estudiante">
+            <% actividades.forEach(act => { %>
+              <%
+                const vencida     = act._vencida;
+                const calificada  = act._estaCalificada;
+                const tieneEntrega = act._tieneEntrega;
+                let estadoClase = '';
+                let estadoLabel = '';
+                let estadoBadge = '';
+                if (calificada) {
+                  estadoClase = 'actividad-est--calificada';
+                  estadoLabel = 'Calificada';
+                  estadoBadge = 'badge--activo';
+                } else if (tieneEntrega) {
+                  estadoClase = 'actividad-est--entregada';
+                  estadoLabel = 'Entregada';
+                  estadoBadge = 'badge--azul';
+                } else if (vencida) {
+                  estadoClase = 'actividad-est--vencida';
+                  estadoLabel = 'Vencida';
+                  estadoBadge = 'badge--inactivo';
+                } else {
+                  estadoClase = 'actividad-est--pendiente';
+                  estadoLabel = 'Pendiente';
+                  estadoBadge = 'badge--pendiente';
+                }
+              %>
+              <a href="/actividades/estudiante/<%= act._id %>" class="tarjeta-actividad-est <%= estadoClase %>">
+                <div class="tarjeta-actividad-est__icono">
+                  <i data-lucide="clipboard-list"></i>
+                </div>
+                <div class="tarjeta-actividad-est__body">
+                  <div class="tarjeta-actividad-est__top">
+                    <h3 class="tarjeta-actividad-est__titulo"><%= act.titulo %></h3>
+                    <span class="badge <%= estadoBadge %>"><%= estadoLabel %></span>
+                  </div>
+                  <div class="tarjeta-actividad-est__meta">
+                    <span class="chip chip--materia">
+                      <i data-lucide="book-open"></i> <%= act.materiaId?.nombre %>
+                    </span>
+                    <span class="texto-secundario texto-sm">
+                      <i data-lucide="user" style="width:12px;height:12px;"></i>
+                      <%= act.docenteId ? act.docenteId.nombre + ' ' + act.docenteId.apellido : '—' %>
+                    </span>
+                    <span class="tarjeta-actividad-est__fecha <%= vencida ? 'texto-error' : '' %>">
+                      <i data-lucide="clock"></i>
+                      <%= vencida ? 'Venció: ' : 'Límite: ' %>
+                      <%= new Date(act.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) %>
+                    </span>
+                  </div>
+                  <% if (calificada && act._mejorNota > 0) { %>
+                    <div class="tarjeta-actividad-est__nota">
+                      <span class="nota-chip nota-chip--grande nota-chip--<%= act._mejorNota >= 3 ? 'ok' : 'mal' %>">
+                        <%= act._mejorNota.toFixed(1) %>
+                      </span>
+                    </div>
+                  <% } %>
+                </div>
+                <i data-lucide="chevron-right" class="tarjeta-actividad-est__arrow"></i>
+              </a>
+            <% }) %>
+          </div>
+        <% } %>
+
+      <% } %>
+
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/notificaciones.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

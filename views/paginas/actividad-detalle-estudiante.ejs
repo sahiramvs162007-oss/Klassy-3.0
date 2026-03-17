@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — <%= actividad.titulo %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/actividades.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <!-- Flash -->
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <a href="/actividades/estudiante" class="btn-back">
+        <i data-lucide="arrow-left"></i> Mis actividades
+      </a>
+
+      <div class="detalle-layout">
+
+        <!-- ─── Info de la actividad ─── -->
+        <div class="detalle-col detalle-col--info">
+          <div class="tarjeta">
+            <div class="actividad-encabezado-est">
+              <div class="actividad-encabezado-est__chips">
+                <span class="chip chip--materia"><%= actividad.materiaId?.nombre %></span>
+                <span class="chip"><%= actividad.periodoId?.nombre %></span>
+              </div>
+              <h2 class="actividad-encabezado-est__titulo"><%= actividad.titulo %></h2>
+              <p class="actividad-encabezado-est__docente">
+                <i data-lucide="user" style="width:14px;height:14px;"></i>
+                <%= actividad.docenteId ? actividad.docenteId.nombre + ' ' + actividad.docenteId.apellido : '—' %>
+              </p>
+              <div class="actividad-encabezado-est__limite <%= vencida ? 'actividad-encabezado-est__limite--vencida' : '' %>">
+                <i data-lucide="<%= vencida ? 'alert-circle' : 'clock' %>"></i>
+                <% if (vencida) { %>
+                  Fecha límite vencida:
+                <% } else { %>
+                  Entrega antes de:
+                <% } %>
+                <strong><%= new Date(actividad.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }) %></strong>
+              </div>
+            </div>
+
+            <% if (actividad.descripcion) { %>
+              <div class="actividad-descripcion">
+                <h4>Instrucciones</h4>
+                <p><%= actividad.descripcion %></p>
+              </div>
+            <% } %>
+
+            <!-- Archivos del docente -->
+            <% if (actividad.archivos?.length > 0) { %>
+              <div class="actividad-archivos">
+                <h4><i data-lucide="paperclip"></i> Material de apoyo</h4>
+                <div class="archivos-lista">
+                  <% actividad.archivos.forEach(a => { %>
+                    <a href="<%= a.ruta %>" target="_blank" class="archivo-chip">
+                      <i data-lucide="file"></i>
+                      <span><%= a.nombreOriginal %></span>
+                    </a>
+                  <% }) %>
+                </div>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Comentarios públicos -->
+          <div class="tarjeta">
+            <div class="tarjeta__cabecera">
+              <i data-lucide="message-square"></i>
+              <h3 class="tarjeta__titulo">Comentarios</h3>
+            </div>
+            <div class="comentarios-lista">
+              <% if (!actividad.comentarios?.length) { %>
+                <p class="texto-vacio">Sin comentarios todavía.</p>
+              <% } else { %>
+                <% actividad.comentarios.forEach(c => { %>
+                  <div class="comentario-item">
+                    <div class="comentario-item__avatar usuario-celda__avatar--<%= c.usuarioId?.rol || 'estudiante' %>">
+                      <%= c.usuarioId ? c.usuarioId.nombre.charAt(0).toUpperCase() : '?' %>
+                    </div>
+                    <div class="comentario-item__body">
+                      <div class="comentario-item__header">
+                        <span class="comentario-item__autor">
+                          <%= c.usuarioId ? c.usuarioId.nombre + ' ' + c.usuarioId.apellido : 'Usuario' %>
+                        </span>
+                        <span class="comentario-item__fecha"><%= new Date(c.fecha).toLocaleDateString('es-CO') %></span>
+                      </div>
+                      <p class="comentario-item__texto"><%= c.texto %></p>
+                    </div>
+                  </div>
+                <% }) %>
+              <% } %>
+            </div>
+            <form method="POST" action="/actividades/estudiante/<%= actividad._id %>/comentarios" class="comentario-form">
+              <input type="text" name="texto" class="campo__entrada" required placeholder="Escribe un comentario..." />
+              <button type="submit" class="btn btn--primario btn--sm">
+                <i data-lucide="send"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- ─── Columna de entrega ─── -->
+        <div class="detalle-col detalle-col--entrega">
+
+          <!-- Mis entregas anteriores -->
+          <% if (misEntregas.length > 0) { %>
+            <div class="tarjeta">
+              <div class="tarjeta__cabecera">
+                <i data-lucide="check-circle"></i>
+                <h3 class="tarjeta__titulo">Mis entregas</h3>
+              </div>
+              <% misEntregas.forEach((e, idx) => { %>
+                <div class="entrega-propia <%= e.estado === 'calificada' ? 'entrega-propia--calificada' : '' %>">
+                  <div class="entrega-propia__header">
+                    <span class="entrega-propia__num">Entrega #<%= misEntregas.length - idx %></span>
+                    <span class="texto-secundario texto-sm">
+                      <%= new Date(e.fechaEntrega).toLocaleString('es-CO', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) %>
+                    </span>
+                    <% if (e.estado === 'calificada') { %>
+                      <span class="nota-chip nota-chip--<%= e.nota >= 3 ? 'ok' : 'mal' %>">
+                        <%= e.nota?.toFixed(1) %>
+                      </span>
+                    <% } else { %>
+                      <span class="badge badge--pendiente">Sin calificar</span>
+                    <% } %>
+                  </div>
+                  <% if (e.contenidoTexto) { %>
+                    <p class="entrega-propia__texto"><%= e.contenidoTexto %></p>
+                  <% } %>
+                  <% if (e.archivos?.length > 0) { %>
+                    <div class="archivos-lista archivos-lista--sm">
+                      <% e.archivos.forEach(a => { %>
+                        <a href="<%= a.ruta %>" target="_blank" class="archivo-chip">
+                          <i data-lucide="file"></i> <%= a.nombreOriginal %>
+                        </a>
+                      <% }) %>
+                    </div>
+                  <% } %>
+                  <% if (e.comentarioDocente) { %>
+                    <div class="entrega-propia__feedback">
+                      <i data-lucide="message-circle" style="width:14px;height:14px;"></i>
+                      <span><strong>Docente:</strong> <%= e.comentarioDocente %></span>
+                    </div>
+                  <% } %>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+
+          <!-- Formulario de nueva entrega -->
+          <% if (!vencida) { %>
+            <div class="tarjeta">
+              <div class="tarjeta__cabecera">
+                <i data-lucide="upload-cloud"></i>
+                <h3 class="tarjeta__titulo">
+                  <%= misEntregas.length > 0 ? 'Enviar otra entrega' : 'Enviar entrega' %>
+                </h3>
+              </div>
+
+              <form method="POST" action="/actividades/estudiante/<%= actividad._id %>/entregas"
+                enctype="multipart/form-data" class="formulario-grupo">
+
+                <div class="campo">
+                  <label class="campo__etiqueta">Respuesta / Comentario</label>
+                  <textarea name="contenidoTexto" class="campo__area" rows="4"
+                    placeholder="Escribe tu respuesta, observaciones o comentario sobre la entrega..."></textarea>
+                </div>
+
+                <div class="campo">
+                  <label class="campo__etiqueta">Archivos</label>
+                  <div class="campo-archivos">
+                    <label class="campo-archivos__zona" for="archivosEntrega">
+                      <i data-lucide="upload-cloud"></i>
+                      <span>Arrastra archivos o haz clic para seleccionar</span>
+                      <span class="campo-archivos__tipos">JPG · PDF · DOCX · PPTX · XLSX · MP3 · MP4</span>
+                    </label>
+                    <input type="file" id="archivosEntrega" name="archivos" multiple
+                      accept=".jpg,.jpeg,.png,.pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.mp3,.mp4"
+                      onchange="mostrarArchivosSeleccionados(this, 'listaArchivosEntrega')"
+                      style="display:none"/>
+                  </div>
+                  <div id="listaArchivosEntrega" class="lista-archivos-preview"></div>
+                </div>
+
+                <button type="submit" class="btn btn--primario" style="width:100%;justify-content:center;">
+                  <i data-lucide="send"></i>
+                  <%= misEntregas.length > 0 ? 'Enviar otra entrega' : 'Enviar entrega' %>
+                </button>
+              </form>
+            </div>
+          <% } else { %>
+            <div class="tarjeta tarjeta-vencida">
+              <i data-lucide="lock"></i>
+              <p>La fecha límite de esta actividad ya venció. No puedes enviar más entregas.</p>
+            </div>
+          <% } %>
+
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    function mostrarArchivosSeleccionados(input, contenedorId) {
+      const contenedor = document.getElementById(contenedorId);
+      contenedor.innerHTML = '';
+      for (const file of input.files) {
+        const chip = document.createElement('div');
+        chip.className = 'archivo-preview-chip';
+        chip.innerHTML = `<i data-lucide="file" style="width:13px;height:13px;"></i> ${file.name}`;
+        contenedor.appendChild(chip);
+      }
+      lucide.createIcons();
+    }
+  </script>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/notificaciones.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

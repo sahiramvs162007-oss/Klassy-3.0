@@ -1,0 +1,134 @@
+<%
+  const rol = usuarioActual ? usuarioActual.rol : '';
+
+  // Permisos por módulo
+  const acceso = {
+    dashboard:    ['admin','director','docente','estudiante'],
+    grados:       ['admin'],
+    materias:     ['admin'],
+    periodos:     ['admin'],
+    usuarios:     ['admin','director'],
+    matriculas:   ['admin','director'],
+    asignaciones: ['admin','director'],
+    actividades:  ['docente','estudiante'],
+    notas:        ['admin','director','docente','estudiante'],
+    boletines:    ['admin','director','docente','estudiante'],
+    noticias:     ['admin','director','docente'],
+    analitica:    ['estudiante'],
+  };
+
+  // Rutas según rol (algunos módulos van a sub-rutas distintas)
+  const rutaPorRol = {
+    actividades: rol === 'docente'    ? '/actividades/docente'
+               : rol === 'estudiante' ? '/actividades/estudiante'
+               : '/actividades',
+    notas:       rol === 'docente'    ? '/notas/docente'
+               : rol === 'estudiante' ? '/notas/estudiante'
+               : '/notas/admin',
+    boletines:   rol === 'docente'    ? '/boletines/docente'
+               : rol === 'estudiante' ? '/boletines/estudiante'
+               : '/boletines/admin',
+  };
+
+  const puede = (clave) => acceso[clave] && acceso[clave].includes(rol);
+  const ruta  = (clave, rutaBase) => rutaPorRol[clave] || rutaBase;
+
+  const grupos = [
+    {
+      seccion: 'Principal',
+      items: [
+        { clave: 'dashboard',    etiqueta: 'Dashboard',    icono: 'layout-dashboard', rutaBase: '/dashboard' },
+      ]
+    },
+    {
+      seccion: 'Académico',
+      items: [
+        { clave: 'grados',       etiqueta: 'Grados',       icono: 'graduation-cap',   rutaBase: '/grados' },
+        { clave: 'materias',     etiqueta: 'Materias',     icono: 'book-open',        rutaBase: '/materias' },
+        { clave: 'periodos',     etiqueta: 'Periodos',     icono: 'calendar',         rutaBase: '/periodos' },
+      ]
+    },
+    {
+      seccion: 'Personas',
+      items: [
+        { clave: 'usuarios',     etiqueta: 'Usuarios',     icono: 'users',            rutaBase: '/usuarios' },
+        { clave: 'matriculas',   etiqueta: 'Matrículas',   icono: 'file-text',        rutaBase: '/matriculas' },
+        { clave: 'asignaciones', etiqueta: 'Asignaciones', icono: 'link',             rutaBase: '/asignaciones' },
+      ]
+    },
+    {
+      seccion: 'Aula',
+      items: [
+        { clave: 'actividades',  etiqueta: 'Actividades',  icono: 'clipboard-list',   rutaBase: '/actividades' },
+        { clave: 'notas',        etiqueta: 'Notas',        icono: 'bar-chart-2',      rutaBase: '/notas' },
+        { clave: 'boletines',    etiqueta: 'Boletines',    icono: 'file-badge',       rutaBase: '/boletines' },
+      ]
+    },
+    {
+      seccion: 'Más',
+      items: [
+        { clave: 'noticias',     etiqueta: 'Noticias',     icono: 'newspaper',        rutaBase: '/noticias' },
+        { clave: 'analitica',    etiqueta: 'Analítica IA', icono: 'trending-up',      rutaBase: '/analitica' },
+      ]
+    }
+  ];
+%>
+
+<aside class="sidebar" id="sidebar">
+
+  <!-- Logo -->
+  <div class="sidebar__logo">
+    <span class="sidebar__logo-icono">K</span>
+    <span class="sidebar__logo-texto">KLASSY</span>
+  </div>
+
+  <!-- Nombre del usuario -->
+  <% if (usuarioActual) { %>
+    <div class="sidebar__usuario">
+      <div class="sidebar__usuario-avatar">
+        <%= usuarioActual.nombre ? usuarioActual.nombre.charAt(0).toUpperCase() : 'U' %>
+      </div>
+      <div class="sidebar__usuario-info">
+        <span class="sidebar__usuario-nombre"><%= usuarioActual.nombre %> <%= usuarioActual.apellido %></span>
+        <span class="sidebar__usuario-rol"><%= rol.charAt(0).toUpperCase() + rol.slice(1) %></span>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Navegación filtrada por rol -->
+  <nav class="sidebar__nav">
+    <% grupos.forEach(grupo => { %>
+      <%
+        // Solo mostrar la sección si al menos un item es accesible
+        const itemsVisibles = grupo.items.filter(i => puede(i.clave));
+      %>
+      <% if (itemsVisibles.length > 0) { %>
+        <div class="sidebar__grupo">
+          <span class="sidebar__grupo-etiqueta"><%= grupo.seccion %></span>
+          <ul class="sidebar__lista">
+            <% itemsVisibles.forEach(item => { %>
+              <li class="sidebar__item">
+                <a
+                  href="<%= ruta(item.clave, item.rutaBase) %>"
+                  class="sidebar__enlace <%= (typeof paginaActual !== 'undefined' && paginaActual === item.clave) ? 'sidebar__enlace--activo' : '' %>"
+                >
+                  <i data-lucide="<%= item.icono %>" class="sidebar__icono"></i>
+                  <span class="sidebar__texto"><%= item.etiqueta %></span>
+                </a>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+      <% } %>
+    <% }) %>
+  </nav>
+
+  <!-- Pie -->
+  <div class="sidebar__pie">
+    <a href="/auth/cerrar-sesion" class="sidebar__enlace sidebar__enlace--salir">
+      <i data-lucide="log-out" class="sidebar__icono"></i>
+      <span class="sidebar__texto">Cerrar sesión</span>
+    </a>
+  </div>
+
+</aside>

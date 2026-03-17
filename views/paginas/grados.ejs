@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Grados</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <!-- Flash messages -->
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <!-- Cabecera -->
+      <div class="cabecera-pagina">
+        <div>
+          <h1 class="cabecera-pagina__titulo">Gestión de Grados</h1>
+          <p class="cabecera-pagina__subtitulo"><%= grados.length %> grado<%= grados.length !== 1 ? 's' : '' %> registrado<%= grados.length !== 1 ? 's' : '' %></p>
+        </div>
+        <div class="cabecera-pagina__acciones">
+          <button class="btn btn--primario" onclick="abrirDrawerCrearGrado()">
+            <i data-lucide="plus"></i> Nuevo grado
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <form method="GET" action="/grados" class="barra-filtros">
+        <div class="barra-filtros__grupo">
+          <div class="barra-filtros__buscar">
+            <i data-lucide="search" class="barra-filtros__icono-buscar"></i>
+            <input type="text" name="buscar" value="<%= buscar %>" placeholder="Buscar grado..." class="barra-filtros__entrada" />
+          </div>
+          <select name="filtroNivel" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todos los niveles</option>
+            <% for (let n = 1; n <= 11; n++) { %>
+              <option value="<%= n %>" <%= filtroNivel == n ? 'selected' : '' %>>Nivel <%= n %></option>
+            <% } %>
+          </select>
+          <select name="filtroAnio" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todos los años</option>
+            <% añosDisponibles.forEach(a => { %>
+              <option value="<%= a %>" <%= filtroAnio == a ? 'selected' : '' %>><%= a %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="barra-filtros__acciones">
+          <button type="submit" class="btn btn--primario btn--sm"><i data-lucide="search"></i> Buscar</button>
+          <% if (buscar || filtroNivel || filtroAnio) { %>
+            <a href="/grados" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Limpiar</a>
+          <% } %>
+        </div>
+      </form>
+
+      <!-- Tabla -->
+      <div class="tabla-contenedor">
+        <% if (grados.length === 0) { %>
+          <div class="tabla-vacia">
+            <i data-lucide="graduation-cap"></i>
+            <p>No hay grados registrados aún.</p>
+          </div>
+        <% } else { %>
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th>Grado</th>
+                <th>Nivel</th>
+                <th>Año</th>
+                <th>Materias asignadas</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% grados.forEach(g => { %>
+                <tr>
+                  <td>
+                    <div class="item-icono">
+                      <div class="item-icono__circulo item-icono__circulo--verde">
+                        <i data-lucide="graduation-cap"></i>
+                      </div>
+                      <span class="item-icono__texto"><%= g.nombre %></span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge badge--azul">Nivel <%= g.nivel %></span>
+                  </td>
+                  <td class="texto-secundario"><%= g.año %></td>
+                  <td>
+                    <% if (g.materias && g.materias.length > 0) { %>
+                      <div class="materias-chips">
+                        <% g.materias.slice(0, 3).forEach(mat => { %>
+                          <span class="chip"><%= mat.nombre %></span>
+                        <% }) %>
+                        <% if (g.materias.length > 3) { %>
+                          <span class="chip chip--mas">+<%= g.materias.length - 3 %> más</span>
+                        <% } %>
+                      </div>
+                    <% } else { %>
+                      <span class="texto-vacio">Sin materias</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <span class="badge <%= g.activo ? 'badge--activo' : 'badge--inactivo' %>">
+                      <%= g.activo ? 'Activo' : 'Inactivo' %>
+                    </span>
+                  </td>
+                  <td>
+                    <div class="acciones-tabla">
+                      <button class="btn-icono btn-icono--editar" onclick="abrirDrawerEditarGrado('<%= g._id %>')" title="Editar">
+                        <i data-lucide="pencil"></i>
+                      </button>
+                      <form method="POST" action="/grados/<%= g._id %>?_method=DELETE"
+                        onsubmit="return confirmarEliminar('<%= g.nombre %>')" style="display:inline">
+                        <button type="submit" class="btn-icono btn-icono--eliminar" title="Eliminar">
+                          <i data-lucide="trash-2"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer__cabecera">
+      <h2 class="drawer__titulo" id="drawerTitulo">Nuevo grado</h2>
+      <button class="drawer__cerrar" onclick="cerrarDrawer()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer__cuerpo" id="drawerCuerpo"></div>
+  </div>
+
+  <!-- Template del formulario de grado -->
+  <%# Pasamos las materias al JS como JSON para usarlas en el template dinámico %>
+  <div id="materias-data" style="display:none;"><%- JSON.stringify((todasMaterias || []).map(m => ({ _id: m._id, nombre: m.nombre }))) %></div>
+  <script>
+    // Lista de materias disponibles inyectada desde el servidor
+    // Usar window. para que sea accesible desde grados.js (scope global)
+    window.MATERIAS_DISPONIBLES = JSON.parse(document.getElementById('materias-data').textContent || '[]');
+  </script>
+
+  <template id="templateFormGrado">
+    <form id="formGrado" method="POST" action="/grados" class="formulario-grupo">
+      <input type="hidden" name="_method" id="metodoGrado" value="" />
+
+      <div class="campo">
+        <label class="campo__etiqueta">Nombre del grado *</label>
+        <input type="text" name="nombre" id="campoNombreGrado" class="campo__entrada" required
+          placeholder="Ej: Primero A, Sexto B, Undécimo" />
+      </div>
+
+      <div class="formulario-2col">
+        <div class="campo">
+          <label class="campo__etiqueta">Nivel académico *</label>
+          <select name="nivel" id="campoNivelGrado" class="campo__select" required>
+            <option value="">Seleccionar nivel</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label class="campo__etiqueta">Año *</label>
+          <input type="number" name="año" id="campoAnioGrado" class="campo__entrada" required
+            min="2000" max="2100" placeholder="Ej: 2025" />
+        </div>
+      </div>
+
+      <!-- Selector de materias con checkboxes -->
+      <div class="campo">
+        <label class="campo__etiqueta">Materias asignadas</label>
+        <div class="lista-checks" id="listaMaterias">
+          <!-- Se llena dinámicamente con JS -->
+        </div>
+        <span class="campo__ayuda">Selecciona las materias que se dictan en este grado.</span>
+      </div>
+
+      <div class="campo" id="grupoActivoGrado" style="display:none;">
+        <label class="campo__etiqueta">Estado</label>
+        <select name="activo" id="campoActivoGrado" class="campo__select">
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+
+      <div class="drawer__pie">
+        <button type="button" class="btn btn--secundario" onclick="cerrarDrawer()">Cancelar</button>
+        <button type="submit" class="btn btn--primario">
+          <i data-lucide="save"></i>
+          <span id="textoGuardarGrado">Crear grado</span>
+        </button>
+      </div>
+    </form>
+  </template>
+  <script src="/js/notificaciones.js"></script>
+  <script src="/js/drawer.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/grados.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Actividades</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/actividades.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <!-- Flash -->
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <!-- ─── ESTADO: Sin asignaciones ─────────────────────────────────────── -->
+      <% if (bloques.length === 0) { %>
+        <div class="estado-vacio">
+          <i data-lucide="book-open"></i>
+          <h3>Sin asignaciones activas</h3>
+          <p>No tienes materias asignadas para el año <%= new Date().getFullYear() %>. Contacta al administrador.</p>
+        </div>
+
+      <!-- ─── ESTADO: Selección de materia (bloques) ──────────────────────── -->
+      <% } else if (!materiaIdActiva) { %>
+        <div class="cabecera-pagina">
+          <div>
+            <h1 class="cabecera-pagina__titulo">Mis Materias</h1>
+            <p class="cabecera-pagina__subtitulo">Selecciona una materia para gestionar sus actividades</p>
+          </div>
+        </div>
+
+        <% if (!periodoActivo) { %>
+          <div class="alerta alerta--info">
+            <i data-lucide="info"></i>
+            <span>⚠ No hay un periodo académico activo. Puedes ver actividades existentes pero no crear nuevas.</span>
+          </div>
+        <% } %>
+
+        <div class="bloques-materias">
+          <% bloques.forEach((bloque, i) => { %>
+            <% const colores = ['bloque--azul', 'bloque--verde', 'bloque--morado', 'bloque--naranja', 'bloque--rojo']; %>
+            <% const color = colores[i % colores.length]; %>
+            <div class="bloque-materia <%= color %>">
+              <div class="bloque-materia__cabecera">
+                <div class="bloque-materia__icono">
+                  <i data-lucide="book-open"></i>
+                </div>
+                <h3 class="bloque-materia__nombre"><%= bloque.materia.nombre %></h3>
+                <% if (bloque.materia.descripcion) { %>
+                  <p class="bloque-materia__desc"><%= bloque.materia.descripcion %></p>
+                <% } %>
+              </div>
+              <div class="bloque-materia__grados">
+                <span class="bloque-materia__grados-label">Elige el grado:</span>
+                <% bloque.grados.forEach(g => { %>
+                  <a
+                    href="/actividades/docente?materiaId=<%= bloque.materia._id %>&gradoId=<%= g.grado._id %>"
+                    class="bloque-grado"
+                  >
+                    <i data-lucide="graduation-cap"></i>
+                    <span><%= g.grado.nombre %></span>
+                    <span class="bloque-grado__nivel">Nivel <%= g.grado.nivel %></span>
+                  </a>
+                <% }) %>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+
+      <!-- ─── ESTADO: Lista de actividades para materia+grado ─────────────── -->
+      <% } else { %>
+
+        <!-- Breadcrumb de regreso -->
+        <div class="actividades-header">
+          <a href="/actividades/docente" class="btn-back">
+            <i data-lucide="arrow-left"></i> Mis materias
+          </a>
+          <div class="actividades-header__info">
+            <div class="actividades-header__tags">
+              <span class="chip chip--materia"><i data-lucide="book-open"></i> <%= materiaSeleccionada?.nombre %></span>
+              <span class="chip chip--grado"><i data-lucide="graduation-cap"></i> <%= gradoSeleccionado?.nombre %></span>
+              <% if (periodoActivo) { %>
+                <span class="chip chip--periodo"><i data-lucide="calendar"></i> Periodo <%= periodoActivo.numero %> activo</span>
+              <% } else { %>
+                <span class="chip chip--alerta"><i data-lucide="alert-triangle"></i> Sin periodo activo</span>
+              <% } %>
+            </div>
+          </div>
+          <% if (periodoActivo) { %>
+            <button class="btn btn--primario" onclick="abrirDrawerCrear()">
+              <i data-lucide="plus"></i> Nueva actividad
+            </button>
+          <% } %>
+        </div>
+
+        <!-- Lista de actividades -->
+        <% if (actividades.length === 0) { %>
+          <div class="estado-vacio">
+            <i data-lucide="clipboard-list"></i>
+            <h3>Sin actividades</h3>
+            <p>No hay actividades publicadas en esta materia y grado.</p>
+            <% if (periodoActivo) { %>
+              <button class="btn btn--primario" onclick="abrirDrawerCrear()">
+                <i data-lucide="plus"></i> Crear primera actividad
+              </button>
+            <% } %>
+          </div>
+        <% } else { %>
+          <div class="lista-actividades-docente">
+            <% actividades.forEach(act => { %>
+              <%
+                const vencida   = new Date() > act.fechaLimite;
+                const estado    = vencida ? 'vencida' : 'activa';
+              %>
+              <div class="tarjeta-actividad-docente tarjeta-actividad-docente--<%= estado %>">
+                <div class="tarjeta-actividad-docente__left">
+                  <div class="tarjeta-actividad-docente__estado-dot"></div>
+                </div>
+
+                <div class="tarjeta-actividad-docente__body">
+                  <div class="tarjeta-actividad-docente__top">
+                    <h3 class="tarjeta-actividad-docente__titulo">
+                      <a href="/actividades/docente/<%= act._id %>"><%= act.titulo %></a>
+                    </h3>
+                    <% if (!vencida) { %>
+                      <span class="badge badge--activo">Abierta</span>
+                    <% } else { %>
+                      <span class="badge badge--inactivo">Cerrada</span>
+                    <% } %>
+                  </div>
+
+                  <p class="tarjeta-actividad-docente__desc">
+                    <%= act.descripcion ? act.descripcion.substring(0, 100) + (act.descripcion.length > 100 ? '...' : '') : 'Sin descripción' %>
+                  </p>
+
+                  <div class="tarjeta-actividad-docente__meta">
+                    <span><i data-lucide="calendar"></i> Límite: <%= new Date(act.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) %></span>
+                    <span><i data-lucide="paperclip"></i> <%= act.archivos?.length || 0 %> archivos</span>
+                    <span><i data-lucide="message-square"></i> <%= act.comentarios?.length || 0 %> comentarios</span>
+                  </div>
+
+                  <!-- Barra de progreso de entregas -->
+                  <div class="entrega-progreso">
+                    <div class="entrega-progreso__barra">
+                      <div class="entrega-progreso__relleno" style="width:<%= act._porcentaje %>%"></div>
+                    </div>
+                    <span class="entrega-progreso__texto">
+                      <%= act._totalEntregas %> / <%= act._totalEst %> entregaron (<%= act._porcentaje %>%)
+                    </span>
+                  </div>
+                </div>
+
+                <div class="tarjeta-actividad-docente__acciones">
+                  <a href="/actividades/docente/<%= act._id %>" class="btn btn--secundario btn--sm">
+                    <i data-lucide="eye"></i> Ver entregas
+                  </a>
+                  <% if (!vencida) { %>
+                    <button class="btn-icono btn-icono--editar"
+                      onclick="abrirDrawerEditar('<%= act._id %>', `<%= act.titulo.replace(/`/g,'\\`') %>`, `<%= (act.descripcion||'').replace(/`/g,'\\`') %>`, '<%= act.fechaLimite.toISOString().slice(0,16) %>')"
+                      title="Editar">
+                      <i data-lucide="pencil"></i>
+                    </button>
+                  <% } %>
+                  <form method="POST" action="/actividades/docente/<%= act._id %>?_method=DELETE&materiaId=<%= materiaIdActiva %>&gradoId=<%= gradoIdActivo %>"
+                    onsubmit="return confirm('¿Eliminar la actividad «<%= act.titulo %>»? Se eliminarán todas las entregas.')"
+                    style="display:inline">
+                    <button type="submit" class="btn-icono btn-icono--eliminar" title="Eliminar">
+                      <i data-lucide="trash-2"></i>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      <% } %>
+
+    </main>
+  </div>
+
+  <!-- ─── Drawer lateral ──────────────────────────────────────────────── -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer__cabecera">
+      <h2 class="drawer__titulo" id="drawerTitulo">Nueva actividad</h2>
+      <button class="drawer__cerrar" onclick="cerrarDrawer()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer__cuerpo" id="drawerCuerpo"></div>
+  </div>
+
+  <!-- ─── Template: Crear actividad ──────────────────────────────────── -->
+  <template id="templateCrearActividad">
+    <form method="POST" action="/actividades/docente" enctype="multipart/form-data" class="formulario-grupo">
+      <input type="hidden" name="gradoId"   value="<%= gradoIdActivo %>"/>
+      <input type="hidden" name="materiaId" value="<%= materiaIdActiva %>"/>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Título de la actividad *</label>
+        <input type="text" name="titulo" class="campo__entrada" required
+          placeholder="Ej: Taller de Fracciones, Exposición oral..." />
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Descripción / Instrucciones</label>
+        <textarea name="descripcion" class="campo__area" rows="5"
+          placeholder="Describe las instrucciones, criterios de evaluación, recursos necesarios..."></textarea>
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Fecha y hora límite *</label>
+        <input type="datetime-local" name="fechaLimite" class="campo__entrada" required />
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Archivos adjuntos</label>
+        <div class="campo-archivos">
+          <label class="campo-archivos__zona" for="archivosActividad">
+            <i data-lucide="upload-cloud"></i>
+            <span>Arrastra archivos o haz clic para seleccionar</span>
+            <span class="campo-archivos__tipos">JPG · PDF · DOCX · PPTX · XLSX · MP3 · MP4 (máx. 50MB c/u)</span>
+          </label>
+          <input type="file" id="archivosActividad" name="archivos" multiple
+            accept=".jpg,.jpeg,.png,.pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.mp3,.mp4"
+            onchange="mostrarArchivosSeleccionados(this, 'listaArchivosActividad')"
+            style="display:none"/>
+        </div>
+        <div id="listaArchivosActividad" class="lista-archivos-preview"></div>
+      </div>
+
+      <div class="drawer__pie">
+        <button type="button" class="btn btn--secundario" onclick="cerrarDrawer()">Cancelar</button>
+        <button type="submit" class="btn btn--primario">
+          <i data-lucide="send"></i> Publicar actividad
+        </button>
+      </div>
+    </form>
+  </template>
+
+  <!-- ─── Template: Editar actividad ─────────────────────────────────── -->
+  <template id="templateEditarActividad">
+    <form method="POST" action="" enctype="multipart/form-data" class="formulario-grupo" id="formEditarActividad">
+      <input type="hidden" name="_method" value="PUT"/>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Título *</label>
+        <input type="text" name="titulo" id="editTitulo" class="campo__entrada" required />
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Descripción / Instrucciones</label>
+        <textarea name="descripcion" id="editDesc" class="campo__area" rows="4"></textarea>
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Nueva fecha límite *</label>
+        <input type="datetime-local" name="fechaLimite" id="editFecha" class="campo__entrada" required />
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Agregar más archivos</label>
+        <div class="campo-archivos">
+          <label class="campo-archivos__zona" for="archivosEditar">
+            <i data-lucide="upload-cloud"></i>
+            <span>Seleccionar archivos adicionales</span>
+          </label>
+          <input type="file" id="archivosEditar" name="archivos" multiple
+            accept=".jpg,.jpeg,.png,.pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.mp3,.mp4"
+            onchange="mostrarArchivosSeleccionados(this, 'listaArchivosEditar')"
+            style="display:none"/>
+        </div>
+        <div id="listaArchivosEditar" class="lista-archivos-preview"></div>
+      </div>
+
+      <div class="drawer__pie">
+        <button type="button" class="btn btn--secundario" onclick="cerrarDrawer()">Cancelar</button>
+        <button type="submit" class="btn btn--primario">
+          <i data-lucide="save"></i> Guardar cambios
+        </button>
+      </div>
+    </form>
+  </template>
+
+  <script src="/js/drawer.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/notificaciones.js"></script>
+  <script src="/js/actividades-docente.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

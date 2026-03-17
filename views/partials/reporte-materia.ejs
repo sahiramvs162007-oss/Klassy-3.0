@@ -1,0 +1,65 @@
+<% if (!reporte) { %>
+  <div class="estado-vacio">
+    <i data-lucide="book-open"></i>
+    <h3>Selecciona grado, periodo y materia</h3>
+    <p>Elige los filtros para ver el reporte por materia.</p>
+  </div>
+<% } else { %>
+
+  <div class="reporte-header">
+    <div>
+      <h2 class="reporte-titulo"><%= reporte.nombreMateria %> — <%= reporte.nombreGrado %></h2>
+      <p class="texto-secundario"><%= reporte.nombrePeriodo %></p>
+    </div>
+    <a href="/boletines/reporte/materia/pdf?gradoId=<%= gradoIdActivo %>&periodoId=<%= periodoIdActivo %>&materiaId=<%= materiaIdActiva %>&año=<%= añoSeleccionado %>"
+      target="_blank" class="btn btn--primario btn--sm">
+      <i data-lucide="download"></i> Descargar PDF
+    </a>
+  </div>
+
+  <div class="reporte-stats">
+    <div class="reporte-stat"><span class="reporte-stat__num"><%= reporte.total %></span><span class="reporte-stat__label">Total</span></div>
+    <div class="reporte-stat reporte-stat--ok"><span class="reporte-stat__num"><%= reporte.aprobados %></span><span class="reporte-stat__label">Aprobados</span></div>
+    <div class="reporte-stat reporte-stat--mal"><span class="reporte-stat__num"><%= reporte.reprobados %></span><span class="reporte-stat__label">Reprobados</span></div>
+    <div class="reporte-stat"><span class="reporte-stat__num"><%= reporte.promedioGrupo %></span><span class="reporte-stat__label">Prom. grupo</span></div>
+  </div>
+
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Estudiante</th>
+          <th>Actividades</th>
+          <th>Promedio materia</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% reporte.filas.forEach(f => { %>
+          <tr>
+            <td><strong><%= f.nombre %></strong></td>
+            <td class="texto-secundario texto-sm" style="text-align:center;"><%= f.notas?.length || 0 %></td>
+            <td style="text-align:center;">
+              <% if (f.promedio !== null) { %>
+                <span class="nota-boletin nota-boletin--<%= f.promedio >= 3 ? 'ok' : 'mal' %>">
+                  <%= f.promedio.toFixed(2) %>
+                </span>
+              <% } else { %>
+                <span class="texto-vacio">—</span>
+              <% } %>
+            </td>
+            <td style="text-align:center;">
+              <% if (f.aprobado !== null) { %>
+                <span class="badge <%= f.aprobado ? 'badge--activo' : 'badge--error' %>">
+                  <%= f.aprobado ? 'Aprobada' : 'Reprobada' %>
+                </span>
+              <% } else { %>
+                <span class="badge badge--inactivo">Sin datos</span>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>

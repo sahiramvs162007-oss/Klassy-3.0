@@ -1,0 +1,974 @@
+/* ═══════════════════════════════════════════════════════
+   KLASSY — CSS del Módulo de Actividades (Sprint 9)
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Estado vacío ─────────────────────────────────────── */
+.estado-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--gris-500);
+}
+
+.estado-vacio svg {
+  width: 48px;
+  height: 48px;
+  stroke-width: 1.25;
+  color: var(--gris-300);
+}
+
+.estado-vacio h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gris-700);
+}
+
+.estado-vacio p {
+  font-size: 0.875rem;
+  max-width: 360px;
+}
+
+/* ─── Botón volver ─────────────────────────────────────── */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--gris-500);
+  text-decoration: none;
+  transition: color var(--trans-rapida);
+  margin-bottom: 4px;
+}
+
+.btn-back svg { width: 14px; height: 14px; stroke-width: 2; }
+.btn-back:hover { color: var(--gris-900); }
+
+/* ═══════════════════════════════════════════════════════
+   PANEL DOCENTE — Bloques de materias
+   ═══════════════════════════════════════════════════════ */
+.bloques-materias {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.bloque-materia {
+  border-radius: var(--radio-lg);
+  padding: 0;
+  overflow: hidden;
+  box-shadow: var(--sombra-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bloque-materia:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+}
+
+.bloque-materia__cabecera {
+  padding: 20px 20px 16px;
+  color: #fff;
+}
+
+.bloque-materia__icono {
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.2);
+  border-radius: var(--radio);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.bloque-materia__icono svg { width: 20px; height: 20px; stroke-width: 1.75; }
+
+.bloque-materia__nombre {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.bloque-materia__desc {
+  font-size: 0.78rem;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+/* Variantes de color */
+.bloque--azul    .bloque-materia__cabecera { background: linear-gradient(135deg, var(--azul-700), var(--azul-500)); }
+.bloque--verde   .bloque-materia__cabecera { background: linear-gradient(135deg, #15803d, var(--verde-600)); }
+.bloque--morado  .bloque-materia__cabecera { background: linear-gradient(135deg, #6d28d9, var(--morado-600)); }
+.bloque--naranja .bloque-materia__cabecera { background: linear-gradient(135deg, #c2410c, var(--naranja-600)); }
+.bloque--rojo    .bloque-materia__cabecera { background: linear-gradient(135deg, #b91c1c, var(--rojo-600)); }
+
+.bloque-materia__grados {
+  background: #fff;
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bloque-materia__grados-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gris-400);
+}
+
+.bloque-grado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--gris-50);
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio);
+  text-decoration: none;
+  transition: background var(--trans-rapida), border-color var(--trans-rapida);
+  color: var(--gris-900);
+}
+
+.bloque-grado:hover {
+  background: var(--azul-50);
+  border-color: var(--azul-200);
+}
+
+.bloque-grado svg { width: 15px; height: 15px; stroke-width: 1.75; color: var(--azul-600); flex-shrink: 0; }
+.bloque-grado span { font-size: 0.875rem; font-weight: 500; flex: 1; }
+.bloque-grado__nivel { font-size: 0.72rem; color: var(--gris-400); }
+
+/* ─── Cabecera de la lista de actividades ─────────────── */
+.actividades-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.actividades-header__info { flex: 1; }
+
+.actividades-header__tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.chip--materia  { background-color: var(--azul-100);    color: var(--azul-700);    border-color: var(--azul-200); }
+.chip--grado    { background-color: var(--verde-100);   color: var(--verde-600);   border-color: #bbf7d0; }
+.chip--periodo  { background-color: var(--morado-100);  color: var(--morado-600);  border-color: #ddd6fe; }
+.chip--alerta   { background-color: var(--naranja-100); color: var(--naranja-600); border-color: #fed7aa; }
+
+/* ─── Lista de actividades docente ────────────────────── */
+.lista-actividades-docente {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tarjeta-actividad-docente {
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  display: flex;
+  gap: 0;
+  overflow: hidden;
+  box-shadow: var(--sombra-xs);
+  transition: box-shadow var(--trans-rapida);
+}
+
+.tarjeta-actividad-docente:hover {
+  box-shadow: var(--sombra-sm);
+}
+
+.tarjeta-actividad-docente__left {
+  width: 4px;
+  flex-shrink: 0;
+  background: var(--gris-200);
+}
+
+.tarjeta-actividad-docente--activa .tarjeta-actividad-docente__left  { background: var(--azul-600); }
+.tarjeta-actividad-docente--vencida .tarjeta-actividad-docente__left { background: var(--gris-300); }
+
+.tarjeta-actividad-docente__body {
+  flex: 1;
+  padding: 14px 16px;
+  min-width: 0;
+}
+
+.tarjeta-actividad-docente__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.tarjeta-actividad-docente__titulo a {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gris-900);
+  text-decoration: none;
+}
+
+.tarjeta-actividad-docente__titulo a:hover {
+  color: var(--azul-600);
+}
+
+.tarjeta-actividad-docente__desc {
+  font-size: 0.8rem;
+  color: var(--gris-500);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.tarjeta-actividad-docente__meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: var(--gris-500);
+  margin-bottom: 10px;
+}
+
+.tarjeta-actividad-docente__meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tarjeta-actividad-docente__meta svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2;
+}
+
+.tarjeta-actividad-docente__acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 16px 14px 0;
+  flex-shrink: 0;
+}
+
+/* ─── Barra de progreso de entregas ───────────────────── */
+.entrega-progreso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.entrega-progreso__barra {
+  flex: 1;
+  height: 6px;
+  background: var(--gris-100);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.entrega-progreso__relleno {
+  height: 100%;
+  background: var(--azul-500);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.entrega-progreso__texto {
+  font-size: 0.72rem;
+  color: var(--gris-500);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.entrega-progreso--grande .entrega-progreso__barra {
+  height: 10px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DETALLE ACTIVIDAD (docente y estudiante)
+   ═══════════════════════════════════════════════════════ */
+.detalle-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.detalle-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.actividad-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.actividad-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.actividad-meta-item__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gris-400);
+}
+
+.actividad-meta-item__valor {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gris-900);
+}
+
+.actividad-descripcion {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gris-100);
+}
+
+.actividad-descripcion h4 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gris-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.actividad-descripcion p {
+  font-size: 0.875rem;
+  color: var(--gris-700);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* Archivos adjuntos */
+.actividad-archivos {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gris-100);
+}
+
+.actividad-archivos h4 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gris-600);
+  margin-bottom: 8px;
+}
+
+.actividad-archivos h4 svg { width: 14px; height: 14px; }
+
+.archivos-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.archivos-lista--sm .archivo-chip {
+  font-size: 0.72rem;
+  padding: 3px 8px;
+}
+
+.archivo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: var(--gris-50);
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio);
+  font-size: 0.78rem;
+  color: var(--azul-700);
+  text-decoration: none;
+  transition: background var(--trans-rapida), border-color var(--trans-rapida);
+}
+
+.archivo-chip:hover {
+  background: var(--azul-50);
+  border-color: var(--azul-200);
+}
+
+.archivo-chip svg { width: 12px; height: 12px; stroke-width: 2; flex-shrink: 0; }
+
+/* ─── Stats de entregas ────────────────────────────────── */
+.tarjeta-stats-entregas { padding: 16px 20px; }
+
+.stats-entregas-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.stat-entrega {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px;
+  border-radius: var(--radio);
+  text-align: center;
+}
+
+.stat-entrega__num {
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: var(--fuente-marca);
+  line-height: 1;
+}
+
+.stat-entrega__label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.stat-entrega--total  { background: var(--gris-50);    color: var(--gris-700); }
+.stat-entrega--ok     { background: var(--verde-100);  color: var(--verde-600); }
+.stat-entrega--falta  { background: var(--rojo-100);   color: var(--rojo-600); }
+.stat-entrega--pct    { background: var(--azul-50);    color: var(--azul-700); }
+
+/* ─── Comentarios ──────────────────────────────────────── */
+.comentarios-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.comentario-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.comentario-item__avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--azul-100);
+  color: var(--azul-700);
+}
+
+.comentario-item__body {
+  flex: 1;
+  background: var(--gris-50);
+  border-radius: var(--radio);
+  padding: 8px 10px;
+}
+
+.comentario-item__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.comentario-item__autor {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gris-900);
+}
+
+.comentario-item__fecha {
+  font-size: 0.68rem;
+  color: var(--gris-400);
+}
+
+.comentario-item__texto {
+  font-size: 0.8rem;
+  color: var(--gris-700);
+  line-height: 1.4;
+}
+
+.comentario-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.comentario-form .campo__entrada {
+  flex: 1;
+}
+
+/* ─── Entregas de estudiantes (tabs) ──────────────────── */
+.entregas-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 10px;
+  border-bottom: 1px solid var(--gris-100);
+}
+
+.entregas-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radio);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--gris-500);
+  cursor: pointer;
+  background: none;
+  border: 1px solid transparent;
+  font-family: var(--fuente-ui);
+  transition: all var(--trans-rapida);
+}
+
+.entregas-tab svg { width: 13px; height: 13px; stroke-width: 2; }
+
+.entregas-tab--activo {
+  background: var(--azul-50);
+  color: var(--azul-700);
+  border-color: var(--azul-100);
+}
+
+.entregas-lista {
+  padding: 4px 0;
+}
+
+/* Item de estudiante en la lista de entregas */
+.entrega-estudiante-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--gris-50);
+  transition: background var(--trans-rapida);
+}
+
+.entrega-estudiante-item:hover {
+  background: var(--gris-50);
+}
+
+.entrega-estudiante-item--faltante {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.entrega-estudiante-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.entrega-estudiante-item__nombre {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gris-900);
+  display: block;
+}
+
+.entrega-estudiante-item__meta {
+  font-size: 0.75rem;
+  color: var(--gris-500);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+/* Chips de nota */
+.nota-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: var(--radio);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.nota-chip--ok  { background: var(--verde-100); color: var(--verde-600); }
+.nota-chip--mal { background: var(--rojo-100);  color: var(--rojo-600); }
+
+.nota-chip--grande {
+  font-size: 1.1rem;
+  padding: 4px 12px;
+}
+
+/* ─── Drawer de entregas individuales ─────────────────── */
+.entregas-detalle-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.entrega-drawer-item {
+  background: var(--gris-50);
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.entrega-drawer-item--calificada {
+  border-color: var(--verde-100);
+  background: #f0fdf4;
+}
+
+.entrega-drawer-item__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.entrega-drawer-item__num {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gris-600);
+  flex: 1;
+}
+
+.entrega-drawer-item__texto {
+  font-size: 0.85rem;
+  color: var(--gris-700);
+  line-height: 1.5;
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio);
+  padding: 10px;
+  white-space: pre-wrap;
+}
+
+.calificar-form__inputs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════════════════
+   VISTA ESTUDIANTE
+   ═══════════════════════════════════════════════════════ */
+.lista-actividades-estudiante {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tarjeta-actividad-est {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow var(--trans-rapida), border-color var(--trans-rapida);
+  box-shadow: var(--sombra-xs);
+}
+
+.tarjeta-actividad-est:hover {
+  box-shadow: var(--sombra-sm);
+  border-color: var(--azul-200);
+}
+
+.tarjeta-actividad-est--calificada {
+  border-left: 3px solid var(--verde-600);
+}
+
+.tarjeta-actividad-est--entregada {
+  border-left: 3px solid var(--azul-500);
+}
+
+.tarjeta-actividad-est--vencida {
+  border-left: 3px solid var(--gris-300);
+  opacity: 0.8;
+}
+
+.tarjeta-actividad-est--pendiente {
+  border-left: 3px solid var(--naranja-600);
+}
+
+.tarjeta-actividad-est__icono {
+  width: 40px;
+  height: 40px;
+  background: var(--azul-50);
+  border-radius: var(--radio);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--azul-600);
+}
+
+.tarjeta-actividad-est__icono svg { width: 18px; height: 18px; stroke-width: 1.75; }
+
+.tarjeta-actividad-est__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.tarjeta-actividad-est__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.tarjeta-actividad-est__titulo {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gris-900);
+}
+
+.tarjeta-actividad-est__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+}
+
+.tarjeta-actividad-est__fecha {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--gris-500);
+}
+
+.tarjeta-actividad-est__fecha svg { width: 12px; height: 12px; }
+
+.tarjeta-actividad-est__nota {
+  margin-top: 4px;
+}
+
+.tarjeta-actividad-est__arrow {
+  width: 16px;
+  height: 16px;
+  color: var(--gris-300);
+  flex-shrink: 0;
+  stroke-width: 2;
+}
+
+/* ─── Detalle actividad estudiante ────────────────────── */
+.actividad-encabezado-est__chips {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.actividad-encabezado-est__titulo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--gris-900);
+  margin-bottom: 6px;
+}
+
+.actividad-encabezado-est__docente {
+  font-size: 0.82rem;
+  color: var(--gris-500);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.actividad-encabezado-est__limite {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--gris-600);
+  padding: 8px 12px;
+  background: var(--gris-50);
+  border-radius: var(--radio);
+  border: 1px solid var(--gris-200);
+}
+
+.actividad-encabezado-est__limite--vencida {
+  background: var(--rojo-100);
+  color: var(--rojo-600);
+  border-color: #fecaca;
+}
+
+.actividad-encabezado-est__limite svg { width: 14px; height: 14px; stroke-width: 2; }
+
+/* Entregas propias del estudiante */
+.entrega-propia {
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.entrega-propia--calificada {
+  border-color: var(--verde-100);
+  background: #f0fdf4;
+}
+
+.entrega-propia__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.entrega-propia__num {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--gris-700);
+  flex: 1;
+}
+
+.entrega-propia__texto {
+  font-size: 0.85rem;
+  color: var(--gris-700);
+  line-height: 1.5;
+  padding: 8px;
+  background: #fff;
+  border-radius: var(--radio);
+  border: 1px solid var(--gris-100);
+  margin-bottom: 6px;
+}
+
+.entrega-propia__feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--azul-50);
+  border-radius: var(--radio);
+  border: 1px solid var(--azul-100);
+  font-size: 0.8rem;
+  color: var(--azul-700);
+  margin-top: 6px;
+}
+
+.entrega-propia__feedback svg { flex-shrink: 0; margin-top: 1px; }
+
+/* Tarjeta de actividad vencida para estudiante */
+.tarjeta-vencida {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--gris-500);
+  border: 2px dashed var(--gris-200);
+}
+
+.tarjeta-vencida svg {
+  width: 32px;
+  height: 32px;
+  stroke-width: 1.25;
+  color: var(--gris-300);
+}
+
+/* ─── Zona de subida de archivos ──────────────────────── */
+.campo-archivos {
+  border: 2px dashed var(--gris-300);
+  border-radius: var(--radio-lg);
+  overflow: hidden;
+  transition: border-color var(--trans-rapida);
+}
+
+.campo-archivos:hover {
+  border-color: var(--azul-400);
+}
+
+.campo-archivos__zona {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px 16px;
+  cursor: pointer;
+  color: var(--gris-500);
+  text-align: center;
+}
+
+.campo-archivos__zona svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 1.5;
+  color: var(--gris-400);
+}
+
+.campo-archivos__zona span:first-of-type {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gris-700);
+}
+
+.campo-archivos__tipos {
+  font-size: 0.72rem;
+  color: var(--gris-400);
+}
+
+/* Preview de archivos seleccionados */
+.lista-archivos-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.archivo-preview-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--azul-50);
+  border: 1px solid var(--azul-100);
+  border-radius: var(--radio);
+  font-size: 0.75rem;
+  color: var(--azul-700);
+}
+
+/* ─── Responsive ───────────────────────────────────────── */
+@media (max-width: 900px) {
+  .detalle-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-entregas-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .bloques-materias {
+    grid-template-columns: 1fr;
+  }
+
+  .tarjeta-actividad-docente__acciones {
+    flex-direction: row;
+    padding: 0 12px 12px;
+  }
+}

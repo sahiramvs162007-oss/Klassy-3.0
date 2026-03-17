@@ -1,0 +1,65 @@
+<header class="topbar">
+
+  <!-- Botón menú móvil -->
+  <button class="topbar__menu-btn" onclick="toggleSidebar()" aria-label="Menú">
+    <i data-lucide="menu"></i>
+  </button>
+
+  <!-- Título de sección -->
+  <div class="topbar__breadcrumb">
+    <span class="topbar__pagina"><%= typeof titulo !== 'undefined' ? titulo : 'KLASSY' %></span>
+  </div>
+
+  <!-- Acciones del usuario -->
+  <div class="topbar__acciones">
+
+    <!-- ─── Campana de notificaciones ─────────────────────── -->
+    <div class="notif-campana" id="notifCampana">
+      <button class="notif-campana__btn" onclick="togglePanelNotif()" aria-label="Notificaciones">
+        <i data-lucide="bell"></i>
+        <span class="notif-campana__badge" id="notifBadge" style="display:none;">0</span>
+      </button>
+
+      <!-- Panel desplegable -->
+      <div class="notif-panel" id="notifPanel" style="display:none;">
+        <div class="notif-panel__header">
+          <span class="notif-panel__titulo">Notificaciones</span>
+          <button class="notif-panel__leer-todas" onclick="marcarTodasLeidas()" title="Marcar todas como leídas">
+            <i data-lucide="check-check"></i>
+          </button>
+        </div>
+        <div class="notif-panel__lista" id="notifLista">
+          <div class="notif-panel__cargando">
+            <i data-lucide="loader-2" class="notif-spin"></i>
+          </div>
+        </div>
+        <div class="notif-panel__footer">
+          <span class="notif-panel__conteo" id="notifConteoTexto"></span>
+        </div>
+      </div>
+    </div>
+    <!-- ─────────────────────────────────────────────────────── -->
+
+    <!-- Avatar y nombre del usuario -->
+    <% if (typeof usuarioActual !== 'undefined' && usuarioActual) { %>
+      <div class="topbar__usuario">
+        <div class="topbar__avatar">
+          <%= usuarioActual.nombre ? usuarioActual.nombre.charAt(0).toUpperCase() : 'U' %>
+        </div>
+        <div class="topbar__info-usuario">
+          <span class="topbar__nombre"><%= usuarioActual.nombre || 'Usuario' %></span>
+          <span class="topbar__rol"><%= usuarioActual.rol || '' %></span>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="topbar__usuario">
+        <div class="topbar__avatar">A</div>
+        <div class="topbar__info-usuario">
+          <span class="topbar__nombre">Admin</span>
+          <span class="topbar__rol">Administrador</span>
+        </div>
+      </div>
+    <% } %>
+
+  </div>
+</header>

@@ -1,0 +1,307 @@
+<%
+  // Helper EJS (server-side) para iconos de archivos
+  function iconoArchivo(mime) {
+    if (!mime) return 'file';
+    if (mime.includes('image'))  return 'image';
+    if (mime.includes('pdf'))    return 'file-text';
+    if (mime.includes('word') || mime.includes('document')) return 'file-text';
+    if (mime.includes('presentation') || mime.includes('powerpoint')) return 'presentation';
+    if (mime.includes('sheet') || mime.includes('excel')) return 'table';
+    if (mime.includes('audio')) return 'music';
+    if (mime.includes('video')) return 'video';
+    return 'file';
+  }
+%>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — <%= actividad.titulo %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/actividades.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <!-- Flash -->
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <!-- Breadcrumb -->
+      <a href="/actividades/docente?materiaId=<%= actividad.materiaId._id %>&gradoId=<%= actividad.gradoId._id %>"
+        class="btn-back">
+        <i data-lucide="arrow-left"></i> <%= actividad.materiaId.nombre %> — <%= actividad.gradoId.nombre %>
+      </a>
+
+      <!-- Layout de dos columnas -->
+      <div class="detalle-layout">
+
+        <!-- ─── Columna izquierda: info de la actividad ─── -->
+        <div class="detalle-col detalle-col--info">
+
+          <div class="tarjeta">
+            <div class="tarjeta__cabecera">
+              <i data-lucide="clipboard-list"></i>
+              <h2 class="tarjeta__titulo"><%= actividad.titulo %></h2>
+            </div>
+
+            <div class="actividad-meta-grid">
+              <div class="actividad-meta-item">
+                <span class="actividad-meta-item__label">Materia</span>
+                <span class="actividad-meta-item__valor"><%= actividad.materiaId.nombre %></span>
+              </div>
+              <div class="actividad-meta-item">
+                <span class="actividad-meta-item__label">Grado</span>
+                <span class="actividad-meta-item__valor"><%= actividad.gradoId.nombre %></span>
+              </div>
+              <div class="actividad-meta-item">
+                <span class="actividad-meta-item__label">Periodo</span>
+                <span class="actividad-meta-item__valor"><%= actividad.periodoId?.nombre || '—' %></span>
+              </div>
+              <div class="actividad-meta-item">
+                <span class="actividad-meta-item__label">Fecha límite</span>
+                <span class="actividad-meta-item__valor">
+                  <%= new Date(actividad.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }) %>
+                </span>
+              </div>
+            </div>
+
+            <% if (actividad.descripcion) { %>
+              <div class="actividad-descripcion">
+                <h4>Instrucciones</h4>
+                <p><%= actividad.descripcion %></p>
+              </div>
+            <% } %>
+
+            <!-- Archivos adjuntos del docente -->
+            <% if (actividad.archivos?.length > 0) { %>
+              <div class="actividad-archivos">
+                <h4><i data-lucide="paperclip"></i> Archivos adjuntos</h4>
+                <div class="archivos-lista">
+                  <% actividad.archivos.forEach(a => { %>
+                    <a href="<%= a.ruta %>" target="_blank" class="archivo-chip">
+                      <i data-lucide="<%= iconoArchivo(a.tipoMime) %>"></i>
+                      <span><%= a.nombreOriginal %></span>
+                    </a>
+                  <% }) %>
+                </div>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Estadísticas de entregas -->
+          <div class="tarjeta tarjeta-stats-entregas">
+            <div class="stats-entregas-grid">
+              <div class="stat-entrega stat-entrega--total">
+                <span class="stat-entrega__num"><%= totalEstudiantes %></span>
+                <span class="stat-entrega__label">Total estudiantes</span>
+              </div>
+              <div class="stat-entrega stat-entrega--ok">
+                <span class="stat-entrega__num"><%= entregaron %></span>
+                <span class="stat-entrega__label">Entregaron</span>
+              </div>
+              <div class="stat-entrega stat-entrega--falta">
+                <span class="stat-entrega__num"><%= totalEstudiantes - entregaron %></span>
+                <span class="stat-entrega__label">Sin entregar</span>
+              </div>
+              <div class="stat-entrega stat-entrega--pct">
+                <span class="stat-entrega__num"><%= porcentaje %>%</span>
+                <span class="stat-entrega__label">Completado</span>
+              </div>
+            </div>
+            <div class="entrega-progreso entrega-progreso--grande">
+              <div class="entrega-progreso__barra">
+                <div class="entrega-progreso__relleno" style="width:<%= porcentaje %>%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección de comentarios -->
+          <div class="tarjeta">
+            <div class="tarjeta__cabecera">
+              <i data-lucide="message-square"></i>
+              <h3 class="tarjeta__titulo">Comentarios públicos</h3>
+            </div>
+            <div class="comentarios-lista">
+              <% if (actividad.comentarios?.length === 0) { %>
+                <p class="texto-vacio">Sin comentarios todavía.</p>
+              <% } else { %>
+                <% actividad.comentarios.forEach(c => { %>
+                  <div class="comentario-item">
+                    <div class="comentario-item__avatar usuario-celda__avatar--<%= c.usuarioId?.rol || 'docente' %>">
+                      <%= c.usuarioId ? c.usuarioId.nombre.charAt(0).toUpperCase() : '?' %>
+                    </div>
+                    <div class="comentario-item__body">
+                      <div class="comentario-item__header">
+                        <span class="comentario-item__autor">
+                          <%= c.usuarioId ? c.usuarioId.nombre + ' ' + c.usuarioId.apellido : 'Usuario' %>
+                        </span>
+                        <span class="comentario-item__fecha"><%= new Date(c.fecha).toLocaleDateString('es-CO') %></span>
+                      </div>
+                      <p class="comentario-item__texto"><%= c.texto %></p>
+                    </div>
+                  </div>
+                <% }) %>
+              <% } %>
+            </div>
+            <form method="POST" action="/actividades/docente/<%= actividad._id %>/comentarios" class="comentario-form">
+              <input type="text" name="texto" class="campo__entrada" required placeholder="Escribe un comentario público..." />
+              <button type="submit" class="btn btn--primario btn--sm">
+                <i data-lucide="send"></i>
+              </button>
+            </form>
+          </div>
+
+        </div>
+
+        <!-- ─── Columna derecha: lista de entregas ─── -->
+        <div class="detalle-col detalle-col--entregas">
+          <div class="tarjeta">
+            <div class="tarjeta__cabecera">
+              <i data-lucide="users"></i>
+              <h3 class="tarjeta__titulo">Entregas de estudiantes</h3>
+            </div>
+
+            <!-- Tabs: Entregaron / No entregaron -->
+            <div class="entregas-tabs">
+              <button class="entregas-tab entregas-tab--activo" onclick="filtrarEntregas('entregaron', this)">
+                <i data-lucide="check-circle"></i> Entregaron (<%= entregaron %>)
+              </button>
+              <button class="entregas-tab" onclick="filtrarEntregas('faltantes', this)">
+                <i data-lucide="alert-circle"></i> Sin entregar (<%= totalEstudiantes - entregaron %>)
+              </button>
+            </div>
+
+            <!-- Lista de los que entregaron -->
+            <div id="listaEntregaron" class="entregas-lista">
+              <% resumenEstudiantes.filter(r => r.entrego).forEach(r => { %>
+                <div class="entrega-estudiante-item" onclick="abrirEntregas('<%= r.estudiante?._id %>', `<%= (r.estudiante?.nombre + ' ' + r.estudiante?.apellido).replace(/`/g,'\\`') %>`)">
+                  <div class="entrega-estudiante-item__avatar usuario-celda__avatar--estudiante">
+                    <%= r.estudiante ? r.estudiante.nombre.charAt(0).toUpperCase() + r.estudiante.apellido.charAt(0).toUpperCase() : '??' %>
+                  </div>
+                  <div class="entrega-estudiante-item__info">
+                    <span class="entrega-estudiante-item__nombre">
+                      <%= r.estudiante ? r.estudiante.nombre + ' ' + r.estudiante.apellido : 'Estudiante' %>
+                    </span>
+                    <span class="entrega-estudiante-item__meta">
+                      <%= r.entregas.length %> entrega<%= r.entregas.length !== 1 ? 's' : '' %>
+                      <% const calificada = r.entregas.find(e => e.estado === 'calificada'); %>
+                      <% if (calificada) { %>
+                        · <span class="nota-chip nota-chip--ok"><%= calificada.nota?.toFixed(1) %></span>
+                      <% } else { %>
+                        · <span class="badge badge--pendiente">Sin calificar</span>
+                      <% } %>
+                    </span>
+                  </div>
+                  <i data-lucide="chevron-right" style="color:var(--gris-400);width:16px;height:16px;"></i>
+                </div>
+              <% }) %>
+              <% if (resumenEstudiantes.filter(r => r.entrego).length === 0) { %>
+                <p class="texto-vacio" style="padding:20px 0;">Ningún estudiante ha entregado aún.</p>
+              <% } %>
+            </div>
+
+            <!-- Lista de los que NO entregaron -->
+            <div id="listaFaltantes" class="entregas-lista" style="display:none;">
+              <% resumenEstudiantes.filter(r => !r.entrego).forEach(r => { %>
+                <div class="entrega-estudiante-item entrega-estudiante-item--faltante">
+                  <div class="entrega-estudiante-item__avatar usuario-celda__avatar--estudiante" style="opacity:0.5;">
+                    <%= r.estudiante ? r.estudiante.nombre.charAt(0).toUpperCase() + r.estudiante.apellido.charAt(0).toUpperCase() : '??' %>
+                  </div>
+                  <div class="entrega-estudiante-item__info">
+                    <span class="entrega-estudiante-item__nombre">
+                      <%= r.estudiante ? r.estudiante.nombre + ' ' + r.estudiante.apellido : 'Estudiante' %>
+                    </span>
+                    <span class="entrega-estudiante-item__meta texto-secundario">No ha entregado</span>
+                  </div>
+                </div>
+              <% }) %>
+              <% if (resumenEstudiantes.filter(r => !r.entrego).length === 0) { %>
+                <p class="texto-vacio" style="padding:20px 0;">¡Todos entregaron! 🎉</p>
+              <% } %>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Drawer para ver entregas de un estudiante -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer__cabecera">
+      <h2 class="drawer__titulo" id="drawerTitulo">Entregas</h2>
+      <button class="drawer__cerrar" onclick="cerrarDrawer()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer__cuerpo" id="drawerCuerpo"></div>
+  </div>
+
+  <!-- Datos de entregas inyectados para JS -->
+  <script>
+    // Usar window. para que sea accesible desde actividad-detalle-docente.js (scope global)
+    window.RESUMEN_ENTREGAS = <%- JSON.stringify(
+      resumenEstudiantes.filter(r => r.entrego).map(r => ({
+        estudianteId:   r.estudiante?._id?.toString(),
+        nombreEstudiante: r.estudiante ? r.estudiante.nombre + ' ' + r.estudiante.apellido : '—',
+        entregas: r.entregas.map(e => ({
+          _id:               e._id?.toString(),
+          contenidoTexto:    e.contenidoTexto || '',
+          archivos:          e.archivos || [],
+          fechaEntrega:      e.fechaEntrega,
+          estado:            e.estado,
+          nota:              e.nota,
+          comentarioDocente: e.comentarioDocente || '',
+        })),
+      }))
+    ) %>;
+
+    function iconoArchivo(mime) {
+      if (!mime) return 'file';
+      if (mime.includes('image'))  return 'image';
+      if (mime.includes('pdf'))    return 'file-text';
+      if (mime.includes('word') || mime.includes('document')) return 'file-text';
+      if (mime.includes('presentation') || mime.includes('powerpoint')) return 'presentation';
+      if (mime.includes('sheet') || mime.includes('excel')) return 'table';
+      if (mime.includes('audio')) return 'music';
+      if (mime.includes('video')) return 'video';
+      return 'file';
+    }
+  </script>
+
+  <script>
+    // Helper también en EJS (para los archivos del docente)
+    function iconoArchivo(mime) {
+      if (!mime) return 'file';
+      if (mime.includes('image'))  return 'image';
+      if (mime.includes('pdf'))    return 'file-text';
+      if (mime.includes('audio')) return 'music';
+      if (mime.includes('video')) return 'video';
+      return 'file';
+    }
+  </script>
+
+  <script src="/js/drawer.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/notificaciones.js"></script>
+  <script src="/js/actividad-detalle-docente.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

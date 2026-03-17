@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Periodos Académicos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <!-- Flash messages -->
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+      <% if (mensajeInfo && mensajeInfo.length > 0) { %>
+        <div class="alerta alerta--info"><i data-lucide="info"></i><span><%= mensajeInfo %></span></div>
+      <% } %>
+
+      <!-- Cabecera -->
+      <div class="cabecera-pagina">
+        <div>
+          <h1 class="cabecera-pagina__titulo">Periodos Académicos</h1>
+          <p class="cabecera-pagina__subtitulo"><%= periodos.length %> periodo<%= periodos.length !== 1 ? 's' : '' %> registrado<%= periodos.length !== 1 ? 's' : '' %></p>
+        </div>
+        <div class="cabecera-pagina__acciones">
+          <button class="btn btn--primario" onclick="abrirDrawerCrearPeriodo()">
+            <i data-lucide="plus"></i> Nuevo periodo
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtro por año -->
+      <form method="GET" action="/periodos" class="barra-filtros">
+        <div class="barra-filtros__grupo">
+          <select name="filtroAnio" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todos los años</option>
+            <% añosDisponibles.forEach(a => { %>
+              <option value="<%= a %>" <%= filtroAnio == a ? 'selected' : '' %>><%= a %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="barra-filtros__acciones">
+          <% if (filtroAnio) { %>
+            <a href="/periodos" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Ver todos</a>
+          <% } %>
+        </div>
+      </form>
+
+      <!-- Contenido principal -->
+      <% if (periodos.length === 0) { %>
+        <div class="tabla-contenedor">
+          <div class="tabla-vacia">
+            <i data-lucide="calendar"></i>
+            <p>No hay periodos registrados aún.</p>
+            <button class="btn btn--primario btn--sm" onclick="abrirDrawerCrearPeriodo()">
+              Crear primer periodo
+            </button>
+          </div>
+        </div>
+      <% } else { %>
+
+        <%
+          // Obtener años ordenados descendentemente para mostrar secciones
+          const añosOrdenados = Object.keys(periodosPorAnio).map(Number).sort((a, b) => b - a);
+        %>
+
+        <% añosOrdenados.forEach(anio => { %>
+          <div class="seccion-anio">
+
+            <!-- Encabezado del año -->
+            <div class="seccion-anio__header">
+              <div class="seccion-anio__titulo">
+                <i data-lucide="calendar-days"></i>
+                <span>Año <%= anio %></span>
+                <span class="seccion-anio__conteo">
+                  <%= periodosPorAnio[anio].length %> periodo<%= periodosPorAnio[anio].length !== 1 ? 's' : '' %>
+                </span>
+              </div>
+              <%
+                const todosAbiertos  = periodosPorAnio[anio].every(p => p.activo);
+                const todosCerrados  = periodosPorAnio[anio].every(p => !p.activo);
+                const estadoAnio     = todosCerrados ? 'Cerrado' : todosAbiertos ? 'En curso' : 'Parcialmente cerrado';
+                const claseEstado    = todosCerrados ? 'badge--inactivo' : 'badge--activo';
+              %>
+              <span class="badge <%= claseEstado %>"><%= estadoAnio %></span>
+            </div>
+
+            <!-- Tarjetas de los 4 periodos -->
+            <div class="periodos-grid">
+              <% periodosPorAnio[anio].forEach(p => { %>
+                <%
+                  const hoy       = new Date();
+                  const inicio    = new Date(p.fechaInicio);
+                  const fin       = new Date(p.fechaFin);
+                  const enCurso   = p.activo && hoy >= inicio && hoy <= fin;
+                  const pendiente = p.activo && hoy < inicio;
+                  const vencido   = p.activo && hoy > fin;
+                %>
+                <div class="tarjeta-periodo <%= !p.activo ? 'tarjeta-periodo--cerrado' : enCurso ? 'tarjeta-periodo--activo' : '' %>">
+
+                  <!-- Número del periodo -->
+                  <div class="tarjeta-periodo__numero">
+                    <span class="tarjeta-periodo__n"><%= p.numero %></span>
+                    <span class="tarjeta-periodo__label">Periodo</span>
+                  </div>
+
+                  <!-- Info principal -->
+                  <div class="tarjeta-periodo__info">
+                    <h3 class="tarjeta-periodo__nombre"><%= p.nombre %></h3>
+
+                    <div class="tarjeta-periodo__fechas">
+                      <span class="tarjeta-periodo__fecha">
+                        <i data-lucide="calendar-arrow-up"></i>
+                        <%= new Date(p.fechaInicio).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %>
+                      </span>
+                      <span class="tarjeta-periodo__sep">→</span>
+                      <span class="tarjeta-periodo__fecha">
+                        <i data-lucide="calendar-arrow-down"></i>
+                        <%= new Date(p.fechaFin).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %>
+                      </span>
+                    </div>
+
+                    <!-- Estado -->
+                    <% if (!p.activo) { %>
+                      <span class="badge badge--inactivo">
+                        <i data-lucide="lock"></i> Cerrado
+                      </span>
+                    <% } else if (enCurso) { %>
+                      <span class="badge badge--activo">
+                        <i data-lucide="play-circle"></i> En curso
+                      </span>
+                    <% } else if (pendiente) { %>
+                      <span class="badge badge--pendiente">
+                        <i data-lucide="clock"></i> Pendiente
+                      </span>
+                    <% } else if (vencido) { %>
+                      <span class="badge badge--suspendido">
+                        <i data-lucide="alert-triangle"></i> Fecha vencida
+                      </span>
+                    <% } %>
+                  </div>
+
+                  <!-- Acciones -->
+                  <div class="tarjeta-periodo__acciones">
+                    <% if (p.activo) { %>
+                      <!-- Editar -->
+                      <button
+                        class="btn-icono btn-icono--editar"
+                        onclick="abrirDrawerEditarPeriodo('<%= p._id %>')"
+                        title="Editar periodo"
+                      >
+                        <i data-lucide="pencil"></i>
+                      </button>
+
+                      <!-- Cerrar periodo -->
+                      <form method="POST" action="/periodos/<%= p._id %>?_method=PUT"
+                        onsubmit="return confirmarCierre('<%= p.nombre %>')"
+                        style="display:inline">
+                        <input type="hidden" name="accion" value="cerrar" />
+                        <button type="submit"
+                          class="btn btn--secundario btn--sm"
+                          title="Cerrar periodo (irreversible)"
+                          onclick="this.form.action='/periodos/<%= p._id %>/cerrar?_method=PUT'"
+                        >
+                          <i data-lucide="lock"></i> Cerrar
+                        </button>
+                      </form>
+
+                      <!-- Eliminar -->
+                      <form method="POST" action="/periodos/<%= p._id %>?_method=DELETE"
+                        onsubmit="return confirmarEliminar('<%= p.nombre %>')"
+                        style="display:inline">
+                        <button type="submit" class="btn-icono btn-icono--eliminar" title="Eliminar">
+                          <i data-lucide="trash-2"></i>
+                        </button>
+                      </form>
+
+                    <% } else { %>
+                      <!-- Periodo cerrado: solo informativo -->
+                      <span class="texto-secundario texto-sm" style="padding: 0 4px;">
+                        <i data-lucide="shield-check" style="width:14px;height:14px;vertical-align:middle;"></i>
+                        Inmutable
+                      </span>
+                    <% } %>
+                  </div>
+
+                </div>
+              <% }) %>
+            </div>
+
+          </div>
+        <% }) %>
+      <% } %>
+
+    </main>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer__cabecera">
+      <h2 class="drawer__titulo" id="drawerTitulo">Nuevo periodo</h2>
+      <button class="drawer__cerrar" onclick="cerrarDrawer()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer__cuerpo" id="drawerCuerpo"></div>
+  </div>
+
+  <!-- Template formulario periodo -->
+  <template id="templateFormPeriodo">
+    <form id="formPeriodo" method="POST" action="/periodos" class="formulario-grupo">
+      <input type="hidden" name="_method" id="metodoPeriodo" value="" />
+
+      <div class="campo">
+        <label class="campo__etiqueta">Nombre del periodo *</label>
+        <input type="text" name="nombre" id="campoNombrePeriodo" class="campo__entrada" required
+          placeholder="Ej: Primer Periodo, Segundo Periodo" />
+      </div>
+
+      <div class="formulario-2col">
+        <div class="campo">
+          <label class="campo__etiqueta">Número *</label>
+          <select name="numero" id="campoNumeroPeriodo" class="campo__select" required>
+            <option value="">Seleccionar</option>
+            <option value="1">Periodo 1</option>
+            <option value="2">Periodo 2</option>
+            <option value="3">Periodo 3</option>
+            <option value="4">Periodo 4</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label class="campo__etiqueta">Año *</label>
+          <input type="number" name="año" id="campoAnioPeriodo" class="campo__entrada" required
+            min="2000" max="2100" />
+        </div>
+      </div>
+
+      <div class="formulario-2col">
+        <div class="campo">
+          <label class="campo__etiqueta">Fecha de inicio *</label>
+          <input type="date" name="fechaInicio" id="campoFechaInicio" class="campo__entrada" required />
+        </div>
+        <div class="campo">
+          <label class="campo__etiqueta">Fecha de fin *</label>
+          <input type="date" name="fechaFin" id="campoFechaFin" class="campo__entrada" required />
+        </div>
+      </div>
+
+      <div class="alerta alerta--info" style="margin-top:4px;">
+        <i data-lucide="info"></i>
+        <span>Una vez cerrado, el periodo es irreversible y generará los boletines académicos.</span>
+      </div>
+
+      <div class="drawer__pie">
+        <button type="button" class="btn btn--secundario" onclick="cerrarDrawer()">Cancelar</button>
+        <button type="submit" class="btn btn--primario">
+          <i data-lucide="save"></i>
+          <span id="textoGuardarPeriodo">Crear periodo</span>
+        </button>
+      </div>
+    </form>
+  </template>
+  <script src="/js/notificaciones.js"></script>
+  <script src="/js/drawer.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/periodos.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

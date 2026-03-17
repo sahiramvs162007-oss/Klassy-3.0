@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Usuarios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <!-- Flash messages -->
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito">
+          <i data-lucide="check-circle"></i>
+          <span><%= mensajeExito %></span>
+        </div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error">
+          <i data-lucide="alert-circle"></i>
+          <span><%= mensajeError %></span>
+        </div>
+      <% } %>
+
+      <!-- Cabecera -->
+      <div class="cabecera-pagina">
+        <div>
+          <h1 class="cabecera-pagina__titulo">Gestión de Usuarios</h1>
+          <p class="cabecera-pagina__subtitulo">
+            <%= usuarios.length %> usuario<%= usuarios.length !== 1 ? 's' : '' %> encontrado<%= usuarios.length !== 1 ? 's' : '' %>
+          </p>
+        </div>
+        <div class="cabecera-pagina__acciones">
+          <button class="btn btn--primario" onclick="abrirDrawerCrear()">
+            <i data-lucide="user-plus"></i>
+            Nuevo usuario
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <form method="GET" action="/usuarios" class="barra-filtros">
+        <div class="barra-filtros__grupo">
+          <div class="barra-filtros__buscar">
+            <i data-lucide="search" class="barra-filtros__icono-buscar"></i>
+            <input
+              type="text"
+              name="buscar"
+              value="<%= buscar %>"
+              placeholder="Buscar por nombre, apellido o correo..."
+              class="barra-filtros__entrada"
+            />
+          </div>
+
+          <select name="filtroRol" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todos los roles</option>
+            <% if (usuarioActual.rol === 'admin') { %>
+              <option value="admin"      <%= filtroRol === 'admin'      ? 'selected' : '' %>>Administrador</option>
+            <% } %>
+            <option value="director"   <%= filtroRol === 'director'   ? 'selected' : '' %>>Director</option>
+            <option value="docente"    <%= filtroRol === 'docente'    ? 'selected' : '' %>>Docente</option>
+            <option value="estudiante" <%= filtroRol === 'estudiante' ? 'selected' : '' %>>Estudiante</option>
+          </select>
+        </div>
+
+        <div class="barra-filtros__acciones">
+          <button type="submit" class="btn btn--primario btn--sm">
+            <i data-lucide="search"></i> Buscar
+          </button>
+          <% if (buscar || filtroRol) { %>
+            <a href="/usuarios" class="btn btn--secundario btn--sm">
+              <i data-lucide="x"></i> Limpiar
+            </a>
+          <% } %>
+        </div>
+      </form>
+
+      <!-- Tabla de usuarios -->
+      <div class="tabla-contenedor">
+        <% if (usuarios.length === 0) { %>
+          <div class="tabla-vacia">
+            <i data-lucide="users"></i>
+            <p>No se encontraron usuarios.</p>
+            <% if (buscar || filtroRol) { %>
+              <a href="/usuarios" class="btn btn--secundario btn--sm">Ver todos</a>
+            <% } %>
+          </div>
+        <% } else { %>
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>Info adicional</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% usuarios.forEach(u => { %>
+                <tr>
+                  <!-- Nombre con avatar -->
+                  <td>
+                    <div class="usuario-celda">
+                      <div class="usuario-celda__avatar usuario-celda__avatar--<%= u.rol %>">
+                        <%= u.nombre.charAt(0).toUpperCase() %><%= u.apellido.charAt(0).toUpperCase() %>
+                      </div>
+                      <div>
+                        <span class="usuario-celda__nombre"><%= u.nombre %> <%= u.apellido %></span>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Correo -->
+                  <td class="texto-secundario"><%= u.correo %></td>
+
+                  <!-- Rol badge -->
+                  <td>
+                    <% const clasesRol = {
+                      admin:      'badge--morado',
+                      director:   'badge--azul',
+                      docente:    'badge--verde',
+                      estudiante: 'badge--naranja'
+                    }; %>
+                    <span class="badge <%= clasesRol[u.rol] || 'badge--inactivo' %>">
+                      <%= u.rol.charAt(0).toUpperCase() + u.rol.slice(1) %>
+                    </span>
+                  </td>
+
+                  <!-- Info adicional según rol -->
+                  <td class="texto-secundario texto-sm">
+                    <% if (u.rol === 'estudiante') { %>
+                      Nivel: <%= u.ultimoNivelCursado !== null ? u.ultimoNivelCursado : '—' %>
+                    <% } else if (u.rol === 'docente') { %>
+                      <%= u.profesion || '—' %>
+                    <% } else { %>
+                      —
+                    <% } %>
+                  </td>
+
+                  <!-- Estado -->
+                  <td>
+                    <span class="badge <%= u.activo ? 'badge--activo' : 'badge--inactivo' %>">
+                      <%= u.activo ? 'Activo' : 'Inactivo' %>
+                    </span>
+                  </td>
+
+                  <!-- Acciones -->
+                  <td>
+                    <div class="acciones-tabla">
+                      <button
+                        class="btn-icono btn-icono--editar"
+                        onclick="abrirDrawerEditar('<%= u._id %>')"
+                        title="Editar usuario"
+                      >
+                        <i data-lucide="pencil"></i>
+                      </button>
+
+                      <%
+                        // Director no puede eliminar admins
+                        // Nadie puede eliminarse a sí mismo
+                        const puedeEliminar =
+                          !(usuarioActual.rol === 'director' && u.rol === 'admin') &&
+                          u._id.toString() !== usuarioActual._id.toString();
+                      %>
+                      <% if (puedeEliminar) { %>
+                        <form
+                          method="POST"
+                          action="/usuarios/<%= u._id %>?_method=DELETE"
+                          onsubmit="return confirmarEliminar('<%= u.nombre %> <%= u.apellido %>')"
+                          style="display:inline"
+                        >
+                          <button type="submit" class="btn-icono btn-icono--eliminar" title="Eliminar usuario">
+                            <i data-lucide="trash-2"></i>
+                          </button>
+                        </form>
+                      <% } %>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ─── Drawer lateral ─────────────────────────────────────────────────── -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
+
+  <div class="drawer" id="drawer">
+    <div class="drawer__cabecera">
+      <h2 class="drawer__titulo" id="drawerTitulo">Nuevo usuario</h2>
+      <button class="drawer__cerrar" onclick="cerrarDrawer()">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
+    <div class="drawer__cuerpo" id="drawerCuerpo">
+      <!-- El formulario se inyecta dinámicamente -->
+    </div>
+  </div>
+
+  <!-- ─── Template del formulario (oculto, se clona al drawer) ──────────── -->
+  <template id="templateFormUsuario">
+    <form id="formUsuario" method="POST" action="/usuarios" class="formulario-grupo">
+      <!-- Campo oculto para method override en edición -->
+      <input type="hidden" name="_method" id="metodoPeticion" value="" />
+      <input type="hidden" name="idUsuario" id="idUsuario" value="" />
+
+      <div class="formulario-2col">
+        <div class="campo">
+          <label class="campo__etiqueta">Nombre *</label>
+          <input type="text" name="nombre" id="campoNombre" class="campo__entrada" required placeholder="Ej: María" />
+        </div>
+        <div class="campo">
+          <label class="campo__etiqueta">Apellido *</label>
+          <input type="text" name="apellido" id="campoApellido" class="campo__entrada" required placeholder="Ej: García" />
+        </div>
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Correo electrónico *</label>
+        <input type="email" name="correo" id="campoCorreo" class="campo__entrada" required placeholder="usuario@colegio.edu.co" />
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Contraseña <span id="labelContrasena">(dejar vacío para no cambiar)</span></label>
+        <input type="text" name="contrasena" id="campoContrasena" class="campo__entrada" placeholder="Mínimo 6 caracteres" minlength="6" />
+      </div>
+
+      <div class="formulario-2col">
+        <div class="campo">
+          <label class="campo__etiqueta">Rol *</label>
+          <select name="rol" id="campoRol" class="campo__select" required onchange="actualizarCamposRol()">
+            <option value="">Seleccionar rol</option>
+            <% if (usuarioActual.rol === 'admin') { %>
+              <option value="admin">Administrador</option>
+            <% } %>
+            <option value="director">Director</option>
+            <option value="docente">Docente</option>
+            <option value="estudiante">Estudiante</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label class="campo__etiqueta">Estado</label>
+          <select name="activo" id="campoActivo" class="campo__select">
+            <option value="true">Activo</option>
+            <option value="false">Inactivo</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Campo específico de docente -->
+      <div class="campo campo-docente" id="grupoProfesion" style="display:none;">
+        <label class="campo__etiqueta">Especialidad / Profesión</label>
+        <input type="text" name="profesion" id="campoProfesion" class="campo__entrada" placeholder="Ej: Licenciado en Matemáticas" />
+      </div>
+
+      <!-- Campo específico de estudiante -->
+      <div class="campo campo-estudiante" id="grupoNivel" style="display:none;">
+        <label class="campo__etiqueta">Último nivel cursado</label>
+        <select name="ultimoNivelCursado" id="campoNivel" class="campo__select">
+          <option value="0">Sin nivel (nuevo ingreso)</option>
+          <% for (let n = 1; n <= 10; n++) { %>
+            <option value="<%= n %>">Nivel <%= n %></option>
+          <% } %>
+        </select>
+        <span class="campo__ayuda">El nivel se actualizará automáticamente al aprobar el año.</span>
+      </div>
+
+      <div class="drawer__pie">
+        <button type="button" class="btn btn--secundario" onclick="cerrarDrawer()">Cancelar</button>
+        <button type="submit" class="btn btn--primario" id="btnGuardar">
+          <i data-lucide="save"></i>
+          <span id="textoGuardar">Crear usuario</span>
+        </button>
+      </div>
+    </form>
+  </template>
+
+  <!-- Scripts -->
+  <script src="/js/notificaciones.js"></script>
+  <script src="/js/drawer.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/usuarios.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

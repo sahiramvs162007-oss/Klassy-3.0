@@ -1,0 +1,111 @@
+<%
+  // b = objeto Boletin
+  // mostrarEliminar = boolean
+  // rol = 'admin' | 'director' | 'docente' | 'estudiante'
+%>
+<div class="boletin-card">
+
+  <!-- Encabezado del boletín -->
+  <div class="boletin-card__header">
+    <div class="boletin-card__header-left">
+      <div class="boletin-card__logo">K</div>
+      <div>
+        <h2 class="boletin-card__nombre"><%= b.nombreEstudiante %> <%= b.apellidoEstudiante %></h2>
+        <p class="boletin-card__meta">
+          <%= b.nombreGrado %> · <%= b.nombrePeriodo %> · <%= b.año %>
+        </p>
+      </div>
+    </div>
+    <div class="boletin-card__header-right">
+      <div class="boletin-card__prom-grande <%= b.aprobadoGeneral ? 'boletin-card__prom-grande--ok' : 'boletin-card__prom-grande--mal' %>">
+        <%= b.promedioGeneral.toFixed(2) %>
+      </div>
+      <span class="badge <%= b.aprobadoGeneral ? 'badge--activo' : 'badge--error' %> badge-lg">
+        <%= b.aprobadoGeneral ? 'Aprobado' : 'Reprobado' %>
+      </span>
+    </div>
+  </div>
+
+  <!-- Tabla de materias -->
+  <div class="boletin-card__tabla-wrap">
+    <table class="tabla boletin-tabla">
+      <thead>
+        <tr>
+          <th style="text-align:left;">Materia</th>
+          <th>Docente</th>
+          <th>Actividades</th>
+          <th>Promedio</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% (b.materias || []).forEach(mat => { %>
+          <tr>
+            <td style="text-align:left;font-weight:500;"><%= mat.nombreMateria %></td>
+            <td class="texto-secundario texto-sm"><%= mat.nombreDocente || '—' %></td>
+            <td class="texto-secundario texto-sm" style="text-align:center;"><%= mat.notas?.length || 0 %></td>
+            <td style="text-align:center;">
+              <span class="nota-boletin nota-boletin--<%= mat.promedio >= 3 ? 'ok' : 'mal' %>">
+                <%= mat.promedio.toFixed(2) %>
+              </span>
+            </td>
+            <td style="text-align:center;">
+              <span class="badge <%= mat.aprobado ? 'badge--activo' : 'badge--error' %>">
+                <%= mat.aprobado ? 'Aprobada' : 'Reprobada' %>
+              </span>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+      <tfoot>
+        <tr class="boletin-tabla__total">
+          <td colspan="3" style="text-align:left;font-weight:700;font-size:0.85rem;">
+            Promedio general del periodo
+          </td>
+          <td style="text-align:center;">
+            <span class="nota-boletin nota-boletin--grande nota-boletin--<%= b.aprobadoGeneral ? 'ok' : 'mal' %>">
+              <%= b.promedioGeneral.toFixed(2) %>
+            </span>
+          </td>
+          <td style="text-align:center;">
+            <span class="badge badge-lg <%= b.aprobadoGeneral ? 'badge--activo' : 'badge--error' %>">
+              <%= b.aprobadoGeneral ? 'Aprobado' : 'Reprobado' %>
+            </span>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Pie del boletín -->
+  <div class="boletin-card__footer">
+    <span class="texto-secundario texto-sm">
+      Generado el <%= new Date(b.generadoEn).toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' }) %>
+    </span>
+    <div class="boletin-card__acciones">
+      <% if (rol === 'estudiante') { %>
+        <a href="/boletines/estudiante/<%= b._id %>/pdf" target="_blank" class="btn btn--primario btn--sm">
+          <i data-lucide="download"></i> Descargar PDF
+        </a>
+      <% } else if (rol === 'docente') { %>
+        <a href="/boletines/docente/<%= b._id %>/pdf" target="_blank" class="btn btn--primario btn--sm">
+          <i data-lucide="download"></i> Descargar PDF
+        </a>
+      <% } else { %>
+        <a href="/boletines/admin/<%= b._id %>/pdf" target="_blank" class="btn btn--primario btn--sm">
+          <i data-lucide="download"></i> Descargar PDF
+        </a>
+        <% if (mostrarEliminar) { %>
+          <form method="POST" action="/boletines/admin/<%= b._id %>?_method=DELETE"
+            onsubmit="return confirm('¿Eliminar este boletín? Esta acción es irreversible.')"
+            style="display:inline">
+            <button type="submit" class="btn btn--peligro btn--sm">
+              <i data-lucide="trash-2"></i> Eliminar
+            </button>
+          </form>
+        <% } %>
+      <% } %>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Notas (Admin)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/notas.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <!-- Flash -->
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <!-- Cabecera -->
+      <div class="cabecera-pagina">
+        <div>
+          <h1 class="cabecera-pagina__titulo">Notas — Vista completa</h1>
+          <p class="cabecera-pagina__subtitulo">Acceso total: puedes ver y editar cualquier nota sin restricción de periodo</p>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <form method="GET" action="/notas/admin" class="barra-filtros">
+        <div class="barra-filtros__grupo">
+          <select name="gradoId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Seleccionar grado</option>
+            <% grados.forEach(g => { %>
+              <option value="<%= g._id %>" <%= gradoIdActivo === g._id.toString() ? 'selected' : '' %>>
+                <%= g.nombre %> (Nivel <%= g.nivel %>)
+              </option>
+            <% }) %>
+          </select>
+          <select name="materiaId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Seleccionar materia</option>
+            <% materias.forEach(m => { %>
+              <option value="<%= m._id %>" <%= materiaIdActiva === m._id.toString() ? 'selected' : '' %>><%= m.nombre %></option>
+            <% }) %>
+          </select>
+          <select name="periodoId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Seleccionar periodo</option>
+            <% periodos.forEach(p => { %>
+              <option value="<%= p._id %>" <%= periodoIdActivo === p._id.toString() ? 'selected' : '' %>>
+                <%= p.nombre %> <%= !p.activo ? '(Cerrado)' : '(Activo)' %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="barra-filtros__acciones">
+          <% if (gradoIdActivo || materiaIdActiva || periodoIdActivo) { %>
+            <a href="/notas/admin" class="btn btn--secundario btn--sm">
+              <i data-lucide="x"></i> Limpiar
+            </a>
+          <% } %>
+        </div>
+      </form>
+
+      <% if (!gradoIdActivo || !materiaIdActiva || !periodoIdActivo) { %>
+        <div class="estado-vacio">
+          <i data-lucide="sliders-horizontal"></i>
+          <h3>Selecciona los filtros</h3>
+          <p>Elige grado, materia y periodo para ver el libro de notas.</p>
+        </div>
+      <% } else if (!tabla || tabla.filas.length === 0) { %>
+        <div class="estado-vacio">
+          <i data-lucide="users"></i>
+          <h3>Sin estudiantes o actividades</h3>
+          <p>No hay datos para la combinación seleccionada.</p>
+        </div>
+      <% } else { %>
+
+        <%
+          const promsValidos = tabla.filas.filter(f => f.promedio !== null).map(f => f.promedio);
+          const promGeneral  = promsValidos.length
+            ? (promsValidos.reduce((a,b)=>a+b,0)/promsValidos.length).toFixed(2)
+            : '—';
+        %>
+
+        <!-- Resumen -->
+        <div class="notas-resumen">
+          <div class="resumen-stat">
+            <span class="resumen-stat__num"><%= tabla.filas.length %></span>
+            <span class="resumen-stat__label">Estudiantes</span>
+          </div>
+          <div class="resumen-stat">
+            <span class="resumen-stat__num"><%= tabla.actividades.length %></span>
+            <span class="resumen-stat__label">Actividades</span>
+          </div>
+          <div class="resumen-stat">
+            <span class="resumen-stat__num"><%= promGeneral %></span>
+            <span class="resumen-stat__label">Promedio grupo</span>
+          </div>
+          <div class="resumen-stat">
+            <span class="resumen-stat__num">
+              <%= tabla.filas.filter(f => f.promedio !== null && f.promedio >= 3).length %>
+            </span>
+            <span class="resumen-stat__label">Aprobados</span>
+          </div>
+          <% if (periodoSeleccionado) { %>
+            <span class="badge <%= periodoSeleccionado.activo ? 'badge--activo' : 'badge--inactivo' %>">
+              <%= periodoSeleccionado.nombre %> — <%= periodoSeleccionado.activo ? 'Abierto' : 'Cerrado' %>
+            </span>
+            <% if (!periodoSeleccionado.activo) { %>
+              <div class="alerta alerta--info" style="padding:6px 12px;font-size:0.78rem;margin:0;">
+                <i data-lucide="info"></i>
+                <span>Admin puede editar notas aunque el periodo esté cerrado.</span>
+              </div>
+            <% } %>
+          <% } %>
+        </div>
+
+        <!-- Tabla de notas -->
+        <div class="tabla-notas-contenedor">
+          <table class="tabla-notas" id="tablaNotas">
+            <thead>
+              <tr>
+                <th class="th-estudiante">Estudiante</th>
+                <% tabla.actividades.forEach(act => { %>
+                  <th class="th-actividad">
+                    <div class="th-actividad__nombre" title="<%= act.titulo %>">
+                      <%= act.titulo.length > 18 ? act.titulo.substring(0,18) + '…' : act.titulo %>
+                    </div>
+                    <div class="th-actividad__fecha">
+                      <%= new Date(act.fechaLimite).toLocaleDateString('es-CO', {day:'2-digit',month:'short'}) %>
+                    </div>
+                  </th>
+                <% }) %>
+                <th class="th-promedio">Promedio</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% tabla.filas.forEach(fila => { %>
+                <tr>
+                  <td class="td-estudiante">
+                    <div class="usuario-celda">
+                      <div class="usuario-celda__avatar usuario-celda__avatar--estudiante">
+                        <%= fila.estudiante.nombre.charAt(0).toUpperCase() %><%= fila.estudiante.apellido.charAt(0).toUpperCase() %>
+                      </div>
+                      <span class="usuario-celda__nombre">
+                        <%= fila.estudiante.nombre %> <%= fila.estudiante.apellido %>
+                      </span>
+                    </div>
+                  </td>
+
+                  <% fila.celdas.forEach(celda => { %>
+                    <td class="td-nota">
+                      <% if (celda) { %>
+                        <div class="nota-celda">
+                          <span
+                            class="nota-valor nota-valor--<%= celda.valor >= 3 ? 'ok' : 'mal' %>"
+                            id="nota_<%= celda._id %>"
+                          ><%= celda.valor.toFixed(1) %></span>
+                          <!-- Admin siempre puede editar -->
+                          <button
+                            class="nota-editar-btn"
+                            onclick="editarNotaAdmin('<%= celda._id %>', <%= celda.valor %>, this)"
+                            title="Editar nota">
+                            <i data-lucide="pencil"></i>
+                          </button>
+                        </div>
+                      <% } else { %>
+                        <span class="nota-vacia">—</span>
+                      <% } %>
+                    </td>
+                  <% }) %>
+
+                  <td class="td-promedio">
+                    <% if (fila.promedio !== null) { %>
+                      <span class="nota-promedio nota-promedio--<%= fila.promedio >= 3 ? 'ok' : 'mal' %>">
+                        <%= fila.promedio.toFixed(2) %>
+                      </span>
+                    <% } else { %>
+                      <span class="nota-vacia">—</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+            <tfoot>
+              <tr class="fila-promedios">
+                <td class="td-estudiante" style="font-weight:600;font-size:0.75rem;color:var(--gris-500);">
+                  Promedio actividad
+                </td>
+                <% tabla.promediosPorActividad.forEach(prom => { %>
+                  <td class="td-nota">
+                    <% if (prom !== null) { %>
+                      <span class="nota-promedio nota-promedio--<%= prom >= 3 ? 'ok' : 'mal' %>">
+                        <%= prom.toFixed(2) %>
+                      </span>
+                    <% } else { %>
+                      <span class="nota-vacia">—</span>
+                    <% } %>
+                  </td>
+                <% }) %>
+                <td class="td-promedio">
+                  <span class="nota-promedio nota-promedio--ok"><%= promGeneral %></span>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+      <% } %>
+
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/notificaciones.js"></script>
+  <script src="/js/notas-admin.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

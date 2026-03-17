@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Asignación de Docentes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <!-- Flash messages -->
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <!-- Cabecera -->
+      <div class="cabecera-pagina">
+        <div>
+          <h1 class="cabecera-pagina__titulo">Asignación de Docentes</h1>
+          <p class="cabecera-pagina__subtitulo">
+            <%= asignaciones.length %> asignación<%= asignaciones.length !== 1 ? 'es' : '' %> encontrada<%= asignaciones.length !== 1 ? 's' : '' %>
+          </p>
+        </div>
+        <div class="cabecera-pagina__acciones">
+          <button class="btn btn--primario" onclick="abrirDrawerCrear()">
+            <i data-lucide="link"></i> Nueva asignación
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <form method="GET" action="/asignaciones" class="barra-filtros">
+        <div class="barra-filtros__grupo">
+
+          <!-- Filtro por docente -->
+          <select name="filtroDocente" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todos los docentes</option>
+            <% docentes.forEach(d => { %>
+              <option value="<%= d._id %>" <%= filtroDocente === d._id.toString() ? 'selected' : '' %>>
+                <%= d.nombre %> <%= d.apellido %>
+              </option>
+            <% }) %>
+          </select>
+
+          <!-- Filtro por grado -->
+          <select name="filtroGrado" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todos los grados</option>
+            <% grados.forEach(g => { %>
+              <option value="<%= g._id %>" <%= filtroGrado === g._id.toString() ? 'selected' : '' %>>
+                <%= g.nombre %> — <%= g.año %>
+              </option>
+            <% }) %>
+          </select>
+
+          <!-- Filtro por año -->
+          <select name="filtroAnio" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todos los años</option>
+            <% años.forEach(a => { %>
+              <option value="<%= a %>" <%= filtroAnio == a ? 'selected' : '' %>><%= a %></option>
+            <% }) %>
+          </select>
+
+          <!-- Filtro por estado -->
+          <select name="filtroEstado" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todos los estados</option>
+            <option value="activo"   <%= filtroEstado === 'activo'   ? 'selected' : '' %>>Activo</option>
+            <option value="inactivo" <%= filtroEstado === 'inactivo' ? 'selected' : '' %>>Inactivo</option>
+          </select>
+
+        </div>
+        <div class="barra-filtros__acciones">
+          <% if (filtroDocente || filtroGrado || filtroAnio || filtroEstado) { %>
+            <a href="/asignaciones" class="btn btn--secundario btn--sm">
+              <i data-lucide="x"></i> Limpiar
+            </a>
+          <% } %>
+        </div>
+      </form>
+
+      <!-- Tabla -->
+      <div class="tabla-contenedor">
+        <% if (asignaciones.length === 0) { %>
+          <div class="tabla-vacia">
+            <i data-lucide="link"></i>
+            <p>No hay asignaciones registradas.</p>
+            <button class="btn btn--primario btn--sm" onclick="abrirDrawerCrear()">
+              Crear primera asignación
+            </button>
+          </div>
+        <% } else { %>
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th>Docente</th>
+                <th>Materia</th>
+                <th>Grado</th>
+                <th>Nivel</th>
+                <th>Año</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% asignaciones.forEach(a => { %>
+                <tr>
+                  <!-- Docente -->
+                  <td>
+                    <div class="usuario-celda">
+                      <div class="usuario-celda__avatar usuario-celda__avatar--docente">
+                        <%= a.docenteId ? a.docenteId.nombre.charAt(0).toUpperCase() + a.docenteId.apellido.charAt(0).toUpperCase() : '??' %>
+                      </div>
+                      <div>
+                        <span class="usuario-celda__nombre">
+                          <%= a.docenteId ? a.docenteId.nombre + ' ' + a.docenteId.apellido : '—' %>
+                        </span>
+                        <% if (a.docenteId && a.docenteId.profesion) { %>
+                          <span class="texto-secundario texto-sm"><%= a.docenteId.profesion %></span>
+                        <% } %>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Materia -->
+                  <td>
+                    <div class="item-icono">
+                      <div class="item-icono__circulo item-icono__circulo--azul">
+                        <i data-lucide="book-open"></i>
+                      </div>
+                      <span class="item-icono__texto"><%= a.materiaId ? a.materiaId.nombre : '—' %></span>
+                    </div>
+                  </td>
+
+                  <!-- Grado -->
+                  <td>
+                    <div class="item-icono">
+                      <div class="item-icono__circulo item-icono__circulo--verde">
+                        <i data-lucide="graduation-cap"></i>
+                      </div>
+                      <span class="item-icono__texto"><%= a.gradoId ? a.gradoId.nombre : '—' %></span>
+                    </div>
+                  </td>
+
+                  <!-- Nivel -->
+                  <td><span class="badge badge--azul">Nivel <%= a.gradoId ? a.gradoId.nivel : '—' %></span></td>
+
+                  <!-- Año -->
+                  <td class="texto-secundario"><%= a.año %></td>
+
+                  <!-- Estado -->
+                  <td>
+                    <span class="badge <%= a.estado === 'activo' ? 'badge--activo' : 'badge--inactivo' %>">
+                      <%= a.estado.charAt(0).toUpperCase() + a.estado.slice(1) %>
+                    </span>
+                  </td>
+
+                  <!-- Acciones -->
+                  <td>
+                    <div class="acciones-tabla">
+                      <!-- Ver detalle -->
+                      <button class="btn-icono btn-icono--ver"
+                        onclick="abrirDrawerDetalle('<%= a._id %>')"
+                        title="Ver detalle">
+                        <i data-lucide="eye"></i>
+                      </button>
+
+                      <!-- Activar / Desactivar -->
+                      <form method="POST" action="/asignaciones/<%= a._id %>?_method=PUT" style="display:inline">
+                        <input type="hidden" name="estado" value="<%= a.estado === 'activo' ? 'inactivo' : 'activo' %>" />
+                        <button type="submit"
+                          class="btn-icono <%= a.estado === 'activo' ? 'btn-icono--desactivar' : 'btn-icono--activar' %>"
+                          title="<%= a.estado === 'activo' ? 'Desactivar' : 'Activar' %>">
+                          <i data-lucide="<%= a.estado === 'activo' ? 'pause-circle' : 'play-circle' %>"></i>
+                        </button>
+                      </form>
+
+                      <!-- Eliminar -->
+                      <form method="POST" action="/asignaciones/<%= a._id %>?_method=DELETE"
+                        onsubmit="return confirm('¿Eliminar esta asignación?')"
+                        style="display:inline">
+                        <button type="submit" class="btn-icono btn-icono--eliminar" title="Eliminar">
+                          <i data-lucide="trash-2"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ─── Drawer ─────────────────────────────────────────────────────────── -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer__cabecera">
+      <h2 class="drawer__titulo" id="drawerTitulo">Nueva asignación</h2>
+      <button class="drawer__cerrar" onclick="cerrarDrawer()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer__cuerpo" id="drawerCuerpo"></div>
+  </div>
+
+  <!-- ─── Template: Crear asignación ────────────────────────────────────── -->
+  <template id="templateCrearAsignacion">
+    <form method="POST" action="/asignaciones" class="formulario-grupo">
+
+      <!-- Año -->
+      <div class="campo">
+        <label class="campo__etiqueta">Año académico *</label>
+        <input type="number" name="año" id="campoAnioAsig" class="campo__entrada"
+          required min="2000" max="2100" />
+      </div>
+
+      <!-- Docente -->
+      <div class="campo">
+        <label class="campo__etiqueta">Docente *</label>
+        <select name="docenteId" id="campoDocenteAsig" class="campo__select" required>
+          <option value="">Seleccionar docente</option>
+        </select>
+        <span class="campo__ayuda" id="ayudaEspecialidad"></span>
+      </div>
+
+      <!-- Grado — al seleccionar carga sus materias -->
+      <div class="campo">
+        <label class="campo__etiqueta">Grado *</label>
+        <select name="gradoId" id="campoGradoAsig" class="campo__select" required
+          onchange="cargarMateriasDeGrado()">
+          <option value="">Seleccionar grado</option>
+        </select>
+      </div>
+
+      <!-- Materia — solo las del grado elegido -->
+      <div class="campo">
+        <label class="campo__etiqueta">Materia *</label>
+        <select name="materiaId" id="campoMateriaAsig" class="campo__select" required>
+          <option value="">Selecciona un grado primero</option>
+        </select>
+        <span class="campo__ayuda">Solo aparecen las materias asignadas al grado seleccionado.</span>
+      </div>
+
+      <div class="drawer__pie">
+        <button type="button" class="btn btn--secundario" onclick="cerrarDrawer()">Cancelar</button>
+        <button type="submit" class="btn btn--primario">
+          <i data-lucide="link"></i> Crear asignación
+        </button>
+      </div>
+    </form>
+  </template>
+
+  <!-- Datos inyectados para el JS -->
+  <script>
+    const DOCENTES_DISPONIBLES = <%- JSON.stringify(docentes.map(d => ({
+      _id:       d._id,
+      nombre:    d.nombre,
+      apellido:  d.apellido,
+      profesion: d.profesion || null,
+    }))) %>;
+
+    const GRADOS_DISPONIBLES = <%- JSON.stringify(grados.map(g => ({
+      _id:    g._id,
+      nombre: g.nombre,
+      nivel:  g.nivel,
+      año:    g.año,
+    }))) %>;
+
+    const ANO_ACTUAL = <%= añoActual %>;
+  </script>
+  <script src="/js/notificaciones.js"></script>
+  <script src="/js/drawer.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/asignaciones.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

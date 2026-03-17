@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Matrículas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <!-- Flash messages -->
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+      <% if (mensajeInfo && mensajeInfo.length > 0) { %>
+        <div class="alerta alerta--info"><i data-lucide="info"></i><span><%= mensajeInfo %></span></div>
+      <% } %>
+
+      <!-- Cabecera -->
+      <div class="cabecera-pagina">
+        <div>
+          <h1 class="cabecera-pagina__titulo">Gestión de Matrículas</h1>
+          <p class="cabecera-pagina__subtitulo"><%= matriculas.length %> matrícula<%= matriculas.length !== 1 ? 's' : '' %> encontrada<%= matriculas.length !== 1 ? 's' : '' %></p>
+        </div>
+        <div class="cabecera-pagina__acciones">
+          <button class="btn btn--primario" onclick="abrirDrawerCrearMatricula()">
+            <i data-lucide="user-check"></i> Nueva matrícula
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <form method="GET" action="/matriculas" class="barra-filtros">
+        <div class="barra-filtros__grupo">
+
+          <!-- Buscar por nombre -->
+          <div class="barra-filtros__buscar">
+            <i data-lucide="search" class="barra-filtros__icono-buscar"></i>
+            <input type="text" name="buscar" value="<%= buscar %>"
+              placeholder="Buscar estudiante..." class="barra-filtros__entrada" />
+          </div>
+
+          <!-- Filtro por grado -->
+          <select name="filtroGrado" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todos los grados</option>
+            <% grados.forEach(g => { %>
+              <option value="<%= g._id %>" <%= filtroGrado === g._id.toString() ? 'selected' : '' %>>
+                <%= g.nombre %> (Nivel <%= g.nivel %> — <%= g.año %>)
+              </option>
+            <% }) %>
+          </select>
+
+          <!-- Filtro por estado -->
+          <select name="filtroEstado" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todos los estados</option>
+            <option value="activa"      <%= filtroEstado === 'activa'      ? 'selected' : '' %>>Activa</option>
+            <option value="suspendida"  <%= filtroEstado === 'suspendida'  ? 'selected' : '' %>>Suspendida</option>
+            <option value="inactiva"    <%= filtroEstado === 'inactiva'    ? 'selected' : '' %>>Inactiva</option>
+            <option value="graduado"    <%= filtroEstado === 'graduado'    ? 'selected' : '' %>>Graduado</option>
+          </select>
+
+          <!-- Filtro por año -->
+          <select name="filtroAnio" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todos los años</option>
+            <% años.forEach(a => { %>
+              <option value="<%= a %>" <%= filtroAnio == a ? 'selected' : '' %>><%= a %></option>
+            <% }) %>
+          </select>
+
+        </div>
+        <div class="barra-filtros__acciones">
+          <button type="submit" class="btn btn--primario btn--sm">
+            <i data-lucide="search"></i> Buscar
+          </button>
+          <% if (buscar || filtroGrado || filtroEstado || filtroAnio) { %>
+            <a href="/matriculas" class="btn btn--secundario btn--sm">
+              <i data-lucide="x"></i> Limpiar
+            </a>
+          <% } %>
+        </div>
+      </form>
+
+      <!-- Tabla -->
+      <div class="tabla-contenedor">
+        <% if (matriculas.length === 0) { %>
+          <div class="tabla-vacia">
+            <i data-lucide="file-text"></i>
+            <p>No se encontraron matrículas.</p>
+            <button class="btn btn--primario btn--sm" onclick="abrirDrawerCrearMatricula()">
+              Crear primera matrícula
+            </button>
+          </div>
+        <% } else { %>
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th>Estudiante</th>
+                <th>Grado</th>
+                <th>Nivel</th>
+                <th>Año</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% matriculas.forEach(m => { %>
+                <%
+                  const nombreEstudiante = m.estudianteId
+                    ? `${m.estudianteId.nombre} ${m.estudianteId.apellido}`
+                    : 'Estudiante eliminado';
+                  const nombreGrado = m.gradoId ? m.gradoId.nombre : '—';
+                  const nivelGrado  = m.gradoId ? m.gradoId.nivel  : '—';
+
+                  const clasesEstado = {
+                    activa:     'badge--activo',
+                    suspendida: 'badge--suspendido',
+                    inactiva:   'badge--inactivo',
+                    graduado:   'badge--morado',
+                  };
+
+                  const clasesTipo = {
+                    nuevaMatricula:     'badge--azul',
+                    matriculaRenovada:  'badge--verde',
+                  };
+
+                  const etiquetaTipo = {
+                    nuevaMatricula:    'Nueva',
+                    matriculaRenovada: 'Renovada',
+                  };
+                %>
+                <tr>
+                  <!-- Estudiante -->
+                  <td>
+                    <div class="usuario-celda">
+                      <div class="usuario-celda__avatar usuario-celda__avatar--estudiante">
+                        <%= m.estudianteId ? m.estudianteId.nombre.charAt(0).toUpperCase() + m.estudianteId.apellido.charAt(0).toUpperCase() : '??' %>
+                      </div>
+                      <div>
+                        <span class="usuario-celda__nombre"><%= nombreEstudiante %></span>
+                        <% if (m.estudianteId) { %>
+                          <span class="texto-secundario texto-sm"><%= m.estudianteId.correo %></span>
+                        <% } %>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Grado -->
+                  <td class="texto-secundario"><%= nombreGrado %></td>
+
+                  <!-- Nivel -->
+                  <td><span class="badge badge--azul">Nivel <%= nivelGrado %></span></td>
+
+                  <!-- Año -->
+                  <td class="texto-secundario"><%= m.año %></td>
+
+                  <!-- Tipo -->
+                  <td>
+                    <span class="badge <%= clasesTipo[m.tipo] || 'badge--inactivo' %>">
+                      <%= etiquetaTipo[m.tipo] || m.tipo %>
+                    </span>
+                  </td>
+
+                  <!-- Estado -->
+                  <td>
+                    <span class="badge <%= clasesEstado[m.estado] || 'badge--inactivo' %>">
+                      <%= m.estado.charAt(0).toUpperCase() + m.estado.slice(1) %>
+                    </span>
+                  </td>
+
+                  <!-- Acciones -->
+                  <td>
+                    <div class="acciones-tabla">
+                      <!-- Ver detalle + historial -->
+                      <button
+                        class="btn-icono btn-icono--ver"
+                        onclick="abrirDrawerDetalle('<%= m._id %>')"
+                        title="Ver detalle e historial"
+                      >
+                        <i data-lucide="eye"></i>
+                      </button>
+
+                      <!-- Editar estado/observaciones -->
+                      <button
+                        class="btn-icono btn-icono--editar"
+                        onclick="abrirDrawerEditarMatricula('<%= m._id %>', '<%= m.estado %>', `<%= (m.observaciones || '').replace(/`/g, '\\`') %>`)"
+                        title="Editar matrícula"
+                      >
+                        <i data-lucide="pencil"></i>
+                      </button>
+
+                      <!-- Eliminar -->
+                      <form method="POST" action="/matriculas/<%= m._id %>?_method=DELETE"
+                        onsubmit="return confirm('¿Eliminar la matrícula de <%= nombreEstudiante %>?')"
+                        style="display:inline">
+                        <button type="submit" class="btn-icono btn-icono--eliminar" title="Eliminar">
+                          <i data-lucide="trash-2"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ─── Drawer ─────────────────────────────────────────────────────────── -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer__cabecera">
+      <h2 class="drawer__titulo" id="drawerTitulo">Nueva matrícula</h2>
+      <button class="drawer__cerrar" onclick="cerrarDrawer()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer__cuerpo" id="drawerCuerpo"></div>
+  </div>
+
+  <!-- ─── Template: Crear matrícula ─────────────────────────────────────── -->
+  <template id="templateCrearMatricula">
+    <form id="formCrearMatricula" method="POST" action="/matriculas" class="formulario-grupo">
+
+      <!-- Selector de año -->
+      <div class="campo">
+        <label class="campo__etiqueta">Año académico *</label>
+        <input type="number" name="año" id="campoAnioMatricula" class="campo__entrada"
+          required min="2000" max="2100" />
+        <span class="campo__ayuda">
+          Al cambiar el año se actualizan los estudiantes y grados disponibles.
+        </span>
+      </div>
+
+      <!-- Selector de estudiante -->
+      <div class="campo">
+        <label class="campo__etiqueta">Estudiante *</label>
+        <select name="estudianteId" id="campoEstudianteMatricula" class="campo__select" required
+          onchange="actualizarGradosDisponibles()">
+          <option value="">Cargando estudiantes...</option>
+        </select>
+        <span class="campo__ayuda" id="ayudaEstudiante"></span>
+      </div>
+
+      <!-- Selector de grado -->
+      <div class="campo">
+        <label class="campo__etiqueta">Grado *</label>
+        <select name="gradoId" id="campoGradoMatricula" class="campo__select" required>
+          <option value="">Selecciona un estudiante primero</option>
+        </select>
+        <span class="campo__ayuda" id="ayudaGrado">Solo se muestran grados del nivel correcto.</span>
+      </div>
+
+      <!-- Observaciones -->
+      <div class="campo">
+        <label class="campo__etiqueta">Observaciones</label>
+        <textarea name="observaciones" id="campoObsMatricula" class="campo__area" rows="3"
+          placeholder="Observaciones sobre el estudiante o la matrícula..."></textarea>
+      </div>
+
+      <div class="drawer__pie">
+        <button type="button" class="btn btn--secundario" onclick="cerrarDrawer()">Cancelar</button>
+        <button type="submit" class="btn btn--primario">
+          <i data-lucide="user-check"></i> Crear matrícula
+        </button>
+      </div>
+    </form>
+  </template>
+
+  <!-- ─── Template: Editar estado ───────────────────────────────────────── -->
+  <template id="templateEditarMatricula">
+    <form id="formEditarMatricula" method="POST" action="" class="formulario-grupo">
+      <input type="hidden" name="_method" value="PUT" />
+
+      <div class="campo">
+        <label class="campo__etiqueta">Estado de la matrícula</label>
+        <select name="estado" id="campoEstadoEditar" class="campo__select">
+          <option value="activa">Activa</option>
+          <option value="suspendida">Suspendida</option>
+          <option value="inactiva">Inactiva</option>
+          <option value="graduado">Graduado</option>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Observaciones</label>
+        <textarea name="observaciones" id="campoObsEditar" class="campo__area" rows="4"
+          placeholder="Observaciones sobre el estudiante o la matrícula..."></textarea>
+      </div>
+
+      <div class="drawer__pie">
+        <button type="button" class="btn btn--secundario" onclick="cerrarDrawer()">Cancelar</button>
+        <button type="submit" class="btn btn--primario">
+          <i data-lucide="save"></i> Guardar cambios
+        </button>
+      </div>
+    </form>
+  </template>
+
+  <!-- Datos del año actual para el JS -->
+  <script>
+    const ANO_ACTUAL = <%= añoActual %>;
+  </script>
+  <script src="/js/notificaciones.js"></script>
+  <script src="/js/drawer.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/matriculas.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

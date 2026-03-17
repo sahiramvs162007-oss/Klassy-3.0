@@ -1,0 +1,247 @@
+/* KLASSY — Login */
+
+.pagina-login {
+  display: flex;
+  min-height: 100vh;
+  background: var(--gris-50);
+}
+
+.login-contenedor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Panel izquierdo */
+.login-marca {
+  background: linear-gradient(145deg, #0f2a5e 0%, #1a4aad 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 40px;
+}
+
+.login-marca__interior {
+  max-width: 340px;
+}
+
+.login-marca__logo {
+  width: 56px;
+  height: 56px;
+  background: #3b82f6;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+.login-marca__nombre {
+  font-family: 'Fraunces', serif;
+  font-size: 2.2rem;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.login-marca__slogan {
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.65);
+  margin-bottom: 24px;
+}
+
+.login-marca__puntos {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.login-marca__puntos li {
+  font-size: 0.875rem;
+  color: rgba(255,255,255,0.75);
+  padding-left: 16px;
+  position: relative;
+}
+
+.login-marca__puntos li::before {
+  content: '·';
+  position: absolute;
+  left: 0;
+  color: #3b82f6;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* Panel derecho */
+.login-form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  padding: 40px 24px;
+}
+
+.login-form-wrap {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-titulo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.login-subtitulo {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+/* Alertas */
+.login-alerta {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.login-alerta--error {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.login-alerta--info {
+  background: #eff6ff;
+  color: #1a4aad;
+  border: 1px solid #dbeafe;
+}
+
+.login-alerta--exito {
+  background: #dcfce7;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+/* Formulario */
+.login-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.login-campo__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.login-campo__input {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: 'DM Sans', sans-serif;
+  color: #111827;
+  background: #fff;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.login-campo__input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+
+.login-campo__wrapper {
+  position: relative;
+}
+
+.login-campo__wrapper .login-campo__input {
+  padding-right: 40px;
+}
+
+.login-campo__ojo {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #9ca3af;
+  padding: 2px;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 11px 16px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 4px;
+}
+
+.login-btn:hover {
+  background: #1a4aad;
+}
+
+/* Recuperar */
+.login-recuperar-link {
+  text-align: center;
+  margin-top: 14px;
+}
+
+.login-recuperar-link button {
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  color: #2563eb;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.login-volver {
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  color: #6b7280;
+  cursor: pointer;
+  margin-bottom: 16px;
+  padding: 0;
+  display: block;
+}
+
+.login-volver:hover { color: #111827; }
+
+@media (max-width: 768px) {
+  .login-contenedor { grid-template-columns: 1fr; }
+  .login-marca { display: none; }
+  .login-form-panel { padding: 32px 20px; align-items: flex-start; padding-top: 48px; }
+}

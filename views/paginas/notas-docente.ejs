@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Notas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/actividades.css" />
+  <link rel="stylesheet" href="/css/notas.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <!-- Flash -->
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <!-- ─── Sin asignaciones ────────────────────────────────────────── -->
+      <% if (bloques.length === 0) { %>
+        <div class="estado-vacio">
+          <i data-lucide="bar-chart-2"></i>
+          <h3>Sin asignaciones activas</h3>
+          <p>No tienes materias asignadas para el año <%= new Date().getFullYear() %>.</p>
+        </div>
+
+      <!-- ─── Paso 1: seleccionar materia ────────────────────────────── -->
+      <% } else if (!materiaIdActiva) { %>
+        <div class="cabecera-pagina">
+          <div>
+            <h1 class="cabecera-pagina__titulo">Libro de Notas</h1>
+            <p class="cabecera-pagina__subtitulo">Selecciona una materia para ver las calificaciones</p>
+          </div>
+        </div>
+
+        <div class="bloques-materias">
+          <% bloques.forEach((bloque, i) => { %>
+            <% const colores = ['bloque--azul','bloque--verde','bloque--morado','bloque--naranja','bloque--rojo']; %>
+            <div class="bloque-materia <%= colores[i % colores.length] %>">
+              <div class="bloque-materia__cabecera">
+                <div class="bloque-materia__icono"><i data-lucide="bar-chart-2"></i></div>
+                <h3 class="bloque-materia__nombre"><%= bloque.materia.nombre %></h3>
+              </div>
+              <div class="bloque-materia__grados">
+                <span class="bloque-materia__grados-label">Elige el grado:</span>
+                <% bloque.grados.forEach(g => { %>
+                  <a href="#" class="bloque-grado"
+                    onclick="abrirSelectorPeriodo('<%= bloque.materia._id %>','<%= g.grado._id %>','<%= bloque.materia.nombre %>','<%= g.grado.nombre %>'); return false;">
+                    <i data-lucide="graduation-cap"></i>
+                    <span><%= g.grado.nombre %></span>
+                    <span class="bloque-grado__nivel">Nivel <%= g.grado.nivel %></span>
+                  </a>
+                <% }) %>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+
+      <!-- ─── Paso 2: tabla de notas ───────────────────────────────────── -->
+      <% } else { %>
+
+        <!-- Breadcrumb + filtro de periodo -->
+        <div class="notas-header">
+          <a href="/notas/docente" class="btn-back">
+            <i data-lucide="arrow-left"></i> Mis materias
+          </a>
+          <div class="notas-header__tags">
+            <span class="chip chip--materia"><i data-lucide="book-open"></i> <%= materiaSeleccionada?.nombre %></span>
+            <span class="chip chip--grado"><i data-lucide="graduation-cap"></i> <%= gradoSeleccionado?.nombre %></span>
+          </div>
+          <form method="GET" action="/notas/docente" class="notas-header__periodo-form">
+            <input type="hidden" name="materiaId" value="<%= materiaIdActiva %>" />
+            <input type="hidden" name="gradoId"   value="<%= gradoIdActivo %>" />
+            <select name="periodoId" class="campo__select" onchange="this.form.submit()">
+              <option value="">Selecciona periodo</option>
+              <% periodos.forEach(p => { %>
+                <option value="<%= p._id %>" <%= periodoIdActivo === p._id.toString() ? 'selected' : '' %>>
+                  <%= p.nombre %> <%= !p.activo ? '(Cerrado)' : '' %>
+                </option>
+              <% }) %>
+            </select>
+          </form>
+        </div>
+
+        <% if (!periodoIdActivo) { %>
+          <div class="estado-vacio">
+            <i data-lucide="calendar"></i>
+            <h3>Selecciona un periodo</h3>
+            <p>Elige el periodo académico para ver el libro de notas.</p>
+          </div>
+        <% } else if (!tabla || tabla.filas.length === 0) { %>
+          <div class="estado-vacio">
+            <i data-lucide="users"></i>
+            <h3>Sin estudiantes matriculados</h3>
+            <p>No hay estudiantes activos en este grado para el año actual.</p>
+          </div>
+        <% } else { %>
+
+          <!-- Resumen rápido -->
+          <div class="notas-resumen">
+            <div class="resumen-stat">
+              <span class="resumen-stat__num"><%= tabla.filas.length %></span>
+              <span class="resumen-stat__label">Estudiantes</span>
+            </div>
+            <div class="resumen-stat">
+              <span class="resumen-stat__num"><%= tabla.actividades.length %></span>
+              <span class="resumen-stat__label">Actividades</span>
+            </div>
+            <div class="resumen-stat">
+              <span class="resumen-stat__num">
+                <%
+                  const promsValidos = tabla.filas.filter(f => f.promedio !== null).map(f => f.promedio);
+                  const promGeneral  = promsValidos.length
+                    ? (promsValidos.reduce((a,b)=>a+b,0)/promsValidos.length).toFixed(2)
+                    : '—';
+                %>
+                <%= promGeneral %>
+              </span>
+              <span class="resumen-stat__label">Promedio grupo</span>
+            </div>
+            <% if (periodoSeleccionado) { %>
+              <span class="badge <%= periodoSeleccionado.activo ? 'badge--activo' : 'badge--inactivo' %>">
+                Periodo <%= periodoSeleccionado.nombre %> <%= !periodoSeleccionado.activo ? '— Cerrado' : '' %>
+              </span>
+            <% } %>
+          </div>
+
+          <!-- Tabla de notas (scrollable horizontalmente) -->
+          <div class="tabla-notas-contenedor">
+            <table class="tabla-notas" id="tablaNotas">
+              <thead>
+                <tr>
+                  <th class="th-estudiante">Estudiante</th>
+                  <% tabla.actividades.forEach(act => { %>
+                    <th class="th-actividad">
+                      <div class="th-actividad__nombre" title="<%= act.titulo %>">
+                        <%= act.titulo.length > 20 ? act.titulo.substring(0,20) + '…' : act.titulo %>
+                      </div>
+                      <div class="th-actividad__fecha">
+                        <%= new Date(act.fechaLimite).toLocaleDateString('es-CO', {day:'2-digit',month:'short'}) %>
+                      </div>
+                    </th>
+                  <% }) %>
+                  <th class="th-promedio">Promedio</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% tabla.filas.forEach(fila => { %>
+                  <tr>
+                    <td class="td-estudiante">
+                      <div class="usuario-celda">
+                        <div class="usuario-celda__avatar usuario-celda__avatar--estudiante">
+                          <%= fila.estudiante.nombre.charAt(0).toUpperCase() %><%= fila.estudiante.apellido.charAt(0).toUpperCase() %>
+                        </div>
+                        <span class="usuario-celda__nombre">
+                          <%= fila.estudiante.nombre %> <%= fila.estudiante.apellido %>
+                        </span>
+                      </div>
+                    </td>
+
+                    <% fila.celdas.forEach((celda, i) => { %>
+                      <td class="td-nota">
+                        <% if (celda) { %>
+                          <div class="nota-celda">
+                            <span
+                              class="nota-valor nota-valor--<%= celda.valor >= 3 ? 'ok' : 'mal' %>"
+                              id="nota_<%= celda._id %>"
+                            ><%= celda.valor.toFixed(1) %></span>
+                            <% if (celda.modificable && periodoSeleccionado?.activo) { %>
+                              <button
+                                class="nota-editar-btn"
+                                onclick="editarNota('<%= celda._id %>', <%= celda.valor %>, this)"
+                                title="Editar nota">
+                                <i data-lucide="pencil"></i>
+                              </button>
+                            <% } %>
+                          </div>
+                        <% } else { %>
+                          <span class="nota-vacia">—</span>
+                        <% } %>
+                      </td>
+                    <% }) %>
+
+                    <td class="td-promedio">
+                      <% if (fila.promedio !== null) { %>
+                        <span class="nota-promedio nota-promedio--<%= fila.promedio >= 3 ? 'ok' : 'mal' %>">
+                          <%= fila.promedio.toFixed(2) %>
+                        </span>
+                      <% } else { %>
+                        <span class="nota-vacia">—</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+
+              <!-- Fila de promedios por actividad -->
+              <tfoot>
+                <tr class="fila-promedios">
+                  <td class="td-estudiante" style="font-weight:600;font-size:0.75rem;color:var(--gris-500);">
+                    Promedio actividad
+                  </td>
+                  <% tabla.promediosPorActividad.forEach(prom => { %>
+                    <td class="td-nota">
+                      <% if (prom !== null) { %>
+                        <span class="nota-promedio nota-promedio--<%= prom >= 3 ? 'ok' : 'mal' %>">
+                          <%= prom.toFixed(2) %>
+                        </span>
+                      <% } else { %>
+                        <span class="nota-vacia">—</span>
+                      <% } %>
+                    </td>
+                  <% }) %>
+                  <td class="td-promedio">
+                    <span class="nota-promedio nota-promedio--ok"><%= promGeneral %></span>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+        <% } %>
+      <% } %>
+
+    </main>
+  </div>
+
+  <!-- Drawer lateral para selector de periodo -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer__cabecera">
+      <h2 class="drawer__titulo" id="drawerTitulo">Seleccionar periodo</h2>
+      <button class="drawer__cerrar" onclick="cerrarDrawer()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer__cuerpo" id="drawerCuerpo"></div>
+  </div>
+
+  <!-- Datos de periodos para el JS -->
+  <script>
+    const PERIODOS_DISPONIBLES = <%- JSON.stringify(periodos.map(p => ({
+      _id:    p._id,
+      nombre: p.nombre,
+      numero: p.numero,
+      activo: p.activo,
+    }))) %>;
+  </script>
+
+  <script src="/js/drawer.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/notificaciones.js"></script>
+  <script src="/js/notas-docente.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

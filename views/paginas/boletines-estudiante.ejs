@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Mis Boletines</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/boletines.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <div class="cabecera-pagina">
+        <h1 class="cabecera-pagina__titulo">Mis Boletines</h1>
+        <p class="cabecera-pagina__subtitulo">Historial académico completo</p>
+      </div>
+
+      <% if (boletines.length === 0) { %>
+        <div class="estado-vacio">
+          <i data-lucide="file-text"></i>
+          <h3>Sin boletines disponibles</h3>
+          <p>Aún no se han generado boletines para ti. Los boletines se generan al cerrar cada periodo.</p>
+        </div>
+      <% } else { %>
+
+        <div class="boletin-layout">
+
+          <!-- Sidebar de boletines disponibles -->
+          <div class="boletin-sidebar">
+            <h3 class="boletin-sidebar__titulo">Periodos disponibles</h3>
+            <% boletines.forEach(b => { %>
+              <a href="/boletines/estudiante?boletinId=<%= b._id %>"
+                class="boletin-item-lista <%= boletinActual && boletinActual._id.toString() === b._id.toString() ? 'boletin-item-lista--activo' : '' %>">
+                <div class="boletin-item-lista__num"><%= b.numeroPeriodo %></div>
+                <div class="boletin-item-lista__info">
+                  <span class="boletin-item-lista__periodo"><%= b.nombrePeriodo %></span>
+                  <span class="boletin-item-lista__año"><%= b.año %> — <%= b.nombreGrado %></span>
+                </div>
+                <span class="badge <%= b.aprobadoGeneral ? 'badge--activo' : 'badge--error' %> boletin-item-lista__badge">
+                  <%= b.promedioGeneral.toFixed(1) %>
+                </span>
+              </a>
+            <% }) %>
+          </div>
+
+          <!-- Contenido del boletín seleccionado -->
+          <div class="boletin-contenido">
+            <% if (boletinActual) { %>
+              <%- include('../partials/boletin-card', { b: boletinActual, mostrarEliminar: false, rol: 'estudiante' }) %>
+            <% } %>
+          </div>
+
+        </div>
+
+      <% } %>
+
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/notificaciones.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

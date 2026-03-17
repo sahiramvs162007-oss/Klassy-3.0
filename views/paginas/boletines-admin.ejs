@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Boletines y Reportes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/boletines.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <div class="cabecera-pagina">
+        <h1 class="cabecera-pagina__titulo">Boletines y Reportes</h1>
+        <p class="cabecera-pagina__subtitulo">Gestión académica completa del año <%= añoSeleccionado %></p>
+      </div>
+
+      <!-- ─── Acciones de cierre (solo admin) ────────────────────────────── -->
+      <% if (usuarioActual.rol === 'admin') { %>
+        <div class="cierre-panel">
+          <div class="cierre-panel__seccion">
+            <h3 class="cierre-panel__titulo"><i data-lucide="lock"></i> Cerrar periodo</h3>
+            <p class="cierre-panel__desc">Genera boletines automáticamente para todos los estudiantes del periodo.</p>
+            <div class="cierre-panel__periodos">
+              <% periodosAbiertos.forEach(p => { %>
+                <form method="POST" action="/boletines/cerrar-periodo/<%= p._id %>?_method=PUT"
+                  onsubmit="return confirm('¿Cerrar el <%= p.nombre %>? Esto generará los boletines de todos los estudiantes. Esta acción es IRREVERSIBLE.')">
+                  <button type="submit" class="btn btn--secundario btn--sm">
+                    <i data-lucide="lock"></i> Cerrar <%= p.nombre %>
+                  </button>
+                </form>
+              <% }) %>
+              <% if (periodosAbiertos.length === 0) { %>
+                <span class="texto-secundario texto-sm">Todos los periodos están cerrados.</span>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="cierre-panel__separador"></div>
+
+          <div class="cierre-panel__seccion">
+            <h3 class="cierre-panel__titulo"><i data-lucide="calendar-check"></i> Cerrar año académico</h3>
+            <p class="cierre-panel__desc">Calcula el resultado anual y actualiza niveles. Requiere todos los periodos cerrados.</p>
+            <form method="POST" action="/boletines/cerrar-anio"
+              onsubmit="return confirm('¿Cerrar el año <%= añoSeleccionado %>? Se calcularán los resultados anuales y se actualizarán los niveles de los estudiantes.')">
+              <input type="hidden" name="año" value="<%= añoSeleccionado %>" />
+              <button type="submit" class="btn btn--primario btn--sm" <%= periodosAbiertos.length > 0 ? 'disabled title="Cierra todos los periodos primero"' : '' %>>
+                <i data-lucide="calendar-check"></i> Cerrar año <%= añoSeleccionado %>
+              </button>
+            </form>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- ─── Tabs de vistas ──────────────────────────────────────────────── -->
+      <div class="vistas-tabs">
+        <a href="/boletines/admin?año=<%= añoSeleccionado %>&vista=boletines" class="vista-tab <%= vista === 'boletines' ? 'vista-tab--activo' : '' %>">
+          <i data-lucide="file-text"></i> Boletines
+        </a>
+        <a href="/boletines/admin?año=<%= añoSeleccionado %>&vista=reporte-grado" class="vista-tab <%= vista === 'reporte-grado' ? 'vista-tab--activo' : '' %>">
+          <i data-lucide="users"></i> Reporte por grado
+        </a>
+        <a href="/boletines/admin?año=<%= añoSeleccionado %>&vista=reporte-materia" class="vista-tab <%= vista === 'reporte-materia' ? 'vista-tab--activo' : '' %>">
+          <i data-lucide="book-open"></i> Reporte por materia
+        </a>
+        <a href="/boletines/admin?año=<%= añoSeleccionado %>&vista=reporte-general" class="vista-tab <%= vista === 'reporte-general' ? 'vista-tab--activo' : '' %>">
+          <i data-lucide="bar-chart-2"></i> Reporte general
+        </a>
+      </div>
+
+      <!-- Filtros comunes -->
+      <form method="GET" action="/boletines/admin" class="barra-filtros" id="formFiltros">
+        <div class="barra-filtros__grupo">
+          <input type="hidden" name="vista" value="<%= vista %>" />
+          <select name="año" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <% añosDisponibles.forEach(a => { %>
+              <option value="<%= a %>" <%= añoSeleccionado === a ? 'selected' : '' %>><%= a %></option>
+            <% }) %>
+          </select>
+          <select name="gradoId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todos los grados</option>
+            <% grados.forEach(g => { %>
+              <option value="<%= g._id %>" <%= gradoIdActivo === g._id.toString() ? 'selected' : '' %>><%= g.nombre %></option>
+            <% }) %>
+          </select>
+          <select name="periodoId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todos los periodos</option>
+            <% periodos.forEach(p => { %>
+              <option value="<%= p._id %>" <%= periodoIdActivo === p._id.toString() ? 'selected' : '' %>><%= p.nombre %> <%= !p.activo ? '' : '(Abierto)' %></option>
+            <% }) %>
+          </select>
+          <% if (vista === 'reporte-materia' && materiasGrado.length > 0) { %>
+            <select name="materiaId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+              <option value="">Seleccionar materia</option>
+              <% materiasGrado.forEach(m => { %>
+                <option value="<%= m._id %>" <%= materiaIdActiva === m._id.toString() ? 'selected' : '' %>><%= m.nombre %></option>
+              <% }) %>
+            </select>
+          <% } %>
+        </div>
+        <div class="barra-filtros__acciones">
+          <% if (gradoIdActivo || periodoIdActivo) { %>
+            <a href="/boletines/admin?año=<%= añoSeleccionado %>&vista=<%= vista %>" class="btn btn--secundario btn--sm">
+              <i data-lucide="x"></i> Limpiar
+            </a>
+          <% } %>
+        </div>
+      </form>
+
+      <!-- ─── CONTENIDO POR VISTA ──────────────────────────────────────── -->
+
+      <!-- VISTA: Boletines -->
+      <% if (vista === 'boletines') { %>
+
+        <% if (boletines.length === 0) { %>
+          <div class="estado-vacio">
+            <i data-lucide="file-text"></i>
+            <h3>Sin boletines</h3>
+            <p>Selecciona grado y periodo para ver boletines, o cierra un periodo para generarlos.</p>
+          </div>
+        <% } else { %>
+          <!-- Botón de descarga de todos -->
+          <% if (gradoIdActivo && periodoIdActivo) { %>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+              <a href="/boletines/reporte/grado/pdf?gradoId=<%= gradoIdActivo %>&periodoId=<%= periodoIdActivo %>&año=<%= añoSeleccionado %>"
+                target="_blank" class="btn btn--secundario btn--sm">
+                <i data-lucide="download"></i> PDF reporte del grado
+              </a>
+            </div>
+          <% } %>
+
+          <div class="tabla-contenedor">
+            <table class="tabla">
+              <thead>
+                <tr>
+                  <th>Estudiante</th>
+                  <th>Grado</th>
+                  <th>Periodo</th>
+                  <th>Año</th>
+                  <th>Promedio</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% boletines.forEach(b => { %>
+                  <tr>
+                    <td><strong><%= b.nombreEstudiante %> <%= b.apellidoEstudiante %></strong></td>
+                    <td class="texto-secundario"><%= b.nombreGrado %></td>
+                    <td class="texto-secundario"><%= b.nombrePeriodo %></td>
+                    <td class="texto-secundario"><%= b.año %></td>
+                    <td>
+                      <span class="nota-boletin nota-boletin--<%= b.aprobadoGeneral ? 'ok' : 'mal' %>">
+                        <%= b.promedioGeneral.toFixed(2) %>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge <%= b.aprobadoGeneral ? 'badge--activo' : 'badge--error' %>">
+                        <%= b.aprobadoGeneral ? 'Aprobado' : 'Reprobado' %>
+                      </span>
+                    </td>
+                    <td>
+                      <div class="acciones-tabla">
+                        <a href="/boletines/admin?año=<%= b.año %>&vista=boletines&gradoId=<%= b.gradoId %>&periodoId=<%= b.periodoId %>&estudianteId=<%= b.estudianteId %>"
+                          class="btn-icono btn-icono--ver" title="Ver boletín">
+                          <i data-lucide="eye"></i>
+                        </a>
+                        <a href="/boletines/admin/<%= b._id %>/pdf" target="_blank"
+                          class="btn-icono btn-icono--editar" title="Descargar PDF">
+                          <i data-lucide="download"></i>
+                        </a>
+                        <form method="POST" action="/boletines/admin/<%= b._id %>?_method=DELETE"
+                          onsubmit="return confirm('¿Eliminar el boletín de <%= b.nombreEstudiante %>?')" style="display:inline">
+                          <button type="submit" class="btn-icono btn-icono--eliminar" title="Eliminar">
+                            <i data-lucide="trash-2"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Ver boletín individual si hay estudianteId -->
+          <% if (estudianteIdActivo && boletines.length === 1) { %>
+            <div style="margin-top:16px;">
+              <%- include('../partials/boletin-card', { b: boletines[0], mostrarEliminar: true, rol: 'admin' }) %>
+            </div>
+          <% } %>
+        <% } %>
+
+      <!-- VISTA: Reporte por grado -->
+      <% } else if (vista === 'reporte-grado') { %>
+        <%- include('../partials/reporte-grado', { reporte }) %>
+
+      <!-- VISTA: Reporte por materia -->
+      <% } else if (vista === 'reporte-materia') { %>
+        <%- include('../partials/reporte-materia', { reporte, gradoIdActivo, periodoIdActivo, materiaIdActiva, añoSeleccionado }) %>
+
+      <!-- VISTA: Reporte general -->
+      <% } else if (vista === 'reporte-general') { %>
+        <%- include('../partials/reporte-general', { reporte, añoSeleccionado, periodoIdActivo }) %>
+      <% } %>
+
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/notificaciones.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

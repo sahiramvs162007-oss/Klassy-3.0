@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Boletines</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/boletines.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <div class="cabecera-pagina">
+        <h1 class="cabecera-pagina__titulo">Boletines</h1>
+        <p class="cabecera-pagina__subtitulo">Consulta los boletines de tus estudiantes</p>
+      </div>
+
+      <!-- Filtros para ver boletines de su grado -->
+      <form method="GET" action="/boletines/docente" class="barra-filtros">
+        <div class="barra-filtros__grupo">
+          <select name="gradoId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Seleccionar grado</option>
+            <% [...new Map(asignaciones.map(a => [a.gradoId._id.toString(), a])).values()].forEach(a => { %>
+              <option value="<%= a.gradoId._id %>" <%= gradoIdActivo === a.gradoId._id.toString() ? 'selected' : '' %>>
+                <%= a.gradoId.nombre %> (Nivel <%= a.gradoId.nivel %>)
+              </option>
+            <% }) %>
+          </select>
+          <select name="periodoId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Seleccionar periodo</option>
+            <% periodos.filter(p => !p.activo).forEach(p => { %>
+              <option value="<%= p._id %>" <%= periodoIdActivo === p._id.toString() ? 'selected' : '' %>><%= p.nombre %></option>
+            <% }) %>
+          </select>
+        </div>
+        <% if (gradoIdActivo || periodoIdActivo) { %>
+          <a href="/boletines/docente" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Limpiar</a>
+        <% } %>
+      </form>
+
+      <!-- Lista de boletines del grado -->
+      <% if (boletines.length > 0) { %>
+        <% if (boletinActual) { %>
+          <div style="margin-bottom:12px;">
+            <a href="/boletines/docente?gradoId=<%= gradoIdActivo %>&periodoId=<%= periodoIdActivo %>" class="btn btn--secundario btn--sm">
+              <i data-lucide="arrow-left"></i> Volver a la lista
+            </a>
+          </div>
+          <%- include('../partials/boletin-card', { b: boletinActual, mostrarEliminar: false, rol: 'docente' }) %>
+        <% } else { %>
+          <div class="tabla-contenedor">
+            <table class="tabla">
+              <thead>
+                <tr>
+                  <th>Estudiante</th>
+                  <th>Grado</th>
+                  <th>Promedio</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% boletines.forEach(b => { %>
+                  <tr>
+                    <td><strong><%= b.nombreEstudiante %> <%= b.apellidoEstudiante %></strong></td>
+                    <td class="texto-secundario"><%= b.nombreGrado %></td>
+                    <td>
+                      <span class="nota-boletin nota-boletin--<%= b.aprobadoGeneral ? 'ok' : 'mal' %>">
+                        <%= b.promedioGeneral.toFixed(2) %>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge <%= b.aprobadoGeneral ? 'badge--activo' : 'badge--error' %>">
+                        <%= b.aprobadoGeneral ? 'Aprobado' : 'Reprobado' %>
+                      </span>
+                    </td>
+                    <td>
+                      <div class="acciones-tabla">
+                        <a href="/boletines/docente?gradoId=<%= gradoIdActivo %>&periodoId=<%= periodoIdActivo %>&boletinId=<%= b._id %>"
+                          class="btn-icono btn-icono--ver" title="Ver boletín">
+                          <i data-lucide="eye"></i>
+                        </a>
+                        <a href="/boletines/docente/<%= b._id %>/pdf" target="_blank"
+                          class="btn-icono btn-icono--editar" title="Descargar PDF">
+                          <i data-lucide="download"></i>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      <% } else if (gradoIdActivo && periodoIdActivo) { %>
+        <div class="estado-vacio">
+          <i data-lucide="file-text"></i>
+          <h3>Sin boletines</h3>
+          <p>No hay boletines generados para este grado y periodo.</p>
+        </div>
+      <% } %>
+
+      <!-- Boletines propios (si fue estudiante) -->
+      <% if (propios.length > 0) { %>
+        <div class="tarjeta" style="margin-top:20px;">
+          <div class="tarjeta__cabecera">
+            <i data-lucide="history"></i>
+            <h3 class="tarjeta__titulo">Mis boletines históricos</h3>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+            <% propios.forEach(b => { %>
+              <a href="/boletines/docente?boletinId=<%= b._id %>"
+                class="chip chip--materia">
+                <%= b.nombrePeriodo %> <%= b.año %> — <%= b.promedioGeneral.toFixed(1) %>
+              </a>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
+
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/notificaciones.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

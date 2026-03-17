@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY - Login</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; background: #f3f4f6; display: flex; min-height: 100vh; }
+
+    .left {
+      width: 420px;
+      background: linear-gradient(145deg, #0f2a5e, #1a4aad);
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 48px 40px; color: #fff;
+    }
+    .left h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 8px; }
+    .left p  { color: rgba(255,255,255,0.65); font-size: 0.95rem; }
+
+    .right {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      background: #fff; padding: 40px;
+    }
+    .card { width: 100%; max-width: 380px; }
+    .card h2 { font-size: 1.5rem; font-weight: 700; color: #111; margin-bottom: 4px; }
+    .card .sub { color: #6b7280; font-size: 0.875rem; margin-bottom: 24px; }
+
+    .error-box {
+      background: #fee2e2; color: #dc2626;
+      border: 1px solid #fecaca; border-radius: 8px;
+      padding: 10px 14px; margin-bottom: 16px; font-size: 0.875rem;
+    }
+    .info-box {
+      background: #eff6ff; color: #1a4aad;
+      border: 1px solid #dbeafe; border-radius: 8px;
+      padding: 10px 14px; margin-bottom: 16px; font-size: 0.875rem;
+    }
+
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 5px; }
+    input[type=email], input[type=password], input[type=text] {
+      width: 100%; padding: 10px 14px; border: 1px solid #d1d5db;
+      border-radius: 8px; font-size: 0.9rem; color: #111;
+      margin-bottom: 14px;
+    }
+    input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+
+    .btn {
+      width: 100%; padding: 11px; background: #2563eb; color: #fff;
+      border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; margin-top: 4px;
+    }
+    .btn:hover { background: #1a4aad; }
+
+    .link-btn {
+      background: none; border: none; color: #2563eb; font-size: 0.82rem;
+      cursor: pointer; text-decoration: underline; margin-top: 14px; display: block; text-align: center;
+    }
+    .back-btn {
+      background: none; border: none; color: #6b7280; font-size: 0.82rem;
+      cursor: pointer; margin-bottom: 16px; display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="left">
+    <h1>KLASSY</h1>
+    <p>Gestor academico para colegios</p>
+  </div>
+
+  <div class="right">
+    <div class="card">
+
+      <% if (error && error.length > 0) { %>
+        <div class="error-box"><%= error %></div>
+      <% } %>
+      <% if (info && info.length > 0) { %>
+        <div class="info-box"><%= info %></div>
+      <% } %>
+
+      <!-- LOGIN -->
+      <div id="login">
+        <h2>Bienvenido</h2>
+        <p class="sub">Ingresa tus credenciales para continuar</p>
+
+        <form method="POST" action="/auth/login">
+          <label>Correo electronico</label>
+          <input type="email" name="correo" placeholder="tu@correo.edu.co" required autofocus autocomplete="email" />
+
+          <label>Contrasena</label>
+          <input type="password" name="contrasena" id="pass" placeholder="Tu contrasena" required autocomplete="current-password" />
+
+          <button type="button" class="link-btn" style="text-align:left;margin-bottom:10px;color:#6b7280;font-size:0.75rem;" onclick="var p=document.getElementById('pass');p.type=p.type==='password'?'text':'password'">
+            Mostrar / ocultar contrasena
+          </button>
+
+          <button type="submit" class="btn">Ingresar</button>
+        </form>
+
+        <button class="link-btn" onclick="document.getElementById('login').style.display='none';document.getElementById('recuperar').style.display='block'">
+          Olvide mi contrasena
+        </button>
+      </div>
+
+      <!-- RECUPERAR -->
+      <div id="recuperar" style="display:none">
+        <button class="back-btn" onclick="document.getElementById('recuperar').style.display='none';document.getElementById('login').style.display='block'">
+          &larr; Volver
+        </button>
+        <h2>Recuperar acceso</h2>
+        <p class="sub" style="margin-bottom:16px;">El director recibira una notificacion para restablecer tu contrasena.</p>
+        <form method="POST" action="/auth/recuperar">
+          <label>Correo registrado</label>
+          <input type="email" name="correo" placeholder="tu@correo.edu.co" required />
+          <button type="submit" class="btn">Enviar solicitud</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

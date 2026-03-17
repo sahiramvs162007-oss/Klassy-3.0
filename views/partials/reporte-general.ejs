@@ -1,0 +1,75 @@
+<% if (!reporte) { %>
+  <div class="estado-vacio">
+    <i data-lucide="bar-chart-2"></i>
+    <h3>Selecciona el año</h3>
+    <p>Elige el año para ver el reporte general del colegio.</p>
+  </div>
+<% } else if (reporte.grados.length === 0) { %>
+  <div class="estado-vacio">
+    <i data-lucide="bar-chart-2"></i>
+    <h3>Sin datos para este año</h3>
+    <p>No hay boletines generados para el año <%= añoSeleccionado %>.</p>
+  </div>
+<% } else { %>
+
+  <div class="reporte-header">
+    <div>
+      <h2 class="reporte-titulo">Reporte General — Año <%= reporte.año %></h2>
+      <p class="texto-secundario">Estadísticas académicas de todo el colegio</p>
+    </div>
+    <a href="/boletines/reporte/general/pdf?año=<%= añoSeleccionado %><%= periodoIdActivo ? '&periodoId=' + periodoIdActivo : '' %>"
+      target="_blank" class="btn btn--primario btn--sm">
+      <i data-lucide="download"></i> Descargar PDF
+    </a>
+  </div>
+
+  <!-- Stats globales -->
+  <div class="reporte-stats reporte-stats--grande">
+    <div class="reporte-stat"><span class="reporte-stat__num"><%= reporte.totalGlobal %></span><span class="reporte-stat__label">Total estudiantes</span></div>
+    <div class="reporte-stat reporte-stat--ok"><span class="reporte-stat__num"><%= reporte.aprobadosGlobal %></span><span class="reporte-stat__label">Aprobados</span></div>
+    <div class="reporte-stat reporte-stat--mal"><span class="reporte-stat__num"><%= reporte.reprobadosGlobal %></span><span class="reporte-stat__label">Reprobados</span></div>
+    <div class="reporte-stat"><span class="reporte-stat__num"><%= reporte.pctAprobacionGlobal %>%</span><span class="reporte-stat__label">% Aprobación</span></div>
+    <div class="reporte-stat"><span class="reporte-stat__num"><%= reporte.promedioGlobal %></span><span class="reporte-stat__label">Promedio global</span></div>
+  </div>
+
+  <!-- Tabla por grado -->
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Grado</th>
+          <th>Nivel</th>
+          <th>Total</th>
+          <th>Aprobados</th>
+          <th>Reprobados</th>
+          <th>% Aprobación</th>
+          <th>Promedio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% reporte.grados.forEach(g => { %>
+          <tr>
+            <td><strong><%= g.nombre %></strong></td>
+            <td style="text-align:center;"><span class="badge badge--azul">Nivel <%= g.nivel %></span></td>
+            <td style="text-align:center;"><%= g.total %></td>
+            <td style="text-align:center;color:var(--verde-600);font-weight:600;"><%= g.aprobados %></td>
+            <td style="text-align:center;color:var(--rojo-600);font-weight:600;"><%= g.reprobados %></td>
+            <td style="text-align:center;">
+              <div class="entrega-progreso" style="min-width:100px;">
+                <div class="entrega-progreso__barra">
+                  <div class="entrega-progreso__relleno" style="width:<%= g.pctAprobacion %>%;background:<%= g.pctAprobacion >= 70 ? 'var(--verde-600)' : 'var(--rojo-600)' %>"></div>
+                </div>
+                <span class="entrega-progreso__texto"><%= g.pctAprobacion %>%</span>
+              </div>
+            </td>
+            <td style="text-align:center;">
+              <span class="nota-boletin nota-boletin--<%= parseFloat(g.promedio) >= 3 ? 'ok' : 'mal' %>">
+                <%= g.promedio %>
+              </span>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>

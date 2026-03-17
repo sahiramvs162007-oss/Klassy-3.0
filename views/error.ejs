@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Error <%= codigo %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/estilos.css" />
+</head>
+<body class="pagina-error">
+  <div class="error-contenedor">
+    <span class="error-codigo"><%= codigo %></span>
+    <h1 class="error-titulo"><%= titulo %></h1>
+    <p class="error-mensaje"><%= mensaje %></p>
+    <a href="/dashboard" class="btn btn--primario">Volver al inicio</a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,495 @@
+/* ═══════════════════════════════════════════════════════
+   KLASSY — CSS del Módulo de Notas (Sprint 10)
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Cabecera de notas ────────────────────────────────── */
+.notas-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.notas-header__tags {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+}
+
+.notas-header__periodo-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.notas-header__periodo-form .campo__select {
+  min-width: 180px;
+}
+
+/* ─── Resumen estadístico ──────────────────────────────── */
+.notas-resumen {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  padding: 16px 20px;
+  box-shadow: var(--sombra-xs);
+}
+
+.resumen-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 12px;
+  border-right: 1px solid var(--gris-200);
+}
+
+.resumen-stat:last-of-type {
+  border-right: none;
+}
+
+.resumen-stat__num {
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: var(--fuente-marca);
+  color: var(--gris-900);
+  line-height: 1;
+}
+
+.resumen-stat__label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--gris-400);
+}
+
+/* ─── Tabla de notas ───────────────────────────────────── */
+.tabla-notas-contenedor {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-xs);
+}
+
+.tabla-notas {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  min-width: 600px;
+}
+
+/* Cabecera */
+.tabla-notas thead {
+  background: var(--azul-900);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tabla-notas thead tr th {
+  padding: 10px 12px;
+  text-align: center;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  white-space: nowrap;
+}
+
+.tabla-notas thead tr th:last-child {
+  border-right: none;
+}
+
+/* Columna de estudiante: fija a la izquierda */
+.th-estudiante,
+.td-estudiante {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  text-align: left !important;
+  min-width: 180px;
+}
+
+.th-estudiante {
+  background: var(--azul-900) !important;
+  z-index: 11;
+  text-align: left !important;
+}
+
+.td-estudiante {
+  background: #fff;
+  border-right: 2px solid var(--gris-200);
+}
+
+.tabla-notas tbody tr:hover .td-estudiante {
+  background: var(--gris-50);
+}
+
+/* Columnas de actividad */
+.th-actividad {
+  min-width: 90px;
+  max-width: 120px;
+}
+
+.th-actividad__nombre {
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.th-actividad__fecha {
+  font-size: 0.65rem;
+  opacity: 0.65;
+  font-weight: 400;
+}
+
+/* Columna de promedio */
+.th-promedio,
+.td-promedio {
+  background: var(--azul-50);
+  min-width: 80px;
+  text-align: center;
+  font-weight: 600;
+  border-left: 2px solid var(--azul-100);
+}
+
+.th-promedio {
+  background: rgba(59,130,246,0.2) !important;
+}
+
+/* Celdas de datos */
+.tabla-notas tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--gris-100);
+  border-right: 1px solid var(--gris-50);
+  vertical-align: middle;
+  text-align: center;
+}
+
+.tabla-notas tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla-notas tbody tr:hover td {
+  background: var(--gris-50);
+}
+
+/* Fila de promedios por actividad */
+.fila-promedios td {
+  background: var(--gris-50) !important;
+  border-top: 2px solid var(--gris-200);
+}
+
+.fila-promedios .td-estudiante {
+  background: var(--gris-50) !important;
+}
+
+/* ─── Celda de nota editable ───────────────────────────── */
+.nota-celda {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.nota-valor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  padding: 3px 6px;
+  border-radius: var(--radio);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--fuente-marca);
+}
+
+.nota-valor--ok  { background: var(--verde-100); color: var(--verde-600); }
+.nota-valor--mal { background: var(--rojo-100);  color: var(--rojo-600); }
+
+.nota-vacia {
+  color: var(--gris-300);
+  font-size: 0.9rem;
+}
+
+.nota-promedio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 4px 8px;
+  border-radius: var(--radio);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--fuente-marca);
+}
+
+.nota-promedio--ok     { background: var(--verde-100);  color: var(--verde-600); }
+.nota-promedio--mal    { background: var(--rojo-100);   color: var(--rojo-600); }
+.nota-promedio--neutro { background: var(--gris-100);   color: var(--gris-500); }
+.nota-promedio--grande { font-size: 1.1rem; padding: 6px 12px; }
+
+/* Botón de editar nota (aparece al hover) */
+.nota-editar-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: var(--gris-400);
+  cursor: pointer;
+  background: none;
+  border: none;
+  opacity: 0;
+  transition: opacity var(--trans-rapida), background var(--trans-rapida), color var(--trans-rapida);
+  flex-shrink: 0;
+}
+
+.nota-editar-btn svg { width: 11px; height: 11px; stroke-width: 2; }
+
+.nota-celda:hover .nota-editar-btn {
+  opacity: 1;
+}
+
+.nota-editar-btn:hover {
+  background: var(--azul-100);
+  color: var(--azul-600);
+}
+
+/* Input inline para edición de nota */
+.nota-input-inline {
+  width: 56px;
+  padding: 3px 6px;
+  border: 1.5px solid var(--azul-500);
+  border-radius: var(--radio);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--fuente-marca);
+  text-align: center;
+  color: var(--gris-900);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  outline: none;
+}
+
+/* ─── Selector de periodo (drawer docente) ─────────────── */
+.selector-periodo-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.selector-periodo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--gris-50);
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--trans-rapida), border-color var(--trans-rapida);
+}
+
+.selector-periodo-item:hover {
+  background: var(--azul-50);
+  border-color: var(--azul-200);
+}
+
+.selector-periodo-item--cerrado {
+  opacity: 0.7;
+}
+
+.selector-periodo-item__num {
+  width: 32px;
+  height: 32px;
+  background: var(--azul-600);
+  color: #fff;
+  border-radius: var(--radio);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fuente-marca);
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.selector-periodo-item--cerrado .selector-periodo-item__num {
+  background: var(--gris-400);
+}
+
+.selector-periodo-item__info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.selector-periodo-item__nombre {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gris-900);
+}
+
+/* ─── Vista estudiante ─────────────────────────────────── */
+.notas-resumen-est {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.notas-resumen-est__prom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-right: 24px;
+  border-right: 2px solid var(--gris-200);
+}
+
+.notas-resumen-est__num {
+  font-family: var(--fuente-marca);
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.notas-resumen-est__num--ok  { color: var(--verde-600); }
+.notas-resumen-est__num--mal { color: var(--rojo-600); }
+
+.notas-resumen-est__label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gris-400);
+  font-weight: 600;
+}
+
+.notas-resumen-est__stats {
+  display: flex;
+  gap: 20px;
+}
+
+.notas-resumen-est__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.notas-resumen-est__stat-num {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--gris-900);
+  font-family: var(--fuente-marca);
+}
+
+.notas-resumen-est__stat-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gris-400);
+  font-weight: 600;
+}
+
+.notas-materias-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notas-materia-seccion {
+  padding: 0;
+  overflow: hidden;
+}
+
+.notas-materia-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gris-100);
+  flex-wrap: wrap;
+}
+
+.notas-materia-cabecera__info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notas-materia-cabecera__nombre {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gris-900);
+}
+
+.notas-materia-cabecera__docente {
+  font-size: 0.75rem;
+  color: var(--gris-500);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.notas-materia-cabecera__prom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notas-tabla-est {
+  padding: 0;
+}
+
+.notas-tabla-est .tabla td,
+.notas-tabla-est .tabla th {
+  text-align: center;
+}
+
+.notas-tabla-est .tabla td:first-child,
+.notas-tabla-est .tabla th:first-child {
+  text-align: left;
+}
+
+/* Enlace a la actividad */
+.enlace-actividad {
+  color: var(--azul-600);
+  text-decoration: none;
+  font-size: 0.83rem;
+}
+
+.enlace-actividad:hover {
+  text-decoration: underline;
+}
+
+/* Badge error */
+.badge--error { background-color: var(--rojo-100); color: var(--rojo-600); }
+
+@media (max-width: 768px) {
+  .notas-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notas-resumen {
+    gap: 8px;
+  }
+
+  .notas-resumen-est {
+    gap: 12px;
+  }
+}

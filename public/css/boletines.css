@@ -1,0 +1,374 @@
+/* ═══════════════════════════════════════════════════════
+   KLASSY — CSS del Módulo de Boletines (Sprint 11)
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Panel de cierre ──────────────────────────────────── */
+.cierre-panel {
+  display: flex;
+  gap: 0;
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  overflow: hidden;
+  box-shadow: var(--sombra-xs);
+}
+
+.cierre-panel__seccion {
+  flex: 1;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cierre-panel__separador {
+  width: 1px;
+  background: var(--gris-200);
+}
+
+.cierre-panel__titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gris-900);
+}
+
+.cierre-panel__titulo svg { width: 15px; height: 15px; stroke-width: 2; color: var(--azul-600); }
+
+.cierre-panel__desc {
+  font-size: 0.78rem;
+  color: var(--gris-500);
+  line-height: 1.4;
+}
+
+.cierre-panel__periodos {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+/* ─── Tabs de vistas ───────────────────────────────────── */
+.vistas-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--gris-200);
+  margin-bottom: 4px;
+}
+
+.vista-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--gris-500);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color var(--trans-rapida), border-color var(--trans-rapida);
+}
+
+.vista-tab svg { width: 14px; height: 14px; stroke-width: 1.75; }
+
+.vista-tab:hover { color: var(--gris-900); }
+
+.vista-tab--activo {
+  color: var(--azul-700);
+  border-bottom-color: var(--azul-600);
+  font-weight: 600;
+}
+
+/* ─── Layout de boletines (estudiante) ─────────────────── */
+.boletin-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Sidebar de boletines */
+.boletin-sidebar {
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  overflow: hidden;
+  box-shadow: var(--sombra-xs);
+  position: sticky;
+  top: 80px;
+}
+
+.boletin-sidebar__titulo {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gris-500);
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--gris-100);
+}
+
+.boletin-item-lista {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid var(--gris-50);
+  transition: background var(--trans-rapida);
+}
+
+.boletin-item-lista:hover { background: var(--gris-50); }
+
+.boletin-item-lista--activo {
+  background: var(--azul-50);
+  border-left: 3px solid var(--azul-600);
+}
+
+.boletin-item-lista__num {
+  width: 26px;
+  height: 26px;
+  background: var(--azul-600);
+  color: #fff;
+  border-radius: var(--radio);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fuente-marca);
+  font-weight: 700;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+}
+
+.boletin-item-lista--activo .boletin-item-lista__num { background: var(--azul-700); }
+
+.boletin-item-lista__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.boletin-item-lista__periodo {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--gris-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.boletin-item-lista__año {
+  font-size: 0.7rem;
+  color: var(--gris-400);
+}
+
+.boletin-item-lista__badge { font-size: 0.68rem; flex-shrink: 0; }
+
+/* ─── Card del boletín ─────────────────────────────────── */
+.boletin-card {
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  overflow: hidden;
+  box-shadow: var(--sombra-sm);
+}
+
+.boletin-card__header {
+  background: linear-gradient(135deg, var(--azul-900) 0%, var(--azul-700) 100%);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.boletin-card__header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.boletin-card__logo {
+  width: 44px;
+  height: 44px;
+  background: rgba(255,255,255,0.15);
+  border-radius: var(--radio);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fuente-marca);
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.boletin-card__nombre {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.boletin-card__meta {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.7);
+}
+
+.boletin-card__header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.boletin-card__prom-grande {
+  font-family: var(--fuente-marca);
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.boletin-card__prom-grande--ok  { color: #86efac; }
+.boletin-card__prom-grande--mal { color: #fca5a5; }
+
+/* Tabla del boletín */
+.boletin-card__tabla-wrap {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.boletin-tabla thead { background-color: var(--gris-50); }
+
+.boletin-tabla__total {
+  background-color: var(--azul-50);
+  font-weight: 700;
+}
+
+/* Pie del boletín */
+.boletin-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 1px solid var(--gris-100);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.boletin-card__acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.badge-lg {
+  font-size: 0.78rem;
+  padding: 4px 10px;
+}
+
+/* Badge error */
+.badge--error { background-color: var(--rojo-100); color: var(--rojo-600); }
+
+/* Nota en el boletín */
+.nota-boletin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 4px 8px;
+  border-radius: var(--radio);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--fuente-marca);
+}
+
+.nota-boletin--ok    { background: var(--verde-100); color: var(--verde-600); }
+.nota-boletin--mal   { background: var(--rojo-100);  color: var(--rojo-600); }
+.nota-boletin--grande { font-size: 1.1rem; padding: 6px 12px; }
+
+/* ─── Reportes ─────────────────────────────────────────── */
+.reporte-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.reporte-titulo {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--gris-900);
+}
+
+.reporte-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  padding: 14px 18px;
+  box-shadow: var(--sombra-xs);
+}
+
+.reporte-stats--grande { gap: 20px; }
+
+.reporte-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 12px;
+  border-right: 1px solid var(--gris-100);
+}
+
+.reporte-stat:last-child { border-right: none; }
+
+.reporte-stat__num {
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: var(--fuente-marca);
+  color: var(--gris-900);
+}
+
+.reporte-stat__label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--gris-400);
+}
+
+.reporte-stat--ok  .reporte-stat__num { color: var(--verde-600); }
+.reporte-stat--mal .reporte-stat__num { color: var(--rojo-600); }
+
+/* ─── Estado vacío (heredado de actividades.css) ──────── */
+.estado-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--gris-500);
+}
+
+.estado-vacio svg { width: 48px; height: 48px; stroke-width: 1.25; color: var(--gris-300); }
+.estado-vacio h3  { font-size: 1.1rem; font-weight: 600; color: var(--gris-700); }
+.estado-vacio p   { font-size: 0.875rem; max-width: 360px; }
+
+@media (max-width: 900px) {
+  .boletin-layout     { grid-template-columns: 1fr; }
+  .boletin-sidebar    { position: static; }
+  .cierre-panel       { flex-direction: column; }
+  .cierre-panel__separador { width: 100%; height: 1px; }
+}
