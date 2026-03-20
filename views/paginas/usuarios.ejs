@@ -102,6 +102,7 @@
               <tr>
                 <th>Usuario</th>
                 <th>Correo</th>
+                <th>Doc. Identidad</th>
                 <th>Rol</th>
                 <th>Info adicional</th>
                 <th>Estado</th>
@@ -125,6 +126,9 @@
 
                   <!-- Correo -->
                   <td class="texto-secundario"><%= u.correo %></td>
+
+                  <!-- Documento de identidad -->
+                  <td class="texto-secundario texto-sm"><%= u.documentoIdentidad || '—' %></td>
 
                   <!-- Rol badge -->
                   <td>
@@ -222,27 +226,7 @@
       <input type="hidden" name="_method" id="metodoPeticion" value="" />
       <input type="hidden" name="idUsuario" id="idUsuario" value="" />
 
-      <div class="formulario-2col">
-        <div class="campo">
-          <label class="campo__etiqueta">Nombre *</label>
-          <input type="text" name="nombre" id="campoNombre" class="campo__entrada" required placeholder="Ej: María" />
-        </div>
-        <div class="campo">
-          <label class="campo__etiqueta">Apellido *</label>
-          <input type="text" name="apellido" id="campoApellido" class="campo__entrada" required placeholder="Ej: García" />
-        </div>
-      </div>
-
-      <div class="campo">
-        <label class="campo__etiqueta">Correo electrónico *</label>
-        <input type="email" name="correo" id="campoCorreo" class="campo__entrada" required placeholder="usuario@colegio.edu.co" />
-      </div>
-
-      <div class="campo">
-        <label class="campo__etiqueta">Contraseña <span id="labelContrasena">(dejar vacío para no cambiar)</span></label>
-        <input type="text" name="contrasena" id="campoContrasena" class="campo__entrada" placeholder="Mínimo 6 caracteres" minlength="6" />
-      </div>
-
+      <!-- 1. Rol y Estado primero -->
       <div class="formulario-2col">
         <div class="campo">
           <label class="campo__etiqueta">Rol *</label>
@@ -266,6 +250,28 @@
         </div>
       </div>
 
+      <!-- 2. Datos personales -->
+      <div class="formulario-2col">
+        <div class="campo">
+          <label class="campo__etiqueta">Nombre *</label>
+          <input type="text" name="nombre" id="campoNombre" class="campo__entrada" required placeholder="Ej: María" />
+        </div>
+        <div class="campo">
+          <label class="campo__etiqueta">Apellido *</label>
+          <input type="text" name="apellido" id="campoApellido" class="campo__entrada" required placeholder="Ej: García" />
+        </div>
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Documento de identidad</label>
+        <input type="text" name="documentoIdentidad" id="campoDocumentoIdentidad" class="campo__entrada" placeholder="Ej: 1234567890" />
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Correo electrónico *</label>
+        <input type="email" name="correo" id="campoCorreo" class="campo__entrada" required placeholder="usuario@colegio.edu.co" />
+      </div>
+
       <!-- Campo específico de docente -->
       <div class="campo campo-docente" id="grupoProfesion" style="display:none;">
         <label class="campo__etiqueta">Especialidad / Profesión</label>
@@ -282,6 +288,16 @@
           <% } %>
         </select>
         <span class="campo__ayuda">El nivel se actualizará automáticamente al aprobar el año.</span>
+      </div>
+
+      <!-- 3. Contraseña al final -->
+      <div class="campo" id="grupoContrasena">
+        <label class="campo__etiqueta">Contraseña <span id="labelContrasena">(dejar vacío para no cambiar)</span></label>
+        <input type="text" name="contrasena" id="campoContrasena" class="campo__entrada" placeholder="Mínimo 6 caracteres" minlength="6" />
+        <span class="campo__ayuda" id="ayudaContrasenaEstudiante" style="display:none;">
+          <i data-lucide="info" style="width:14px;height:14px;vertical-align:middle;"></i>
+          Se generará automáticamente una contraseña numérica aleatoria de 8 dígitos.
+        </span>
       </div>
 
       <div class="drawer__pie">

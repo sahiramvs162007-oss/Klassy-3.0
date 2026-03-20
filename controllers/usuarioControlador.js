@@ -71,7 +71,7 @@ const crearUsuario = async (req, res) => {
     const { rol: rolActual } = req.session.usuario;
     const {
       nombre, apellido, correo, contrasena,
-      rol, profesion, ultimoNivelCursado,
+      rol, profesion, ultimoNivelCursado, documentoIdentidad,
     } = req.body;
 
     // Regla: solo admin puede crear admins
@@ -87,14 +87,20 @@ const crearUsuario = async (req, res) => {
       return res.redirect('/usuarios');
     }
 
+    // Para estudiantes: generar contraseña numérica aleatoria de 8 dígitos
+    const contrasenaFinal = (rol === 'estudiante')
+      ? String(Math.floor(10000000 + Math.random() * 90000000))
+      : contrasena;
+
     // Construir documento
     const nuevoUsuario = new Usuario({
-      nombre:   nombre.trim(),
-      apellido: apellido.trim(),
-      correo:   correo.toLowerCase().trim(),
-      contrasena,
+      nombre:             nombre.trim(),
+      apellido:           apellido.trim(),
+      correo:             correo.toLowerCase().trim(),
+      contrasena:         contrasenaFinal,
       rol,
-      activo:   true,
+      documentoIdentidad: documentoIdentidad ? documentoIdentidad.trim() : null,
+      activo:             true,
     });
 
     // Campos según rol
@@ -112,7 +118,10 @@ const crearUsuario = async (req, res) => {
 
     await nuevoUsuario.save();
 
-    req.flash('exito', `Usuario ${nuevoUsuario.nombreCompleto} creado correctamente.`);
+    const mensajeExtra = (rol === 'estudiante')
+      ? ` Su contraseña temporal es: <strong>${contrasenaFinal}</strong>`
+      : '';
+    req.flash('exito', `Usuario ${nuevoUsuario.nombreCompleto} creado correctamente.${mensajeExtra}`);
     res.redirect('/usuarios');
   } catch (error) {
     console.error('Error al crear usuario:', error);
@@ -130,7 +139,7 @@ const editarUsuario = async (req, res) => {
     const { rol: rolActual } = req.session.usuario;
     const {
       nombre, apellido, correo, contrasena,
-      rol: rolNuevo, profesion, ultimoNivelCursado, activo,
+      rol: rolNuevo, profesion, ultimoNivelCursado, activo, documentoIdentidad,
     } = req.body;
 
     const usuario = await Usuario.findById(id).select('+contrasena');
@@ -154,11 +163,12 @@ const editarUsuario = async (req, res) => {
     const rolAnterior = usuario.rol;
 
     // Actualizar campos básicos
-    usuario.nombre   = nombre.trim();
-    usuario.apellido = apellido.trim();
-    usuario.correo   = correo.toLowerCase().trim();
-    usuario.rol      = rolNuevo;
-    usuario.activo   = activo === 'true' || activo === true;
+    usuario.nombre             = nombre.trim();
+    usuario.apellido           = apellido.trim();
+    usuario.correo             = correo.toLowerCase().trim();
+    usuario.rol                = rolNuevo;
+    usuario.activo             = activo === 'true' || activo === true;
+    usuario.documentoIdentidad = documentoIdentidad ? documentoIdentidad.trim() : null;
 
     // Cambio de rol: ajustar campos específicos
     if (rolNuevo === 'estudiante') {

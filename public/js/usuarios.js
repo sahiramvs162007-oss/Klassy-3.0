@@ -47,6 +47,7 @@ async function abrirDrawerEditar(idUsuario) {
     cuerpo.querySelector('#campoNombre').value        = usuario.nombre || '';
     cuerpo.querySelector('#campoApellido').value      = usuario.apellido || '';
     cuerpo.querySelector('#campoCorreo').value        = usuario.correo || '';
+    cuerpo.querySelector('#campoDocumentoIdentidad').value = usuario.documentoIdentidad || '';
     cuerpo.querySelector('#campoContrasena').required = false;
     cuerpo.querySelector('#campoActivo').value        = usuario.activo ? 'true' : 'false';
     cuerpo.querySelector('#textoGuardar').textContent = 'Guardar cambios';
@@ -93,18 +94,48 @@ function actualizarCamposRol() {
   const rolSeleccionado = document.getElementById('campoRol')?.value;
   const grupoProfesion  = document.getElementById('grupoProfesion');
   const grupoNivel      = document.getElementById('grupoNivel');
+  const campoContrasena = document.getElementById('campoContrasena');
+  const ayudaEstudiante = document.getElementById('ayudaContrasenaEstudiante');
+  const labelContrasena = document.getElementById('labelContrasena');
+  const esCreacion      = document.getElementById('metodoPeticion')?.value === '';
 
   if (!grupoProfesion || !grupoNivel) return;
 
   if (rolSeleccionado === 'docente' || rolSeleccionado === 'admin' || rolSeleccionado === 'director') {
     grupoProfesion.style.display = 'flex';
     grupoNivel.style.display     = 'none';
+    // Restaurar campo contraseña normal
+    if (campoContrasena) {
+      campoContrasena.style.display = '';
+      campoContrasena.placeholder   = 'Mínimo 6 caracteres';
+      campoContrasena.required      = esCreacion; // requerido solo en creación
+    }
+    if (ayudaEstudiante) ayudaEstudiante.style.display = 'none';
+    if (labelContrasena) labelContrasena.textContent   = esCreacion ? '*' : '(dejar vacío para no cambiar)';
+
   } else if (rolSeleccionado === 'estudiante') {
     grupoProfesion.style.display = 'none';
     grupoNivel.style.display     = 'flex';
+    if (esCreacion) {
+      // Ocultar contraseña y quitar required — se genera automáticamente
+      if (campoContrasena) {
+        campoContrasena.style.display = 'none';
+        campoContrasena.required      = false; // ← FIX: evita bloqueo del formulario
+        campoContrasena.value         = '';
+      }
+      if (ayudaEstudiante) ayudaEstudiante.style.display = 'flex';
+      if (labelContrasena) labelContrasena.textContent   = '(se generará automáticamente)';
+    }
+
   } else {
+    // Sin rol seleccionado
     grupoProfesion.style.display = 'none';
     grupoNivel.style.display     = 'none';
+    if (campoContrasena) {
+      campoContrasena.style.display = '';
+      campoContrasena.required      = esCreacion;
+    }
+    if (ayudaEstudiante) ayudaEstudiante.style.display = 'none';
   }
 }
 

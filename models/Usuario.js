@@ -31,6 +31,13 @@ const usuarioSchema = new mongoose.Schema(
       required: [true, 'El rol es obligatorio'],
     },
 
+    // ── Documento de identidad ────────────────────────────────────────────
+    documentoIdentidad: {
+      type:    String,
+      trim:    true,
+      default: null,
+    },
+
     // ── Solo para estudiantes ─────────────────────────────────────────────
     ultimoNivelCursado: {
       type:    Number,
