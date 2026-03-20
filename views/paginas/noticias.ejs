@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Noticias</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Fraunces:wght@700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <div class="cabecera-pagina">
+        <div>
+          <h1 class="cabecera-pagina__titulo">Gestión de Noticias</h1>
+          <p class="cabecera-pagina__subtitulo"><%= noticias.length %> noticia<%= noticias.length !== 1 ? 's' : '' %></p>
+        </div>
+        <button class="btn btn--primario" onclick="abrirDrawerCrear()">
+          <i data-lucide="plus"></i> Nueva noticia
+        </button>
+      </div>
+
+      <!-- Filtro -->
+      <form method="GET" action="/noticias" class="barra-filtros">
+        <div class="barra-filtros__grupo">
+          <select name="filtroEstado" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+            <option value="">Todas</option>
+            <option value="activas"   <%= filtroEstado === 'activas'   ? 'selected' : '' %>>Activas</option>
+            <option value="inactivas" <%= filtroEstado === 'inactivas' ? 'selected' : '' %>>Inactivas</option>
+          </select>
+        </div>
+        <% if (filtroEstado) { %>
+          <a href="/noticias" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Limpiar</a>
+        <% } %>
+      </form>
+
+      <!-- Grid de gestión -->
+      <% if (noticias.length === 0) { %>
+        <div class="estado-vacio-noticias">
+          <i data-lucide="newspaper"></i>
+          <h3>Sin noticias</h3>
+          <p>Crea la primera noticia para que aparezca en el dashboard del colegio.</p>
+          <button class="btn btn--primario btn--sm" onclick="abrirDrawerCrear()">
+            <i data-lucide="plus"></i> Crear noticia
+          </button>
+        </div>
+      <% } else { %>
+        <div class="noticias-gestion-grid">
+          <% noticias.forEach(n => { %>
+            <div class="noticia-gestion-card <%= !n.activo ? 'noticia-gestion-card--inactiva' : '' %>">
+
+              <% if (n.imagen) { %>
+                <div class="noticia-gestion-card__img-wrap">
+                  <img src="<%= n.imagen %>" alt="<%= n.titulo %>" class="noticia-gestion-card__img" />
+                  <% if (!n.activo) { %>
+                    <div class="noticia-gestion-card__inactiva-label">Inactiva</div>
+                  <% } %>
+                </div>
+              <% } else { %>
+                <div class="noticia-gestion-card__sin-img"><i data-lucide="image"></i></div>
+              <% } %>
+
+              <div class="noticia-gestion-card__cuerpo">
+                <div class="noticia-gestion-card__top">
+                  <span class="badge <%= n.activo ? 'badge--activo' : 'badge--inactivo' %>">
+                    <%= n.activo ? 'Activa' : 'Inactiva' %>
+                  </span>
+                  <span class="texto-secundario texto-sm">
+                    <%= new Date(n.fechaPublicacion).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) %>
+                  </span>
+                </div>
+                <h3 class="noticia-gestion-card__titulo"><%= n.titulo %></h3>
+                <p class="noticia-gestion-card__extracto">
+                  <%= n.contenido.length > 110 ? n.contenido.substring(0,110) + '…' : n.contenido %>
+                </p>
+                <div class="noticia-gestion-card__pie">
+                  <span class="texto-secundario texto-sm">
+                    <i data-lucide="user" style="width:11px;height:11px;vertical-align:middle;"></i>
+                    <%= n.autorId ? n.autorId.nombre + ' ' + n.autorId.apellido : '—' %>
+                  </span>
+                  <div class="acciones-tabla">
+                    <button class="btn-icono btn-icono--editar"
+                      onclick="abrirDrawerEditar('<%= n._id %>')" title="Editar">
+                      <i data-lucide="pencil"></i>
+                    </button>
+                    <form method="POST" action="/noticias/<%= n._id %>?_method=DELETE"
+                      onsubmit="return confirm('Eliminar la noticia?')"
+                      style="display:inline">
+                      <button type="submit" class="btn-icono btn-icono--eliminar" title="Eliminar">
+                        <i data-lucide="trash-2"></i>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+
+    </main>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer__cabecera">
+      <h2 class="drawer__titulo" id="drawerTitulo">Nueva noticia</h2>
+      <button class="drawer__cerrar" onclick="cerrarDrawer()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer__cuerpo" id="drawerCuerpo"></div>
+  </div>
+
+  <!-- Template del formulario -->
+  <template id="tplFormNoticia">
+    <form method="POST" action="/noticias" enctype="multipart/form-data"
+      class="formulario-grupo" id="formNoticia">
+      <input type="hidden" name="_method" id="metodoNoticia" value="" />
+
+      <div class="campo">
+        <label class="campo__etiqueta">Título *</label>
+        <input type="text" name="titulo" id="campoTitulo" class="campo__entrada"
+          required placeholder="Título de la noticia..." />
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Contenido *</label>
+        <textarea name="contenido" id="campoContenido" class="campo__area"
+          rows="5" required placeholder="Escribe el contenido de la noticia..."></textarea>
+      </div>
+
+      <div class="formulario-2col">
+        <div class="campo">
+          <label class="campo__etiqueta">Fecha de publicación</label>
+          <input type="date" name="fechaPublicacion" id="campoFecha" class="campo__entrada" />
+        </div>
+        <div class="campo">
+          <label class="campo__etiqueta">Estado</label>
+          <select name="activo" id="campoActivo" class="campo__select">
+            <option value="true">Activa</option>
+            <option value="false">Inactiva</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Imagen</label>
+        <label for="inputImagen" class="zona-upload">
+          <i data-lucide="image"></i>
+          <span>Haz clic para seleccionar una imagen</span>
+          <span class="zona-upload__tipos">JPG · PNG · WebP · GIF (máx 10 MB)</span>
+        </label>
+        <input type="file" id="inputImagen" name="imagen"
+          accept=".jpg,.jpeg,.png,.webp,.gif"
+          onchange="previsualizarImg(this)"
+          style="display:none" />
+        <div id="previewImg" style="margin-top:8px;"></div>
+        <div id="imgActual" style="margin-top:4px;"></div>
+      </div>
+
+      <div class="drawer__pie">
+        <button type="button" class="btn btn--secundario" onclick="cerrarDrawer()">Cancelar</button>
+        <button type="submit" class="btn btn--primario">
+          <i data-lucide="save"></i>
+          <span id="txtGuardar">Crear noticia</span>
+        </button>
+      </div>
+    </form>
+  </template>
+
+  <script src="/js/drawer.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/notificaciones.js"></script>
+  <script src="/js/noticias.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

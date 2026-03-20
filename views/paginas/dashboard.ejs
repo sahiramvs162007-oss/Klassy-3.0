@@ -1,7 +1,3 @@
-<%
-  // Simula el include del layout principal
-  // En cada vista hacemos include manual del layout
-%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,141 +5,236 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KLASSY — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Fraunces:wght@700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
 </head>
 <body>
-
   <%- include('../partials/sidebar') %>
-
   <div class="contenedor-principal">
     <%- include('../partials/topbar') %>
-
     <main class="contenido">
 
-      <!-- Flash messages -->
       <% if (mensajeExito && mensajeExito.length > 0) { %>
-        <div class="alerta alerta--exito">
-          <i data-lucide="check-circle"></i>
-          <span><%= mensajeExito %></span>
-        </div>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
       <% } %>
       <% if (mensajeError && mensajeError.length > 0) { %>
-        <div class="alerta alerta--error">
-          <i data-lucide="alert-circle"></i>
-          <span><%= mensajeError %></span>
-        </div>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
       <% } %>
 
-      <!-- Cabecera del dashboard -->
-      <div class="cabecera-pagina">
-        <div>
-          <h1 class="cabecera-pagina__titulo">Bienvenido a KLASSY</h1>
-          <p class="cabecera-pagina__subtitulo">Panel de gestión académica</p>
-        </div>
-      </div>
-
-      <!-- Tarjetas de resumen (placeholders para sprints futuros) -->
-      <div class="cuadricula-tarjetas">
-
-        <div class="tarjeta-stat">
-          <div class="tarjeta-stat__icono tarjeta-stat__icono--azul">
-            <i data-lucide="users"></i>
+      <% if (rol === 'admin') { %>
+        <%# ═══════════ ADMIN ═══════════ %>
+        <div class="cabecera-pagina">
+          <div>
+            <h1 class="cabecera-pagina__titulo">Panel de Administración</h1>
+            <p class="cabecera-pagina__subtitulo">Bienvenido, <%= usuarioActual.nombre %> &mdash; <%= new Date().getFullYear() %></p>
           </div>
-          <div class="tarjeta-stat__datos">
-            <span class="tarjeta-stat__valor">—</span>
-            <span class="tarjeta-stat__etiqueta">Estudiantes</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="/noticias" class="btn btn--secundario"><i data-lucide="newspaper"></i> Noticias</a>
+            <button class="btn btn--secundario" onclick="abrirDrawerConfig()"><i data-lucide="settings"></i> Configuración</button>
           </div>
         </div>
 
-        <div class="tarjeta-stat">
-          <div class="tarjeta-stat__icono tarjeta-stat__icono--verde">
-            <i data-lucide="graduation-cap"></i>
+        <div class="cuadricula-tarjetas">
+          <div class="tarjeta-stat"><div class="tarjeta-stat__icono tarjeta-stat__icono--azul"><i data-lucide="users"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= stats.totalEstudiantes %></span><span class="tarjeta-stat__etiqueta">Estudiantes</span></div></div>
+          <div class="tarjeta-stat"><div class="tarjeta-stat__icono tarjeta-stat__icono--verde"><i data-lucide="user-check"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= stats.totalDocentes %></span><span class="tarjeta-stat__etiqueta">Docentes</span></div></div>
+          <div class="tarjeta-stat"><div class="tarjeta-stat__icono tarjeta-stat__icono--naranja"><i data-lucide="graduation-cap"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= stats.totalGrados %></span><span class="tarjeta-stat__etiqueta">Grados activos</span></div></div>
+          <div class="tarjeta-stat"><div class="tarjeta-stat__icono tarjeta-stat__icono--morado"><i data-lucide="book-open"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= stats.totalMaterias %></span><span class="tarjeta-stat__etiqueta">Materias</span></div></div>
+        </div>
+
+        <div class="seccion-titulo">Acceso rápido</div>
+        <div class="accesos-grid">
+          <a href="/usuarios"        class="acceso-card acceso-card--azul"><i data-lucide="users"></i><span>Usuarios</span></a>
+          <a href="/grados"          class="acceso-card acceso-card--verde"><i data-lucide="graduation-cap"></i><span>Grados</span></a>
+          <a href="/materias"        class="acceso-card acceso-card--naranja"><i data-lucide="book-open"></i><span>Materias</span></a>
+          <a href="/periodos"        class="acceso-card acceso-card--morado"><i data-lucide="calendar"></i><span>Periodos</span></a>
+          <a href="/matriculas"      class="acceso-card acceso-card--azul"><i data-lucide="file-text"></i><span>Matrículas</span></a>
+          <a href="/asignaciones"    class="acceso-card acceso-card--verde"><i data-lucide="link"></i><span>Asignaciones</span></a>
+          <a href="/notas/admin"     class="acceso-card acceso-card--naranja"><i data-lucide="bar-chart-2"></i><span>Notas</span></a>
+          <a href="/boletines/admin" class="acceso-card acceso-card--morado"><i data-lucide="file-badge"></i><span>Boletines</span></a>
+        </div>
+
+        <div class="cuadricula-2col">
+          <div class="tarjeta"><div class="tarjeta__cabecera"><i data-lucide="eye"></i><h3 class="tarjeta__titulo">Visión</h3></div><p class="tarjeta__texto"><% if(config&&config.vision){%><%= config.vision %><%}else{%><em class="texto-vacio">Sin configurar.</em><%}%></p></div>
+          <div class="tarjeta"><div class="tarjeta__cabecera"><i data-lucide="target"></i><h3 class="tarjeta__titulo">Misión</h3></div><p class="tarjeta__texto"><% if(config&&config.mision){%><%= config.mision %><%}else{%><em class="texto-vacio">Sin configurar.</em><%}%></p></div>
+        </div>
+
+        <% if(noticias&&noticias.length>0){%>
+          <div class="seccion-titulo">Noticias publicadas (<%= noticias.length %>)</div>
+          <div class="mosaico-mini">
+            <%noticias.slice(0,4).forEach(n=>{%>
+              <div class="noticia-mini noticia-clickable"
+                data-titulo="<%= n.titulo %>"
+                data-fecha="<%= n.fechaPublicacion %>"
+                data-autor="<%= n.autorId ? n.autorId.nombre+' '+n.autorId.apellido : '' %>"
+                data-imagen="<%= n.imagen || '' %>">
+                <%if(n.imagen){%><img src="<%= n.imagen %>" alt="<%= n.titulo %>" class="noticia-mini__img"/><%}else{%><div class="noticia-mini__sin-img"><i data-lucide="image"></i></div><%}%>
+                <div class="noticia-mini__info">
+                  <span class="noticia-mini__titulo"><%= n.titulo %></span>
+                  <span class="noticia-mini__fecha"><%= new Date(n.fechaPublicacion).toLocaleDateString('es-CO',{day:'2-digit',month:'short'}) %></span>
+                </div>
+                <span class="noticia-contenido-oculto" style="display:none"><%= n.contenido %></span>
+              </div>
+            <%})%>
           </div>
-          <div class="tarjeta-stat__datos">
-            <span class="tarjeta-stat__valor">—</span>
-            <span class="tarjeta-stat__etiqueta">Grados activos</span>
+        <%}%>
+
+      <% } else { %>
+        <%# ═══════════ DIRECTOR / DOCENTE / ESTUDIANTE ═══════════ %>
+
+        <div class="hero-colegio">
+          <div class="hero-colegio__overlay">
+            <div class="hero-colegio__info">
+              <h1 class="hero-colegio__nombre"><%= (config&&config.nombreColegio) ? config.nombreColegio : 'KLASSY' %></h1>
+              <p class="hero-colegio__saludo">Bienvenido, <strong><%= usuarioActual.nombre %> <%= usuarioActual.apellido %></strong></p>
+              <span class="hero-colegio__badge"><%= rol.charAt(0).toUpperCase()+rol.slice(1) %></span>
+            </div>
           </div>
         </div>
 
-        <div class="tarjeta-stat">
-          <div class="tarjeta-stat__icono tarjeta-stat__icono--naranja">
-            <i data-lucide="book-open"></i>
+        <% if((config&&config.vision)||(config&&config.mision)){%>
+          <div class="cuadricula-2col">
+            <%if(config&&config.vision){%><div class="tarjeta info-institucional"><div class="info-institucional__icono"><i data-lucide="eye"></i></div><div><h3 class="info-institucional__titulo">Visión</h3><p class="tarjeta__texto"><%= config.vision %></p></div></div><%}%>
+            <%if(config&&config.mision){%><div class="tarjeta info-institucional"><div class="info-institucional__icono"><i data-lucide="target"></i></div><div><h3 class="info-institucional__titulo">Misión</h3><p class="tarjeta__texto"><%= config.mision %></p></div></div><%}%>
           </div>
-          <div class="tarjeta-stat__datos">
-            <span class="tarjeta-stat__valor">—</span>
-            <span class="tarjeta-stat__etiqueta">Materias</span>
-          </div>
+        <%}%>
+
+        <div class="seccion-titulo">Accesos rápidos</div>
+        <div class="accesos-grid">
+          <%if(rol==='director'){%>
+            <a href="/usuarios"        class="acceso-card acceso-card--azul"><i data-lucide="users"></i><span>Usuarios</span></a>
+            <a href="/matriculas"      class="acceso-card acceso-card--verde"><i data-lucide="file-text"></i><span>Matrículas</span></a>
+            <a href="/asignaciones"    class="acceso-card acceso-card--naranja"><i data-lucide="link"></i><span>Asignaciones</span></a>
+            <a href="/notas/admin"     class="acceso-card acceso-card--morado"><i data-lucide="bar-chart-2"></i><span>Notas</span></a>
+            <a href="/boletines/admin" class="acceso-card acceso-card--azul"><i data-lucide="file-badge"></i><span>Boletines</span></a>
+            <a href="/noticias"        class="acceso-card acceso-card--verde"><i data-lucide="newspaper"></i><span>Noticias</span></a>
+          <%}else if(rol==='docente'){%>
+            <a href="/actividades/docente" class="acceso-card acceso-card--azul"><i data-lucide="clipboard-list"></i><span>Actividades</span></a>
+            <a href="/notas/docente"       class="acceso-card acceso-card--verde"><i data-lucide="bar-chart-2"></i><span>Notas</span></a>
+            <a href="/boletines/docente"   class="acceso-card acceso-card--naranja"><i data-lucide="file-badge"></i><span>Boletines</span></a>
+            <a href="/noticias"            class="acceso-card acceso-card--morado"><i data-lucide="newspaper"></i><span>Noticias</span></a>
+          <%}else if(rol==='estudiante'){%>
+            <a href="/actividades/estudiante" class="acceso-card acceso-card--azul"><i data-lucide="clipboard-list"></i><span>Actividades</span></a>
+            <a href="/notas/estudiante"        class="acceso-card acceso-card--verde"><i data-lucide="bar-chart-2"></i><span>Mis Notas</span></a>
+            <a href="/boletines/estudiante"    class="acceso-card acceso-card--naranja"><i data-lucide="file-badge"></i><span>Mis Boletines</span></a>
+          <%}%>
         </div>
 
-        <div class="tarjeta-stat">
-          <div class="tarjeta-stat__icono tarjeta-stat__icono--morado">
-            <i data-lucide="clipboard-list"></i>
+        <%if(noticias&&noticias.length>0){%>
+          <div class="noticias-seccion">
+            <div class="noticias-seccion__titulo">
+              <i data-lucide="newspaper"></i>
+              <span>Noticias del colegio</span>
+              <span class="seccion-conteo"><%= noticias.length %> publicación<%= noticias.length!==1?'es':'' %></span>
+            </div>
+
+            <%#
+              Patrón cada 5 noticias en una grid de 4 columnas:
+              [VERT 1×2][normal][normal][VERT 1×2]
+              [VERT 1×2][HORIZ 2×1    ][VERT 1×2]
+
+              Posición en el grupo (idx % 5):
+                0 → col 1,   filas base / base+1  (vertical izq)
+                1 → col 2,   fila base             (normal)
+                2 → col 3,   fila base             (normal)
+                3 → col 4,   filas base / base+1  (vertical der)
+                4 → col 2-3, fila base+1           (horizontal)
+            %>
+            <div class="mosaico-noticias">
+              <% noticias.forEach(function(n, idx) {
+                const grupo    = Math.floor(idx / 5);
+                const pos      = idx % 5;
+                const filaBase = grupo * 2 + 1; // cada grupo ocupa 2 filas
+
+                let colStart, colEnd, rowStart, rowEnd, claseExtra;
+                if (pos === 0) {
+                  colStart = 1; colEnd = 2; rowStart = filaBase; rowEnd = filaBase + 2; claseExtra = 'noticia-card--vertical';
+                } else if (pos === 1) {
+                  colStart = 2; colEnd = 3; rowStart = filaBase; rowEnd = filaBase + 1; claseExtra = '';
+                } else if (pos === 2) {
+                  colStart = 3; colEnd = 4; rowStart = filaBase; rowEnd = filaBase + 1; claseExtra = '';
+                } else if (pos === 3) {
+                  colStart = 4; colEnd = 5; rowStart = filaBase; rowEnd = filaBase + 2; claseExtra = 'noticia-card--vertical';
+                } else {
+                  colStart = 2; colEnd = 4; rowStart = filaBase + 1; rowEnd = filaBase + 2; claseExtra = 'noticia-card--horizontal';
+                }
+                const estiloGrid = 'grid-column:' + colStart + '/' + colEnd + ';grid-row:' + rowStart + '/' + rowEnd + ';';
+              %>
+              <article class="noticia-card <%= claseExtra %> noticia-clickable"
+                style="<%= estiloGrid %>"
+                data-titulo="<%= n.titulo %>"
+                data-fecha="<%= n.fechaPublicacion %>"
+                data-autor="<%= n.autorId ? n.autorId.nombre+' '+n.autorId.apellido : '' %>"
+                data-imagen="<%= n.imagen || '' %>">
+                <%if(n.imagen){%>
+                  <div class="noticia-card__foto">
+                    <img src="<%= n.imagen %>" alt="<%= n.titulo %>" class="noticia-card__foto-img" loading="lazy"/>
+                  </div>
+                <%}else{%>
+                  <div class="noticia-card__foto noticia-card__foto--vacia"><i data-lucide="image"></i></div>
+                <%}%>
+                <div class="noticia-card__cuerpo">
+                  <time class="noticia-card__fecha"><%= new Date(n.fechaPublicacion).toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'}) %></time>
+                  <h3 class="noticia-card__titulo"><%= n.titulo %></h3>
+                  <p class="noticia-card__texto"><%= n.contenido.length > 130 ? n.contenido.substring(0, 130)+'…' : n.contenido %></p>
+                  <div class="noticia-card__pie">
+                    <i data-lucide="user"></i>
+                    <span><%= n.autorId ? n.autorId.nombre+' '+n.autorId.apellido : '' %></span>
+                    <span class="noticia-card__leer-mas">Ver más <i data-lucide="arrow-right"></i></span>
+                  </div>
+                </div>
+                <%# Contenido completo para el drawer — no visible al usuario %>
+                <span class="noticia-contenido-oculto" style="display:none"><%= n.contenido %></span>
+              </article>
+              <% }); %>
+            </div>
           </div>
-          <div class="tarjeta-stat__datos">
-            <span class="tarjeta-stat__valor">—</span>
-            <span class="tarjeta-stat__etiqueta">Actividades</span>
-          </div>
-        </div>
+        <%}else{%>
+          <div class="sin-noticias"><i data-lucide="newspaper"></i><p>No hay noticias publicadas actualmente.</p></div>
+        <%}%>
 
-      </div>
-
-      <!-- Bloque visión y misión del colegio (placeholder) -->
-      <div class="cuadricula-2col">
-
-        <div class="tarjeta">
-          <div class="tarjeta__cabecera">
-            <i data-lucide="eye"></i>
-            <h3 class="tarjeta__titulo">Visión</h3>
-          </div>
-          <p class="tarjeta__texto tarjeta__texto--placeholder">
-            La visión del colegio se configurará en el módulo de ajustes institucionales.
-          </p>
-        </div>
-
-        <div class="tarjeta">
-          <div class="tarjeta__cabecera">
-            <i data-lucide="target"></i>
-            <h3 class="tarjeta__titulo">Misión</h3>
-          </div>
-          <p class="tarjeta__texto tarjeta__texto--placeholder">
-            La misión del colegio se configurará en el módulo de ajustes institucionales.
-          </p>
-        </div>
-
-      </div>
-
-      <!-- Noticias recientes (placeholder para Sprint 12) -->
-      <div class="tarjeta tarjeta--completo">
-        <div class="tarjeta__cabecera">
-          <i data-lucide="newspaper"></i>
-          <h3 class="tarjeta__titulo">Noticias recientes</h3>
-        </div>
-        <p class="tarjeta__texto tarjeta__texto--placeholder">
-          Las noticias del colegio estarán disponibles en el Sprint 12.
-        </p>
-      </div>
-
+      <% } %>
     </main>
   </div>
 
-  <!-- Drawer lateral -->
+  <%# ─── Drawer de noticia (clic desde el mosaico) ─────────────────────── %>
   <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
   <div class="drawer" id="drawer">
     <div class="drawer__cabecera">
-      <h2 class="drawer__titulo" id="drawerTitulo">Detalle</h2>
-      <button class="drawer__cerrar" onclick="cerrarDrawer()">
-        <i data-lucide="x"></i>
-      </button>
+      <h2 class="drawer__titulo" id="drawerTitulo">Noticia</h2>
+      <button class="drawer__cerrar" onclick="cerrarDrawer()"><i data-lucide="x"></i></button>
     </div>
     <div class="drawer__cuerpo" id="drawerCuerpo"></div>
   </div>
-  <script src="/js/notificaciones.js"></script>
+
+  <%# ─── Drawer de configuración (solo admin) ────────────────────────── %>
+  <%if(rol==='admin'){%>
+  <div class="drawer-overlay" id="configOverlay" onclick="cerrarConfig()" style="z-index:199;display:none;"></div>
+  <div class="drawer" id="drawerConfig" style="z-index:200;">
+    <div class="drawer__cabecera">
+      <h2 class="drawer__titulo">Configuración institucional</h2>
+      <button class="drawer__cerrar" onclick="cerrarConfig()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer__cuerpo">
+      <form method="POST" action="/dashboard/configuracion?_method=PUT" class="formulario-grupo">
+        <div class="campo"><label class="campo__etiqueta">Nombre del colegio</label><input type="text" name="nombreColegio" class="campo__entrada" value="<%= config&&config.nombreColegio?config.nombreColegio:'' %>" placeholder="Nombre oficial" /></div>
+        <div class="campo"><label class="campo__etiqueta">Visión institucional</label><textarea name="vision" class="campo__area" rows="4" placeholder="Visión del colegio..."><%= config&&config.vision?config.vision:'' %></textarea></div>
+        <div class="campo"><label class="campo__etiqueta">Misión institucional</label><textarea name="mision" class="campo__area" rows="4" placeholder="Misión del colegio..."><%= config&&config.mision?config.mision:'' %></textarea></div>
+        <div class="campo"><label class="campo__etiqueta">Correo del director</label><input type="email" name="correoDirector" class="campo__entrada" value="<%= config&&config.correoDirector?config.correoDirector:'' %>" placeholder="director@colegio.edu.co" /></div>
+        <div class="drawer__pie">
+          <button type="button" class="btn btn--secundario" onclick="cerrarConfig()">Cancelar</button>
+          <button type="submit" class="btn btn--primario"><i data-lucide="save"></i> Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <%}%>
+
   <script src="/js/drawer.js"></script>
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
+  <script src="/js/dashboard.js"></script>
   <script>lucide.createIcons();</script>
 </body>
 </html>

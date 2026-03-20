@@ -1,45 +1,33 @@
 /**
  * controllers/dashboardControlador.js
- * Dashboard principal con vistas diferenciadas por rol.
  *
- * Admin:      resumen del sistema + accesos rápidos a módulos
- * Resto:      visión/misión + foto + noticias + accesos rápidos
+ * Admin:    stats + accesos rápidos + gestión de noticias + config institucional
+ * Resto:    hero + visión/misión + accesos por rol + mosaico de noticias
  */
 
-const { Noticia, Usuario, Grado, Materia, Matricula, Configuracion } = require('../models');
+const { Noticia, Usuario, Grado, Materia, Configuracion } = require('../models');
 
 const AÑO_ACTUAL = new Date().getFullYear();
 
-// ─── Obtener o crear configuración institucional ──────────────────────────────
-const obtenerConfiguracion = async () => {
-  let config = await Configuracion.findOne();
-  if (!config) {
-    config = await Configuracion.create({
-      nombreColegio:  'Mi Colegio KLASSY',
-      vision:         '',
-      mision:         '',
-      correoDirector: '',
-    });
-  }
-  return config;
+const obtenerConfig = async () => {
+  let c = await Configuracion.findOne();
+  if (!c) c = await Configuracion.create({ nombreColegio: 'Mi Colegio', vision: '', mision: '' });
+  return c;
 };
 
-// ─── DASHBOARD PRINCIPAL ──────────────────────────────────────────────────────
+// ─── GET /dashboard ───────────────────────────────────────────────────────────
 const mostrarDashboard = async (req, res) => {
   try {
     const { rol } = req.session.usuario;
 
-    // Noticias activas para todos los roles
     const noticias = await Noticia.find({ activo: true })
       .populate('autorId', 'nombre apellido')
       .sort({ fechaPublicacion: -1 })
-      .limit(9);
+      .limit(10);
 
-    // Configuración institucional
-    const config = await obtenerConfiguracion();
+    const config = await obtenerConfig();
 
     if (rol === 'admin') {
-      // ─── Dashboard del administrador ───────────────────────────────────
       const [totalEstudiantes, totalDocentes, totalGrados, totalMaterias] = await Promise.all([
         Usuario.countDocuments({ rol: 'estudiante', activo: true }),
         Usuario.countDocuments({ rol: 'docente',    activo: true }),
@@ -47,66 +35,43 @@ const mostrarDashboard = async (req, res) => {
         Materia.countDocuments({ activo: true }),
       ]);
 
-      // Matrículas activas del año
-      const totalMatriculas = await Matricula.countDocuments({ año: AÑO_ACTUAL, estado: 'activa' });
-
       return res.render('paginas/dashboard', {
-        titulo:           'Dashboard',
-        paginaActual:     'dashboard',
-        rol:              'admin',
-        config,
-        noticias,
-        stats: {
-          totalEstudiantes,
-          totalDocentes,
-          totalGrados,
-          totalMaterias,
-          totalMatriculas,
-        },
+        titulo: 'Dashboard', paginaActual: 'dashboard', rol, config, noticias,
+        stats: { totalEstudiantes, totalDocentes, totalGrados, totalMaterias },
         mensajeExito: req.flash('exito'),
         mensajeError: req.flash('error'),
       });
     }
 
-    // ─── Dashboard de director, docente y estudiante ───────────────────────
     return res.render('paginas/dashboard', {
-      titulo:       'Dashboard',
-      paginaActual: 'dashboard',
-      rol,
-      config,
-      noticias,
-      stats:        null,
+      titulo: 'Dashboard', paginaActual: 'dashboard', rol, config, noticias, stats: null,
       mensajeExito: req.flash('exito'),
       mensajeError: req.flash('error'),
     });
 
   } catch (error) {
     console.error('Error en dashboard:', error);
-    req.flash('error', 'Error al cargar el dashboard.');
     res.render('paginas/dashboard', {
-      titulo: 'Dashboard', paginaActual: 'dashboard', rol: 'admin',
+      titulo: 'Dashboard', paginaActual: 'dashboard',
+      rol: req.session.usuario?.rol || 'admin',
       config: {}, noticias: [], stats: null,
       mensajeExito: [], mensajeError: [],
     });
   }
 };
 
-// ─── GUARDAR CONFIGURACIÓN  PUT /dashboard/configuracion ─────────────────────
+// ─── PUT /dashboard/configuracion ────────────────────────────────────────────
 const guardarConfiguracion = async (req, res) => {
   try {
     const { nombreColegio, vision, mision, correoDirector } = req.body;
-
     let config = await Configuracion.findOne();
     if (!config) config = new Configuracion();
-
-    config.nombreColegio  = nombreColegio?.trim() || config.nombreColegio;
+    if (nombreColegio) config.nombreColegio  = nombreColegio.trim();
     config.vision         = vision?.trim()         || '';
     config.mision         = mision?.trim()         || '';
     config.correoDirector = correoDirector?.trim()  || '';
-
     await config.save();
-
-    req.flash('exito', 'Configuración institucional guardada correctamente.');
+    req.flash('exito', 'Configuración guardada correctamente.');
     res.redirect('/dashboard');
   } catch (error) {
     console.error('Error al guardar configuración:', error);

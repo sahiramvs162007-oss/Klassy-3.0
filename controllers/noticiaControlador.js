@@ -1,14 +1,14 @@
 /**
  * controllers/noticiaControlador.js
- * CRUD de noticias. Acceso: admin, director, docente.
+ * Gestión de noticias: admin, director y docente.
  */
 
-const { Noticia, Usuario, Grado, Materia, Matricula } = require('../models');
+const { Noticia } = require('../models');
 const multer = require('multer');
 const path   = require('path');
 const fs     = require('fs');
 
-// ─── Storage de imágenes de noticias ─────────────────────────────────────────
+// ─── Storage multer ───────────────────────────────────────────────────────────
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, '../public/uploads/noticias');
@@ -17,26 +17,23 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `noticia_${Date.now()}${ext}`);
+    cb(null, `noticia_${Date.now()}_${Math.round(Math.random() * 1e4)}${ext}`);
   },
 });
 
-const subirImagenNoticia = multer({
+const subirImagen = multer({
   storage,
   fileFilter: (req, file, cb) => {
-    const tipos = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    tipos.includes(file.mimetype) ? cb(null, true) : cb(new Error('Solo imágenes JPG, PNG o WebP'));
+    ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.mimetype)
+      ? cb(null, true)
+      : cb(new Error('Solo imágenes JPG, PNG, WebP o GIF'));
   },
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 10 * 1024 * 1024 },
 }).single('imagen');
 
-// Middleware con manejo de errores
-const manejarImagenNoticia = (req, res, next) => {
-  subirImagenNoticia(req, res, (err) => {
-    if (err) {
-      req.flash('error', err.message);
-      return res.redirect('back');
-    }
+const manejarImagen = (req, res, next) => {
+  subirImagen(req, res, (err) => {
+    if (err) { req.flash('error', err.message); return res.redirect('back'); }
     next();
   });
 };
@@ -68,10 +65,10 @@ const listarNoticias = async (req, res) => {
   }
 };
 
-// ─── OBTENER UNA  GET /noticias/:id/datos ─────────────────────────────────────
+// ─── OBTENER  GET /noticias/:id/datos ─────────────────────────────────────────
 const obtenerNoticia = async (req, res) => {
   try {
-    const noticia = await Noticia.findById(req.params.id).populate('autorId', 'nombre apellido');
+    const noticia = await Noticia.findById(req.params.id);
     if (!noticia) return res.status(404).json({ error: 'Noticia no encontrada' });
     res.json(noticia);
   } catch (error) {
@@ -85,7 +82,7 @@ const crearNoticia = async (req, res) => {
     const { titulo, contenido, fechaPublicacion, activo } = req.body;
     const autorId = req.session.usuario._id;
 
-    const nuevaNoticia = await Noticia.create({
+    await Noticia.create({
       titulo:           titulo.trim(),
       contenido:        contenido.trim(),
       autorId,
@@ -94,7 +91,7 @@ const crearNoticia = async (req, res) => {
       imagen:           req.file ? `/uploads/noticias/${req.file.filename}` : null,
     });
 
-    req.flash('exito', `Noticia "${nuevaNoticia.titulo}" creada correctamente.`);
+    req.flash('exito', `Noticia "${titulo.trim()}" creada correctamente.`);
     res.redirect('/noticias');
   } catch (error) {
     console.error('Error al crear noticia:', error);
@@ -106,10 +103,8 @@ const crearNoticia = async (req, res) => {
 // ─── EDITAR  PUT /noticias/:id ────────────────────────────────────────────────
 const editarNoticia = async (req, res) => {
   try {
-    const { id } = req.params;
     const { titulo, contenido, fechaPublicacion, activo } = req.body;
-
-    const noticia = await Noticia.findById(id);
+    const noticia = await Noticia.findById(req.params.id);
     if (!noticia) {
       req.flash('error', 'Noticia no encontrada.');
       return res.redirect('/noticias');
@@ -120,18 +115,16 @@ const editarNoticia = async (req, res) => {
     noticia.fechaPublicacion = fechaPublicacion ? new Date(fechaPublicacion) : noticia.fechaPublicacion;
     noticia.activo           = activo !== 'false';
 
-    // Si se sube nueva imagen, reemplazar
     if (req.file) {
-      // Borrar imagen anterior si existe
+      // Borrar imagen anterior
       if (noticia.imagen) {
-        const rutaAnterior = path.join(__dirname, '../public', noticia.imagen);
-        if (fs.existsSync(rutaAnterior)) fs.unlinkSync(rutaAnterior);
+        const ruta = path.join(__dirname, '../public', noticia.imagen);
+        if (fs.existsSync(ruta)) fs.unlinkSync(ruta);
       }
       noticia.imagen = `/uploads/noticias/${req.file.filename}`;
     }
 
     await noticia.save();
-
     req.flash('exito', `Noticia "${noticia.titulo}" actualizada.`);
     res.redirect('/noticias');
   } catch (error) {
@@ -144,22 +137,17 @@ const editarNoticia = async (req, res) => {
 // ─── ELIMINAR  DELETE /noticias/:id ──────────────────────────────────────────
 const eliminarNoticia = async (req, res) => {
   try {
-    const { id } = req.params;
-    const noticia = await Noticia.findById(id);
+    const noticia = await Noticia.findById(req.params.id);
     if (!noticia) {
       req.flash('error', 'Noticia no encontrada.');
       return res.redirect('/noticias');
     }
-
-    // Borrar imagen si existe
     if (noticia.imagen) {
-      const rutaImagen = path.join(__dirname, '../public', noticia.imagen);
-      if (fs.existsSync(rutaImagen)) fs.unlinkSync(rutaImagen);
+      const ruta = path.join(__dirname, '../public', noticia.imagen);
+      if (fs.existsSync(ruta)) fs.unlinkSync(ruta);
     }
-
     const titulo = noticia.titulo;
-    await Noticia.findByIdAndDelete(id);
-
+    await Noticia.findByIdAndDelete(req.params.id);
     req.flash('exito', `Noticia "${titulo}" eliminada.`);
     res.redirect('/noticias');
   } catch (error) {
@@ -175,5 +163,5 @@ module.exports = {
   crearNoticia,
   editarNoticia,
   eliminarNoticia,
-  manejarImagenNoticia,
+  manejarImagen,
 };
