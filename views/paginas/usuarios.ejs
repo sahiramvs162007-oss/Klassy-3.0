@@ -42,6 +42,10 @@
           </p>
         </div>
         <div class="cabecera-pagina__acciones">
+          <button class="btn btn--secundario" onclick="abrirModalImportar()">
+            <i data-lucide="file-spreadsheet"></i>
+            Importar Excel
+          </button>
           <button class="btn btn--primario" onclick="abrirDrawerCrear()">
             <i data-lucide="user-plus"></i>
             Nuevo usuario
@@ -263,8 +267,12 @@
       </div>
 
       <div class="campo">
-        <label class="campo__etiqueta">Documento de identidad</label>
+        <label class="campo__etiqueta">Documento de identidad <span id="labelDocumento"></span></label>
         <input type="text" name="documentoIdentidad" id="campoDocumentoIdentidad" class="campo__entrada" placeholder="Ej: 1234567890" />
+        <span class="campo__ayuda" id="ayudaDocumentoEstudiante" style="display:none;">
+          <i data-lucide="info" style="width:14px;height:14px;vertical-align:middle;"></i>
+          Para estudiantes este campo es obligatorio — se usará como contraseña de acceso.
+        </span>
       </div>
 
       <div class="campo">
@@ -296,7 +304,7 @@
         <input type="text" name="contrasena" id="campoContrasena" class="campo__entrada" placeholder="Mínimo 6 caracteres" minlength="6" />
         <span class="campo__ayuda" id="ayudaContrasenaEstudiante" style="display:none;">
           <i data-lucide="info" style="width:14px;height:14px;vertical-align:middle;"></i>
-          Se generará automáticamente una contraseña numérica aleatoria de 8 dígitos.
+          La contraseña del estudiante será su documento de identidad.
         </span>
       </div>
 
@@ -310,11 +318,99 @@
     </form>
   </template>
 
+  <!-- ─── Modal Importar Excel ──────────────────────────────────────────────── -->
+  <div class="drawer-overlay" id="overlayImportar" onclick="cerrarModalImportar()" style="display:none;"></div>
+
+  <div id="modalImportar" style="
+    display:none;
+    position:fixed;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    background:var(--color-superficie);
+    border:1px solid var(--color-borde);
+    border-radius:var(--radio-lg);
+    padding:2rem;
+    width:min(480px, 90vw);
+    z-index:1100;
+    box-shadow:var(--sombra-lg);
+  ">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+      <h2 style="font-size:1.1rem;font-weight:600;margin:0;">Importar usuarios desde Excel</h2>
+      <button onclick="cerrarModalImportar()" style="background:none;border:none;cursor:pointer;color:var(--color-texto-secundario);">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
+    <!-- Instrucciones -->
+    <div style="background:var(--color-fondo);border-radius:var(--radio-md);padding:1rem;margin-bottom:1.25rem;font-size:0.85rem;color:var(--color-texto-secundario);line-height:1.6;">
+      <p style="margin:0 0 0.5rem;font-weight:600;color:var(--color-texto);">Columnas requeridas en el Excel:</p>
+      <ul style="margin:0;padding-left:1.2rem;">
+        <li><strong>nombre</strong> — Nombre del usuario</li>
+        <li><strong>apellido</strong> — Apellido</li>
+        <li><strong>correo</strong> — Correo electrónico único</li>
+        <li><strong>rol</strong> — admin / director / docente / estudiante</li>
+      </ul>
+      <p style="margin:0.75rem 0 0.25rem;font-weight:600;color:var(--color-texto);">Columnas opcionales:</p>
+      <ul style="margin:0;padding-left:1.2rem;">
+        <li><strong>documentoIdentidad</strong> — Documento de identidad</li>
+        <li><strong>profesion</strong> — Solo para docentes</li>
+        <li><strong>ultimoNivelCursado</strong> — Solo para estudiantes (0–10)</li>
+      </ul>
+      <p style="margin:0.75rem 0 0;padding:0.5rem;background:var(--color-superficie);border-radius:var(--radio-sm);border-left:3px solid var(--color-primario);">
+        🔑 Estudiantes recibirán contraseña numérica aleatoria.<br>
+        Otros roles usarán el documento de identidad como contraseña (o <em>klassy + nº fila</em> si no tiene).
+      </p>
+    </div>
+
+    <!-- Descarga de plantilla -->
+    <div style="margin-bottom:1rem;">
+      <a href="/usuarios/plantilla-excel" class="btn btn--secundario btn--sm" style="width:100%;justify-content:center;text-decoration:none;">
+        <i data-lucide="download"></i>
+        Descargar plantilla de ejemplo
+      </a>
+    </div>
+
+    <!-- Formulario de subida -->
+    <form method="POST" action="/usuarios/importar" enctype="multipart/form-data">
+      <div class="campo" style="margin-bottom:1.25rem;">
+        <label class="campo__etiqueta">Seleccionar archivo Excel *</label>
+        <input
+          type="file"
+          name="archivoExcel"
+          accept=".xlsx,.xls"
+          required
+          class="campo__entrada"
+          style="padding:0.5rem;"
+        />
+      </div>
+      <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+        <button type="button" class="btn btn--secundario" onclick="cerrarModalImportar()">Cancelar</button>
+        <button type="submit" class="btn btn--primario">
+          <i data-lucide="upload"></i>
+          Importar
+        </button>
+      </div>
+    </form>
+  </div>
+
   <!-- Scripts -->
   <script src="/js/notificaciones.js"></script>
   <script src="/js/drawer.js"></script>
   <script src="/js/main.js"></script>
   <script src="/js/usuarios.js"></script>
-  <script>lucide.createIcons();</script>
+  <script>
+    lucide.createIcons();
+    function abrirModalImportar() {
+      document.getElementById('modalImportar').style.display = 'block';
+      document.getElementById('overlayImportar').style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      lucide.createIcons();
+    }
+    function cerrarModalImportar() {
+      document.getElementById('modalImportar').style.display = 'none';
+      document.getElementById('overlayImportar').style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  </script>
 </body>
 </html>

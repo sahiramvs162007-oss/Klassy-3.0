@@ -5,6 +5,7 @@
  */
 
 const { Usuario } = require('../models');
+const XLSX = require('xlsx');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LISTAR  GET /usuarios
@@ -87,9 +88,14 @@ const crearUsuario = async (req, res) => {
       return res.redirect('/usuarios');
     }
 
-    // Para estudiantes: generar contraseña numérica aleatoria de 8 dígitos
+    // Para estudiantes: la contraseña es el documento de identidad (obligatorio)
+    if (rol === 'estudiante' && !documentoIdentidad?.trim()) {
+      req.flash('error', 'El documento de identidad es obligatorio para estudiantes, ya que se usa como contraseña.');
+      return res.redirect('/usuarios');
+    }
+
     const contrasenaFinal = (rol === 'estudiante')
-      ? String(Math.floor(10000000 + Math.random() * 90000000))
+      ? documentoIdentidad.trim()
       : contrasena;
 
     // Construir documento
@@ -119,7 +125,7 @@ const crearUsuario = async (req, res) => {
     await nuevoUsuario.save();
 
     const mensajeExtra = (rol === 'estudiante')
-      ? ` Su contraseña temporal es: <strong>${contrasenaFinal}</strong>`
+      ? ` Su contraseña es su documento de identidad: ${documentoIdentidad.trim()}`
       : '';
     req.flash('exito', `Usuario ${nuevoUsuario.nombreCompleto} creado correctamente.${mensajeExtra}`);
     res.redirect('/usuarios');
@@ -258,10 +264,133 @@ const obtenerUsuario = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// IMPORTAR DESDE EXCEL  POST /usuarios/importar
+// ─────────────────────────────────────────────────────────────────────────────
+const importarUsuariosExcel = async (req, res) => {
+  try {
+    const { rol: rolActual } = req.session.usuario;
+
+    if (!req.file) {
+      req.flash('error', 'No se recibió ningún archivo Excel.');
+      return res.redirect('/usuarios');
+    }
+
+    // Leer el workbook desde el buffer en memoria
+    const workbook  = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const hoja      = workbook.Sheets[workbook.SheetNames[0]];
+    const filas     = XLSX.utils.sheet_to_json(hoja, { defval: '' });
+
+    if (!filas.length) {
+      req.flash('error', 'El archivo Excel está vacío o no tiene datos.');
+      return res.redirect('/usuarios');
+    }
+
+    // Columnas esperadas (insensible a mayúsculas y espacios)
+    // nombre | apellido | correo | rol | documentoIdentidad | profesion | ultimoNivelCursado
+    const rolesValidos = ['admin', 'director', 'docente', 'estudiante'];
+
+    let creados   = 0;
+    let omitidos  = 0;
+    const errores = [];
+
+    for (let i = 0; i < filas.length; i++) {
+      const fila = filas[i];
+      const fNum = i + 2; // número de fila real en Excel (encabezado = 1)
+
+      // Normalizar claves (quitar espacios y pasar a minúscula)
+      const f = {};
+      for (const key of Object.keys(fila)) {
+        f[key.trim().toLowerCase()] = String(fila[key]).trim();
+      }
+
+      const nombre              = f['nombre']               || '';
+      const apellido            = f['apellido']             || '';
+      const correo              = f['correo']               || '';
+      const rol                 = (f['rol']                 || '').toLowerCase();
+      const documentoIdentidad  = f['documentoidentidad']   || f['documento_identidad'] || f['documento'] || null;
+      const profesion           = f['profesion']            || f['profesión'] || null;
+      const ultimoNivelCursado  = f['ultimonivelcursado']   || f['ultimo_nivel_cursado'] || f['nivel'] || '0';
+
+      // Validaciones básicas por fila
+      if (!nombre || !apellido || !correo) {
+        errores.push(`Fila ${fNum}: faltan nombre, apellido o correo.`);
+        omitidos++;
+        continue;
+      }
+      if (!rolesValidos.includes(rol)) {
+        errores.push(`Fila ${fNum}: rol "${rol}" no válido. Use: admin, director, docente, estudiante.`);
+        omitidos++;
+        continue;
+      }
+      if (rol === 'admin' && rolActual !== 'admin') {
+        errores.push(`Fila ${fNum}: sin permiso para crear administradores.`);
+        omitidos++;
+        continue;
+      }
+
+      // Verificar correo duplicado
+      const existe = await Usuario.findOne({ correo: correo.toLowerCase() });
+      if (existe) {
+        errores.push(`Fila ${fNum}: el correo "${correo}" ya está registrado.`);
+        omitidos++;
+        continue;
+      }
+
+      // Validar que estudiantes tengan documento
+      if (rol === 'estudiante' && !documentoIdentidad) {
+        errores.push(`Fila ${fNum}: el documento de identidad es obligatorio para estudiantes (se usa como contraseña).`);
+        omitidos++;
+        continue;
+      }
+
+      // Contraseña: estudiantes → documento de identidad; otros → documento o "klassy" + nº fila
+      const contrasenaFinal = rol === 'estudiante'
+        ? documentoIdentidad
+        : (documentoIdentidad || `klassy${fNum}`);
+
+      const nuevoUsuario = new Usuario({
+        nombre:             nombre,
+        apellido:           apellido,
+        correo:             correo.toLowerCase(),
+        contrasena:         contrasenaFinal,
+        rol,
+        documentoIdentidad: documentoIdentidad || null,
+        activo:             true,
+      });
+
+      if (rol === 'estudiante') {
+        nuevoUsuario.ultimoNivelCursado = parseInt(ultimoNivelCursado, 10) || 0;
+        nuevoUsuario.profesion          = null;
+      } else {
+        nuevoUsuario.profesion          = profesion || null;
+        nuevoUsuario.ultimoNivelCursado = 11;
+      }
+
+      await nuevoUsuario.save();
+      creados++;
+    }
+
+    let mensaje = `Importación completada: ${creados} usuario(s) creado(s).`;
+    if (omitidos > 0) mensaje += ` ${omitidos} fila(s) omitida(s).`;
+    if (errores.length) {
+      req.flash('error', errores.slice(0, 5).join(' | ') + (errores.length > 5 ? ` ... y ${errores.length - 5} más.` : ''));
+    }
+    req.flash('exito', mensaje);
+    res.redirect('/usuarios');
+
+  } catch (error) {
+    console.error('Error al importar usuarios desde Excel:', error);
+    req.flash('error', 'Error al procesar el archivo Excel.');
+    res.redirect('/usuarios');
+  }
+};
+
 module.exports = {
   listarUsuarios,
   crearUsuario,
   editarUsuario,
   eliminarUsuario,
   obtenerUsuario,
+  importarUsuariosExcel,
 };

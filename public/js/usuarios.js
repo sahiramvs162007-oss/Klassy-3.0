@@ -91,44 +91,53 @@ function construirFormulario() {
 
 // ─── Mostrar/ocultar campos según rol seleccionado ────────────────────────────
 function actualizarCamposRol() {
-  const rolSeleccionado = document.getElementById('campoRol')?.value;
-  const grupoProfesion  = document.getElementById('grupoProfesion');
-  const grupoNivel      = document.getElementById('grupoNivel');
-  const campoContrasena = document.getElementById('campoContrasena');
-  const ayudaEstudiante = document.getElementById('ayudaContrasenaEstudiante');
-  const labelContrasena = document.getElementById('labelContrasena');
-  const esCreacion      = document.getElementById('metodoPeticion')?.value === '';
+  const rolSeleccionado       = document.getElementById('campoRol')?.value;
+  const grupoProfesion        = document.getElementById('grupoProfesion');
+  const grupoNivel            = document.getElementById('grupoNivel');
+  const campoContrasena       = document.getElementById('campoContrasena');
+  const ayudaEstudiante       = document.getElementById('ayudaContrasenaEstudiante');
+  const labelContrasena       = document.getElementById('labelContrasena');
+  const campoDocumento        = document.getElementById('campoDocumentoIdentidad');
+  const ayudaDocumento        = document.getElementById('ayudaDocumentoEstudiante');
+  const labelDocumento        = document.getElementById('labelDocumento');
+  const esCreacion            = document.getElementById('metodoPeticion')?.value === '';
 
   if (!grupoProfesion || !grupoNivel) return;
 
   if (rolSeleccionado === 'docente' || rolSeleccionado === 'admin' || rolSeleccionado === 'director') {
     grupoProfesion.style.display = 'flex';
     grupoNivel.style.display     = 'none';
-    // Restaurar campo contraseña normal
+    // Contraseña normal
     if (campoContrasena) {
       campoContrasena.style.display = '';
       campoContrasena.placeholder   = 'Mínimo 6 caracteres';
-      campoContrasena.required      = esCreacion; // requerido solo en creación
+      campoContrasena.required      = esCreacion;
     }
     if (ayudaEstudiante) ayudaEstudiante.style.display = 'none';
     if (labelContrasena) labelContrasena.textContent   = esCreacion ? '*' : '(dejar vacío para no cambiar)';
+    // Documento opcional
+    if (campoDocumento) campoDocumento.required = false;
+    if (ayudaDocumento) ayudaDocumento.style.display = 'none';
+    if (labelDocumento) labelDocumento.textContent    = '';
 
   } else if (rolSeleccionado === 'estudiante') {
     grupoProfesion.style.display = 'none';
     grupoNivel.style.display     = 'flex';
-    if (esCreacion) {
-      // Ocultar contraseña y quitar required — se genera automáticamente
-      if (campoContrasena) {
-        campoContrasena.style.display = 'none';
-        campoContrasena.required      = false; // ← FIX: evita bloqueo del formulario
-        campoContrasena.value         = '';
-      }
-      if (ayudaEstudiante) ayudaEstudiante.style.display = 'flex';
-      if (labelContrasena) labelContrasena.textContent   = '(se generará automáticamente)';
+    // Ocultar contraseña — se usa el documento
+    if (campoContrasena) {
+      campoContrasena.style.display = 'none';
+      campoContrasena.required      = false;
+      campoContrasena.value         = '';
     }
+    if (ayudaEstudiante) ayudaEstudiante.style.display = 'flex';
+    if (labelContrasena) labelContrasena.textContent   = '(se usará el documento de identidad)';
+    // Documento obligatorio para estudiantes
+    if (campoDocumento) campoDocumento.required = esCreacion;
+    if (ayudaDocumento) ayudaDocumento.style.display = esCreacion ? 'flex' : 'none';
+    if (labelDocumento) labelDocumento.textContent    = esCreacion ? '*' : '';
 
   } else {
-    // Sin rol seleccionado
+    // Sin rol
     grupoProfesion.style.display = 'none';
     grupoNivel.style.display     = 'none';
     if (campoContrasena) {
@@ -136,6 +145,9 @@ function actualizarCamposRol() {
       campoContrasena.required      = esCreacion;
     }
     if (ayudaEstudiante) ayudaEstudiante.style.display = 'none';
+    if (campoDocumento) campoDocumento.required = false;
+    if (ayudaDocumento) ayudaDocumento.style.display = 'none';
+    if (labelDocumento) labelDocumento.textContent    = '';
   }
 }
 

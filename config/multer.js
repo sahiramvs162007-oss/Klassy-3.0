@@ -100,9 +100,42 @@ const mapearArchivo = (file) => ({
   tamanio:        file.size,
 });
 
+// ─── Para importación masiva de usuarios (solo xlsx) ─────────────────────────
+const filtroSoloExcel = (req, file, cb) => {
+  const mimesExcel = [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-excel',
+  ];
+  if (mimesExcel.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Solo se permiten archivos Excel (.xlsx / .xls)'), false);
+  }
+};
+
+const subirExcelUsuarios = multer({
+  storage: multer.memoryStorage(), // en memoria, no se guarda en disco
+  fileFilter: filtroSoloExcel,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB máx
+}).single('archivoExcel');
+
+const manejarSubidaExcelUsuarios = (req, res, next) => {
+  subirExcelUsuarios(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      req.flash('error', `Error al subir archivo: ${err.message}`);
+      return res.redirect('/usuarios');
+    } else if (err) {
+      req.flash('error', err.message);
+      return res.redirect('/usuarios');
+    }
+    next();
+  });
+};
+
 module.exports = {
   manejarSubidaActividad,
   manejarSubidaEntrega,
+  manejarSubidaExcelUsuarios,
   mapearArchivo,
   TIPOS_PERMITIDOS,
 };
