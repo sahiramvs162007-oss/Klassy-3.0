@@ -4,120 +4,196 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KLASSY - Login</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: sans-serif; background: #f3f4f6; display: flex; min-height: 100vh; }
-
-    .left {
-      width: 420px;
-      background: linear-gradient(145deg, #0f2a5e, #1a4aad);
-      display: flex; flex-direction: column; justify-content: center;
-      padding: 48px 40px; color: #fff;
-    }
-    .left h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 8px; }
-    .left p  { color: rgba(255,255,255,0.65); font-size: 0.95rem; }
-
-    .right {
-      flex: 1; display: flex; align-items: center; justify-content: center;
-      background: #fff; padding: 40px;
-    }
-    .card { width: 100%; max-width: 380px; }
-    .card h2 { font-size: 1.5rem; font-weight: 700; color: #111; margin-bottom: 4px; }
-    .card .sub { color: #6b7280; font-size: 0.875rem; margin-bottom: 24px; }
-
-    .error-box {
-      background: #fee2e2; color: #dc2626;
-      border: 1px solid #fecaca; border-radius: 8px;
-      padding: 10px 14px; margin-bottom: 16px; font-size: 0.875rem;
-    }
-    .info-box {
-      background: #eff6ff; color: #1a4aad;
-      border: 1px solid #dbeafe; border-radius: 8px;
-      padding: 10px 14px; margin-bottom: 16px; font-size: 0.875rem;
-    }
-
-    label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 5px; }
-    input[type=email], input[type=password], input[type=text] {
-      width: 100%; padding: 10px 14px; border: 1px solid #d1d5db;
-      border-radius: 8px; font-size: 0.9rem; color: #111;
-      margin-bottom: 14px;
-    }
-    input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
-
-    .btn {
-      width: 100%; padding: 11px; background: #2563eb; color: #fff;
-      border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600;
-      cursor: pointer; margin-top: 4px;
-    }
-    .btn:hover { background: #1a4aad; }
-
-    .link-btn {
-      background: none; border: none; color: #2563eb; font-size: 0.82rem;
-      cursor: pointer; text-decoration: underline; margin-top: 14px; display: block; text-align: center;
-    }
-    .back-btn {
-      background: none; border: none; color: #6b7280; font-size: 0.82rem;
-      cursor: pointer; margin-bottom: 16px; display: block;
-    }
-  </style>
+  <link rel="stylesheet" href="/css/login.css" />
+  <link rel="icon" href="/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <div class="left">
-    <h1>KLASSY</h1>
-    <p>Gestor academico para colegios</p>
-  </div>
+  <div class="login-container">
 
-  <div class="right">
-    <div class="card">
+    <!-- ===== LADO IZQUIERDO ===== -->
+    <div class="left">
 
-      <% if (error && error.length > 0) { %>
-        <div class="error-box"><%= error %></div>
-      <% } %>
-      <% if (info && info.length > 0) { %>
-        <div class="info-box"><%= info %></div>
-      <% } %>
+      <!-- Manchas de color -->
+      <div class="mancha azul"></div>
+      <div class="mancha amarillo"></div>
+      <div class="mancha aqua"></div>
+      <div class="mancha verde"></div>
 
-      <!-- LOGIN -->
-      <div id="login">
-        <h2>Bienvenido</h2>
-        <p class="sub">Ingresa tus credenciales para continuar</p>
+      <!-- Tags flotantes -->
+      <div class="subject-tag tag-math">📐 Matemáticas</div>
+      <div class="subject-tag tag-sci">🔬 Ciencias</div>
+      <div class="subject-tag tag-lit">📚 Literatura</div>
+      <div class="subject-tag tag-hist">📜 Historia</div>
 
-        <form method="POST" action="/auth/login">
-          <label>Correo electronico</label>
-          <input type="email" name="correo" placeholder="tu@correo.edu.co" required autofocus autocomplete="email" />
+      <!-- Card del formulario -->
+      <div class="card">
 
-          <label>Contrasena</label>
-          <input type="password" name="contrasena" id="pass" placeholder="Tu contrasena" required autocomplete="current-password" />
+        <% if (error && error.length > 0) { %>
+          <div class="error-box"><%= error %></div>
+        <% } %>
+        <% if (info && info.length > 0) { %>
+          <div class="info-box"><%= info %></div>
+        <% } %>
 
-          <button type="button" class="link-btn" style="text-align:left;margin-bottom:10px;color:#6b7280;font-size:0.75rem;" onclick="var p=document.getElementById('pass');p.type=p.type==='password'?'text':'password'">
-            Mostrar / ocultar contrasena
+        <!-- LOGIN -->
+        <div id="login">
+          <h2>Iniciar Sesión</h2>
+
+          <form class="formulario" method="POST" action="/auth/login">
+
+            <!-- Correo -->
+            <div class="input-group">
+              <span class="icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="M2 7l10 7 10-7"/>
+                </svg>
+              </span>
+              <input
+                type="email"
+                name="correo"
+                id="correo"
+                placeholder=" "
+                required
+                autofocus
+                autocomplete="email"
+              />
+              <label for="correo">Correo electrónico</label>
+            </div>
+
+            <!-- Contraseña -->
+            <div class="input-group">
+              <span class="icon">
+                <!-- Ícono candado limpio SVG -->
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="5" y="11" width="14" height="10" rx="2"/>
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                </svg>
+              </span>
+              <input
+                type="password"
+                name="contrasena"
+                id="pass"
+                placeholder=" "
+                required
+                autocomplete="current-password"
+              />
+              <label for="pass">Contraseña</label>
+              <!-- Ojito mostrar/ocultar -->
+              <button
+                type="button"
+                class="toggle-password"
+                onclick="
+                  var p = document.getElementById('pass');
+                  var isHidden = p.type === 'password';
+                  p.type = isHidden ? 'text' : 'password';
+                  this.querySelector('.eye-open').style.display  = isHidden ? 'none' : 'block';
+                  this.querySelector('.eye-close').style.display = isHidden ? 'block' : 'none';
+                "
+                title="Mostrar / ocultar contraseña"
+              >
+                <!-- Ojo abierto -->
+                <svg class="eye-open" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <!-- Ojo cerrado (oculto por defecto) -->
+                <svg class="eye-close" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display:none">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+
+            <button type="submit" class="btn">Ingresar</button>
+          </form>
+
+          <button
+            class="forgot-link"
+            onclick="document.getElementById('login').style.display='none'; document.getElementById('recuperar').style.display='block'"
+          >
+            Olvidé mi contraseña
           </button>
+        </div>
 
-          <button type="submit" class="btn">Ingresar</button>
-        </form>
+        <!-- RECUPERAR CONTRASEÑA -->
+        <div id="recuperar" style="display:none">
+          <button
+            class="back-btn"
+            onclick="document.getElementById('recuperar').style.display='none'; document.getElementById('login').style.display='block'"
+          >
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Volver
+          </button>
+          <h2>Recuperar acceso</h2>
+          <p class="sub" style="margin-bottom:20px; font-size:0.85rem;">
+            El director recibirá una notificación para restablecer tu contraseña.
+          </p>
+          <form method="POST" action="/auth/recuperar">
+            <div class="input-group">
+              <span class="icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="M2 7l10 7 10-7"/>
+                </svg>
+              </span>
+              <input
+                type="email"
+                name="correo"
+                id="correo-rec"
+                placeholder=" "
+                required
+              />
+              <label for="correo-rec">Correo registrado</label>
+            </div>
+            <button type="submit" class="btn">Enviar solicitud</button>
+          </form>
+        </div>
 
-        <button class="link-btn" onclick="document.getElementById('login').style.display='none';document.getElementById('recuperar').style.display='block'">
-          Olvide mi contrasena
-        </button>
       </div>
-
-      <!-- RECUPERAR -->
-      <div id="recuperar" style="display:none">
-        <button class="back-btn" onclick="document.getElementById('recuperar').style.display='none';document.getElementById('login').style.display='block'">
-          &larr; Volver
-        </button>
-        <h2>Recuperar acceso</h2>
-        <p class="sub" style="margin-bottom:16px;">El director recibira una notificacion para restablecer tu contrasena.</p>
-        <form method="POST" action="/auth/recuperar">
-          <label>Correo registrado</label>
-          <input type="email" name="correo" placeholder="tu@correo.edu.co" required />
-          <button type="submit" class="btn">Enviar solicitud</button>
-        </form>
-      </div>
-
     </div>
+
+    <!-- ===== LADO DERECHO (SLIDER) ===== -->
+    <div class="right">
+      <div class="slider">
+
+        <div class="slide active">
+          <img src="https://i.pinimg.com/736x/5d/28/db/5d28dbfbf05c7248d6a9e59bc2514bb9.jpg" alt="Slide 1">
+          <div class="contenido">
+            <h2>Potencia tu institución</h2>
+            <p>Integra estudiantes, docentes y administración en un entorno que impulsa el crecimiento académico.</p>
+          </div>
+        </div>
+
+        <div class="slide">
+          <img src="https://i.pinimg.com/736x/63/15/45/631545adea07b4210f72e8c40c70e310.jpg" alt="Slide 2">
+          <div class="contenido">
+            <h2>Avanza con cada actividad</h2>
+            <p>Convierte cada tarea en un paso hacia tu desarrollo académico.</p>
+          </div>
+        </div>
+
+        <div class="slide">
+          <img src="https://i.pinimg.com/webp/736x/22/5e/d6/225ed64777b68c6108f4894f3da7c662.webp" alt="Slide 3">
+          <div class="contenido">
+            <h2>Impulsa tu aprendizaje con IA</h2>
+            <p>Herramientas inteligentes que potencian tu rendimiento.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Título central KLASSY -->
+    <h1 class="titulo-central">KLASSY</h1>
+
   </div>
 
+  <script src="/js/login.js"></script>
 </body>
 </html>
