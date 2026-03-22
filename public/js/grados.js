@@ -41,6 +41,9 @@ async function abrirDrawerEditarGrado(id) {
     contenedor.querySelector('#grupoActivoGrado').style.display = 'flex';
     contenedor.querySelector('#campoActivoGrado').value         = grado.activo ? 'true' : 'false';
     contenedor.querySelector('#textoGuardarGrado').textContent  = 'Guardar cambios';
+    if (contenedor.querySelector('#campoCupoGrado')) {
+      contenedor.querySelector('#campoCupoGrado').value = grado.cupo || 0;
+    }
 
     llenarSelectNiveles(contenedor.querySelector('#campoNivelGrado'), grado.nivel);
 

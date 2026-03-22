@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Retiro de Estudiantes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <!-- Flash messages -->
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <!-- Cabecera -->
+      <div class="cabecera-pagina">
+        <div>
+          <h1 class="cabecera-pagina__titulo">Retiro de Estudiantes</h1>
+          <p class="cabecera-pagina__subtitulo"><%= estudiantesActivos.length %> estudiante<%= estudiantesActivos.length !== 1 ? 's' : '' %> activo<%= estudiantesActivos.length !== 1 ? 's' : '' %></p>
+        </div>
+        <div class="cabecera-pagina__acciones">
+          <button class="btn btn--primario" onclick="abrirDrawerRetirar()">
+            <i data-lucide="user-x"></i> Retirar estudiante
+          </button>
+        </div>
+      </div>
+
+      <!-- Buscador -->
+      <form method="GET" action="/retiros" class="barra-filtros">
+        <div class="barra-filtros__grupo">
+          <div class="barra-filtros__buscar">
+            <i data-lucide="search" class="barra-filtros__icono-buscar"></i>
+            <input type="text" name="buscar" value="<%= buscar %>"
+              placeholder="Buscar por nombre o documento..." class="barra-filtros__entrada" />
+          </div>
+        </div>
+        <div class="barra-filtros__acciones">
+          <button type="submit" class="btn btn--primario btn--sm"><i data-lucide="search"></i> Buscar</button>
+          <% if (buscar) { %>
+            <a href="/retiros" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Limpiar</a>
+          <% } %>
+        </div>
+      </form>
+
+      <!-- ── Tabla historial de retiros ── -->
+      <h2 style="font-size:1rem;font-weight:600;margin:1.5rem 0 0.75rem;">Historial de retiros</h2>
+      <div class="tabla-contenedor">
+        <% if (retiros.length === 0) { %>
+          <div class="tabla-vacia">
+            <i data-lucide="user-x"></i>
+            <p>No hay retiros registrados aún.</p>
+          </div>
+        <% } else { %>
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th>Estudiante</th>
+                <th>Documento</th>
+                <th>Último grado</th>
+                <th>Motivo</th>
+                <th>Fecha retiro</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% retiros.forEach(r => { %>
+                <tr>
+                  <td>
+                    <div class="usuario-celda">
+                      <div class="usuario-celda__avatar" style="background:var(--color-error-suave);color:var(--color-error);">
+                        <%= r.nombreEstudiante.charAt(0).toUpperCase() %>
+                      </div>
+                      <span class="usuario-celda__nombre"><%= r.nombreEstudiante %></span>
+                    </div>
+                  </td>
+                  <td class="texto-secundario"><%= r.documento || '—' %></td>
+                  <td class="texto-secundario"><%= r.ultimoGrado %></td>
+                  <td class="texto-secundario"><%= r.motivo || '—' %></td>
+                  <td class="texto-secundario">
+                    <%= new Date(r.fechaRetiro).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %>
+                  </td>
+                  <td>
+                    <% if (r.reincorporado) { %>
+                      <span class="badge badge--activo">Reincorporado</span>
+                    <% } else { %>
+                      <span class="badge badge--inactivo">Retirado</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (!r.reincorporado) { %>
+                      <form method="POST" action="/retiros/<%= r._id %>/reactivar?_method=PUT"
+                        onsubmit="return confirm('¿Reactivar a <%= r.nombreEstudiante %>? El estudiante quedará activo pero deberá ser matriculado manualmente.')"
+                        style="display:inline">
+                        <button type="submit" class="btn btn--secundario btn--sm" title="Reactivar estudiante">
+                          <i data-lucide="user-check"></i> Reactivar
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <span class="texto-secundario texto-sm">
+                        Reingresó <%= new Date(r.fechaReincorporacion).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %>
+                      </span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer__cabecera">
+      <h2 class="drawer__titulo" id="drawerTitulo">Retirar estudiante</h2>
+      <button class="drawer__cerrar" onclick="cerrarDrawer()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer__cuerpo" id="drawerCuerpo"></div>
+  </div>
+
+  <!-- Template formulario de retiro -->
+  <template id="templateRetirar">
+    <form method="POST" action="/retiros" class="formulario-grupo">
+
+      <div class="campo">
+        <label class="campo__etiqueta">Estudiante a retirar *</label>
+        <select name="estudianteId" class="campo__select" required>
+          <option value="">Seleccionar estudiante...</option>
+          <% estudiantesActivos.forEach(e => { %>
+            <option value="<%= e._id %>">
+              <%= e.apellido %>, <%= e.nombre %>
+              <% if (e.documentoIdentidad) { %> — Doc: <%= e.documentoIdentidad %><% } %>
+              (Nivel <%= e.ultimoNivelCursado || 0 %>)
+            </option>
+          <% }) %>
+        </select>
+        <% if (estudiantesActivos.length === 0) { %>
+          <span class="campo__ayuda" style="color:var(--color-error)">No hay estudiantes activos para retirar.</span>
+        <% } %>
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Motivo del retiro</label>
+        <textarea name="motivo" class="campo__area" rows="3"
+          placeholder="Ej: Traslado a otra institución, motivos económicos, etc."></textarea>
+      </div>
+
+      <div class="alerta alerta--info" style="margin-bottom:1rem;">
+        <i data-lucide="info"></i>
+        <span>El estudiante pasará a <strong>inactivo</strong>. Si regresa al colegio podrás reactivarlo desde el historial.</span>
+      </div>
+
+      <div class="drawer__pie">
+        <button type="button" class="btn btn--secundario" onclick="cerrarDrawer()">Cancelar</button>
+        <button type="submit" class="btn btn--error">
+          <i data-lucide="user-x"></i> Confirmar retiro
+        </button>
+      </div>
+    </form>
+  </template>
+
+  <script src="/js/notificaciones.js"></script>
+  <script src="/js/drawer.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    function abrirDrawerRetirar() {
+      const template = document.getElementById('templateRetirar');
+      const clon = template.content.cloneNode(true);
+      document.getElementById('drawerTitulo').textContent = 'Retirar estudiante';
+      document.getElementById('drawerCuerpo').innerHTML = '';
+      document.getElementById('drawerCuerpo').appendChild(clon);
+      document.getElementById('drawerOverlay').classList.add('activo');
+      document.getElementById('drawer').classList.add('activo');
+      lucide.createIcons();
+    }
+    function cerrarDrawer() {
+      document.getElementById('drawerOverlay').classList.remove('activo');
+      document.getElementById('drawer').classList.remove('activo');
+    }
+  </script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

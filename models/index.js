@@ -17,6 +17,7 @@ const Boletin            = require('./Boletin');
 const Noticia            = require('./Noticia');
 const Configuracion      = require('./Configuracion');
 const Notificacion       = require('./Notificacion');
+const RetiroEstudiante   = require('./RetiroEstudiante');
 
 module.exports = {
   Usuario,
@@ -34,4 +35,5 @@ module.exports = {
   Noticia,
   Configuracion,
   Notificacion,
+  RetiroEstudiante,
 };

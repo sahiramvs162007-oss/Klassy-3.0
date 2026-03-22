@@ -37,6 +37,14 @@
           <p class="cabecera-pagina__subtitulo"><%= matriculas.length %> matrícula<%= matriculas.length !== 1 ? 's' : '' %> encontrada<%= matriculas.length !== 1 ? 's' : '' %></p>
         </div>
         <div class="cabecera-pagina__acciones">
+          <% if (puedeMasiva) { %>
+            <form method="POST" action="/matriculas/masiva" style="display:inline"
+              onsubmit="return confirm('¿Ejecutar matrícula masiva para <%= añoActual + 1 %>? Se promoverán automáticamente todos los estudiantes según sus resultados del año actual.')">
+              <button type="submit" class="btn btn--secundario">
+                <i data-lucide="users"></i> Matrícula Masiva <%= añoActual + 1 %>
+              </button>
+            </form>
+          <% } %>
           <button class="btn btn--primario" onclick="abrirDrawerCrearMatricula()">
             <i data-lucide="user-check"></i> Nueva matrícula
           </button>
@@ -298,6 +306,14 @@
       </div>
 
       <div class="campo">
+        <label class="campo__etiqueta">Cambiar grado <span style="font-weight:400;color:var(--color-texto-suave)">(solo grados con cupo disponible)</span></label>
+        <select name="gradoId" id="campoGradoEditar" class="campo__select">
+          <option value="">Cargando grados disponibles...</option>
+        </select>
+        <span class="campo__ayuda" id="ayudaGradoEditar">Solo se muestran grados del mismo nivel con cupo.</span>
+      </div>
+
+      <div class="campo">
         <label class="campo__etiqueta">Observaciones</label>
         <textarea name="observaciones" id="campoObsEditar" class="campo__area" rows="4"
           placeholder="Observaciones sobre el estudiante o la matrícula..."></textarea>
@@ -320,6 +336,30 @@
   <script src="/js/drawer.js"></script>
   <script src="/js/main.js"></script>
   <script src="/js/matriculas.js"></script>
+  <script>
+  // Cargar grados disponibles al abrir el drawer de edición
+  async function cargarGradosDisponibles(matriculaId, gradoActualId) {
+    const select = document.getElementById('campoGradoEditar');
+    if (!select) return;
+    try {
+      const resp = await fetch(`/matriculas/${matriculaId}/grados-disponibles`);
+      const data = await resp.json();
+      select.innerHTML = '<option value="">-- Mantener grado actual --</option>';
+      (data.grados || []).forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g._id;
+        opt.selected = g._id === gradoActualId;
+        opt.textContent = `${g.nombre} (Nivel ${g.nivel} — Cupo: ${g.matriculados}/${g.cupo > 0 ? g.cupo : '∞'})`;
+        select.appendChild(opt);
+      });
+      if (!data.grados || data.grados.length === 0) {
+        select.innerHTML = '<option value="">Sin otros grados disponibles con cupo</option>';
+      }
+    } catch(e) {
+      select.innerHTML = '<option value="">Error al cargar grados</option>';
+    }
+  }
+  </script>
   <script>lucide.createIcons();</script>
 </body>
 </html>

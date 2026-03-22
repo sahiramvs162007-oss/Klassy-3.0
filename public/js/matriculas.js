@@ -118,7 +118,7 @@ function actualizarGradosDisponibles() {
 }
 
 // ─── ABRIR DRAWER EDITAR ──────────────────────────────────────────────────────
-function abrirDrawerEditarMatricula(id, estadoActual, observacionesActuales) {
+async function abrirDrawerEditarMatricula(id, estadoActual, observacionesActuales) {
   const template = document.getElementById('templateEditarMatricula');
   const form     = template.content.cloneNode(true).querySelector('form');
 
@@ -132,6 +132,11 @@ function abrirDrawerEditarMatricula(id, estadoActual, observacionesActuales) {
 
   abrirPanelDrawer();
   lucide.createIcons();
+
+  // Cargar grados disponibles con cupo para reasignación
+  if (typeof cargarGradosDisponibles === 'function') {
+    await cargarGradosDisponibles(id, null);
+  }
 }
 
 // ─── ABRIR DRAWER DETALLE + HISTORIAL ────────────────────────────────────────

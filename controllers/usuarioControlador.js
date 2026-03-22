@@ -88,6 +88,15 @@ const crearUsuario = async (req, res) => {
       return res.redirect('/usuarios');
     }
 
+    // Verificar documento de identidad duplicado
+    if (documentoIdentidad && documentoIdentidad.trim()) {
+      const existeDoc = await Usuario.findOne({ documentoIdentidad: documentoIdentidad.trim() });
+      if (existeDoc) {
+        req.flash('error', `Usuario ya registrado: el documento de identidad ${documentoIdentidad.trim()} ya pertenece a ${existeDoc.nombre} ${existeDoc.apellido}.`);
+        return res.redirect('/usuarios');
+      }
+    }
+
     // Para estudiantes: la contraseña es el documento de identidad (obligatorio)
     if (rol === 'estudiante' && !documentoIdentidad?.trim()) {
       req.flash('error', 'El documento de identidad es obligatorio para estudiantes, ya que se usa como contraseña.');
@@ -217,6 +226,7 @@ const eliminarUsuario = async (req, res) => {
   try {
     const { id } = req.params;
     const { rol: rolActual, _id: idActual } = req.session.usuario;
+    const { AsignacionDocente, Matricula } = require('../models');
 
     const usuario = await Usuario.findById(id);
     if (!usuario) {
@@ -234,6 +244,30 @@ const eliminarUsuario = async (req, res) => {
     if (id === idActual.toString()) {
       req.flash('error', 'No puedes eliminar tu propia cuenta.');
       return res.redirect('/usuarios');
+    }
+
+    // Regla: no se puede eliminar si tiene asignaciones de materia activas (docente)
+    if (usuario.rol === 'docente') {
+      const asignaciones = await AsignacionDocente.countDocuments({ docenteId: id, estado: 'activo' });
+      if (asignaciones > 0) {
+        req.flash('error',
+          `No se puede eliminar a ${usuario.nombreCompleto} porque tiene ${asignaciones} asignación(es) de materia activa(s). ` +
+          `Primero retira o desactiva sus asignaciones.`
+        );
+        return res.redirect('/usuarios');
+      }
+    }
+
+    // Regla: no se puede eliminar si tiene matrícula activa (estudiante)
+    if (usuario.rol === 'estudiante') {
+      const matriculaActiva = await Matricula.findOne({ estudianteId: id, estado: 'activa' });
+      if (matriculaActiva) {
+        req.flash('error',
+          `No se puede eliminar a ${usuario.nombreCompleto} porque tiene una matrícula activa. ` +
+          `Primero retira al estudiante desde el módulo de Retiros.`
+        );
+        return res.redirect('/usuarios');
+      }
     }
 
     const nombre = usuario.nombreCompleto;

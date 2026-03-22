@@ -3,7 +3,7 @@
  * CRUD de grados con asignación de materias. Solo admin.
  */
 
-const { Grado, Materia } = require('../models');
+const { Grado, Materia, Matricula } = require('../models');
 
 // ─── LISTAR  GET /grados ──────────────────────────────────────────────────────
 const listarGrados = async (req, res) => {
@@ -24,7 +24,16 @@ const listarGrados = async (req, res) => {
       Materia.find({ activo: true }).sort({ nombre: 1 }),
     ]);
 
-    console.log('todasMaterias:', todasMaterias.length, todasMaterias.map(m => m.nombre));
+    // Contar matriculados activos por grado (para mostrar X/cupo en la tabla)
+    const matriculadosPorGrado = {};
+    for (const grado of grados) {
+      const count = await Matricula.countDocuments({
+        gradoId: grado._id,
+        año: grado.año,
+        estado: 'activa',
+      });
+      matriculadosPorGrado[grado._id.toString()] = count;
+    }
 
     // Años distintos presentes en la BD para el filtro
     const añosDisponibles = await Grado.distinct('año');
@@ -39,6 +48,7 @@ const listarGrados = async (req, res) => {
       buscar,
       filtroNivel,
       filtroAnio,
+      matriculadosPorGrado,
     });
   } catch (error) {
     console.error('Error al listar grados:', error);
@@ -52,7 +62,14 @@ const obtenerGrado = async (req, res) => {
   try {
     const grado = await Grado.findById(req.params.id).populate('materias', 'nombre activo');
     if (!grado) return res.status(404).json({ error: 'Grado no encontrado' });
-    res.json(grado);
+
+    const matriculados = await Matricula.countDocuments({
+      gradoId: grado._id,
+      año: grado.año,
+      estado: 'activa',
+    });
+
+    res.json({ ...grado.toObject(), matriculados });
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener el grado' });
   }
@@ -61,9 +78,8 @@ const obtenerGrado = async (req, res) => {
 // ─── CREAR  POST /grados ──────────────────────────────────────────────────────
 const crearGrado = async (req, res) => {
   try {
-    const { nombre, nivel, año, materias } = req.body;
+    const { nombre, nivel, año, materias, cupo } = req.body;
 
-    // materias puede llegar como string (1 item) o array (varios)
     const materiasIds = materias
       ? Array.isArray(materias) ? materias : [materias]
       : [];
@@ -81,6 +97,7 @@ const crearGrado = async (req, res) => {
       nombre:   nombre.trim(),
       nivel:    parseInt(nivel, 10),
       año:      parseInt(año, 10),
+      cupo:     cupo ? parseInt(cupo, 10) : 0,
       materias: materiasIds,
     });
 
@@ -97,7 +114,7 @@ const crearGrado = async (req, res) => {
 const editarGrado = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, nivel, año, materias, activo } = req.body;
+    const { nombre, nivel, año, materias, activo, cupo } = req.body;
 
     const grado = await Grado.findById(id);
     if (!grado) {
@@ -105,7 +122,6 @@ const editarGrado = async (req, res) => {
       return res.redirect('/grados');
     }
 
-    // Verificar nombre duplicado excluyendo el grado actual
     const duplicado = await Grado.findOne({
       _id:    { $ne: id },
       nombre: new RegExp(`^${nombre.trim()}$`, 'i'),
@@ -123,6 +139,7 @@ const editarGrado = async (req, res) => {
     grado.nombre   = nombre.trim();
     grado.nivel    = parseInt(nivel, 10);
     grado.año      = parseInt(año, 10);
+    grado.cupo     = cupo ? parseInt(cupo, 10) : 0;
     grado.materias = materiasIds;
     grado.activo   = activo === 'true';
 

@@ -82,6 +82,7 @@
                 <th>Grado</th>
                 <th>Nivel</th>
                 <th>Año</th>
+                <th>Cupo</th>
                 <th>Materias asignadas</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -102,6 +103,20 @@
                     <span class="badge badge--azul">Nivel <%= g.nivel %></span>
                   </td>
                   <td class="texto-secundario"><%= g.año %></td>
+                  <td>
+                    <%
+                      const matriculados = matriculadosPorGrado[g._id.toString()] || 0;
+                      const cupoStr = g.cupo > 0 ? g.cupo : '∞';
+                      const claseContador = (g.cupo > 0 && matriculados >= g.cupo)
+                        ? 'badge badge--error'
+                        : (g.cupo > 0 && matriculados >= g.cupo * 0.9)
+                          ? 'badge badge--suspendido'
+                          : 'badge badge--azul';
+                    %>
+                    <span class="<%= claseContador %>">
+                      <%= matriculados %>/<%= cupoStr %>
+                    </span>
+                  </td>
                   <td>
                     <% if (g.materias && g.materias.length > 0) { %>
                       <div class="materias-chips">
@@ -171,6 +186,13 @@
         <label class="campo__etiqueta">Nombre del grado *</label>
         <input type="text" name="nombre" id="campoNombreGrado" class="campo__entrada" required
           placeholder="Ej: Primero A, Sexto B, Undécimo" />
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta">Cupo máximo de estudiantes</label>
+        <input type="number" name="cupo" id="campoCupoGrado" class="campo__entrada"
+          min="0" placeholder="0 = sin límite" />
+        <span class="campo__ayuda">Ingresa 0 si el salón no tiene límite de estudiantes.</span>
       </div>
 
       <div class="formulario-2col">
