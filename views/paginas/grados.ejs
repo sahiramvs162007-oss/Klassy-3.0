@@ -41,32 +41,105 @@
       </div>
 
       <!-- Filtros -->
-      <form method="GET" action="/grados" class="barra-filtros">
-        <div class="barra-filtros__grupo">
-          <div class="barra-filtros__buscar">
-            <i data-lucide="search" class="barra-filtros__icono-buscar"></i>
-            <input type="text" name="buscar" value="<%= buscar %>" placeholder="Buscar grado..." class="barra-filtros__entrada" />
+      <div class="filtros-centro">
+        <form method="GET" action="/grados" class="barra-filtros">
+  
+          <!-- Fila 1: buscador + año + acciones -->
+          <div class="barra-filtros__fila-superior">
+
+            <div class="barra-filtros__buscar">
+              <i data-lucide="search" class="barra-filtros__icono-buscar"></i>
+              <input type="text" name="buscar" value="<%= buscar %>" placeholder="Buscar grado..." class="barra-filtros__entrada" />
+            </div>
+  
+            <i data-lucide="calendar" class="barra-filtros__anio-icono"></i>
+            <span class="barra-filtros__anio-label">Año escolar</span>
+            <div class="barra-filtros__anio-wrap">
+              <select name="filtroAnio" class="barra-filtros__anio-select" onchange="this.form.submit()">
+                <option value="">Todos los años</option>
+                <% añosDisponibles.forEach(a => { %>
+                  <option value="<%= a %>" <%= (filtroAnio == a || (!filtroAnio && a == new Date().getFullYear())) ? 'selected' : '' %>><%= a %></option>
+                <% }) %>
+              </select>
+            </div>
+  
+            
+            <div class="barra-filtros__acciones">
+              <button type="submit" class="btn btn--primario btn--sm"><i data-lucide="search"></i> Buscar</button>
+              <% if (buscar || filtroNivel || filtroAnio) { %>
+                <a href="/grados" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Limpiar</a>
+              <% } %>
+            </div>
           </div>
-          <select name="filtroNivel" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Todos los niveles</option>
-            <% for (let n = 1; n <= 11; n++) { %>
-              <option value="<%= n %>" <%= filtroNivel == n ? 'selected' : '' %>>Nivel <%= n %></option>
-            <% } %>
-          </select>
-          <select name="filtroAnio" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Todos los años</option>
-            <% añosDisponibles.forEach(a => { %>
-              <option value="<%= a %>" <%= filtroAnio == a ? 'selected' : '' %>><%= a %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="barra-filtros__acciones">
-          <button type="submit" class="btn btn--primario btn--sm"><i data-lucide="search"></i> Buscar</button>
-          <% if (buscar || filtroNivel || filtroAnio) { %>
-            <a href="/grados" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Limpiar</a>
-          <% } %>
-        </div>
-      </form>
+  
+          <!-- Fila 2: selector de nivel educativo como acordeón -->
+          <div class="filtro-nivel-wrap">
+  
+            <button type="button" class="filtro-nivel_edu" id="btnNivelTrigger" onclick="toggleFiltroNivel()">
+              <i data-lucide="graduation-cap"></i>
+              <span>Nivel educativo</span>
+              <% if (filtroNivel) { %>
+                <span class="filtro-nivel__badge-trigger">Nivel <%= filtroNivel %></span>
+              <% } %>
+              <i data-lucide="chevron-down" class="filtro-nivel__chevron" id="nivelChevron"></i>
+            </button>
+  
+            <div class="filtro-nivel__panel" id="nivelPanel">
+  
+              <div class="filtro-nivel__categoria">
+                <div class="filtro-nivel__cat-label">
+                  <span class="filtro-nivel__dot filtro-nivel__dot--primaria"></span>
+                  Primaria
+                </div>
+                <div class="filtro-nivel__chips">
+                  <% [1,2,3,4,5].forEach(n => { %>
+                    <a href="/grados?filtroNivel=<%= n %><%= buscar ? '&buscar=' + buscar : '' %><%= filtroAnio ? '&filtroAnio=' + filtroAnio : '' %>"
+                       class="nivel-chip nivel-chip--primaria <%= filtroNivel == n ? 'nivel-chip--activo nivel-chip--activo-primaria' : '' %>">
+                      <%= n %>°
+                    </a>
+                  <% }) %>
+                </div>
+              </div>
+  
+              <hr class="filtro-nivel__divisor" />
+  
+              <div class="filtro-nivel__categoria">
+                <div class="filtro-nivel__cat-label">
+                  <span class="filtro-nivel__dot filtro-nivel__dot--secundaria"></span>
+                  Secundaria
+                </div>
+                <div class="filtro-nivel__chips">
+                  <% [6,7,8,9].forEach(n => { %>
+                    <a href="/grados?filtroNivel=<%= n %><%= buscar ? '&buscar=' + buscar : '' %><%= filtroAnio ? '&filtroAnio=' + filtroAnio : '' %>"
+                       class="nivel-chip nivel-chip--secundaria <%= filtroNivel == n ? 'nivel-chip--activo nivel-chip--activo-secundaria' : '' %>">
+                      <%= n %>°
+                    </a>
+                  <% }) %>
+                </div>
+              </div>
+  
+              <hr class="filtro-nivel__divisor" />
+  
+              <div class="filtro-nivel__categoria">
+                <div class="filtro-nivel__cat-label">
+                  <span class="filtro-nivel__dot filtro-nivel__dot--media"></span>
+                  Educación media
+                </div>
+                <div class="filtro-nivel__chips">
+                  <% [10,11].forEach(n => { %>
+                    <a href="/grados?filtroNivel=<%= n %><%= buscar ? '&buscar=' + buscar : '' %><%= filtroAnio ? '&filtroAnio=' + filtroAnio : '' %>"
+                       class="nivel-chip nivel-chip--media <%= filtroNivel == n ? 'nivel-chip--activo nivel-chip--activo-media' : '' %>">
+                      <%= n %>°
+                    </a>
+                  <% }) %>
+                </div>
+              </div>
+  
+            </div>
+          </div>
+  
+        </form>
+      </div>
 
       <!-- Tabla -->
       <div class="tabla-contenedor">
@@ -76,7 +149,7 @@
             <p>No hay grados registrados aún.</p>
           </div>
         <% } else { %>
-          <table class="tabla">
+          <table class="tabla tabla--cards">
             <thead>
               <tr>
                 <th>Grado</th>
@@ -90,7 +163,7 @@
             </thead>
             <tbody>
               <% grados.forEach(g => { %>
-                <tr>
+                <tr class="tabla__fila-card">
                   <td>
                     <div class="item-icono">
                       <div class="item-icono__circulo item-icono__circulo--verde">
@@ -235,10 +308,11 @@
       </div>
     </form>
   </template>
+
   <script src="/js/notificaciones.js"></script>
   <script src="/js/drawer.js"></script>
   <script src="/js/main.js"></script>
   <script src="/js/grados.js"></script>
-  <script>lucide.createIcons();</script>
+
 </body>
 </html>

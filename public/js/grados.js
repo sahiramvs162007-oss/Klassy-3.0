@@ -148,3 +148,22 @@ function abrirPanelDrawer() {
 function confirmarEliminar(nombre) {
   return confirm(`¿Eliminar el grado "${nombre}"?\nEsta acción no se puede deshacer.`);
 }
+
+lucide.createIcons();
+
+    // Acordeón nivel educativo
+    function toggleFiltroNivel() {
+      const panel   = document.getElementById('nivelPanel');
+      const chevron = document.getElementById('nivelChevron');
+      const trigger = document.getElementById('btnNivelTrigger');
+      const abierto = panel.classList.toggle('filtro-nivel__panel--abierto');
+      trigger.classList.toggle('filtro-nivel__trigger--activo', abierto);
+      chevron.style.transform = abierto ? 'rotate(180deg)' : '';
+    }
+
+    // Si ya hay un nivel filtrado, abrir el panel al cargar
+    if (filtroNivel) { 
+      document.getElementById('nivelPanel').classList.add('filtro-nivel__panel--abierto');
+      document.getElementById('btnNivelTrigger').classList.add('filtro-nivel__trigger--activo');
+      document.getElementById('nivelChevron').style.transform = 'rotate(180deg)';
+    } 
