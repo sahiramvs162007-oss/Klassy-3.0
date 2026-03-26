@@ -140,26 +140,6 @@
           </div>
         <%}%>
 
-        <div class="seccion-titulo">Accesos rápidos</div>
-        <div class="accesos-grid">
-          <%if(rol==='director'){%>
-            <a href="/usuarios"        class="acceso-card acceso-card--azul"><i data-lucide="users"></i><span>Usuarios</span></a>
-            <a href="/matriculas"      class="acceso-card acceso-card--verde"><i data-lucide="file-text"></i><span>Matrículas</span></a>
-            <a href="/asignaciones"    class="acceso-card acceso-card--naranja"><i data-lucide="link"></i><span>Asignaciones</span></a>
-            <a href="/notas/admin"     class="acceso-card acceso-card--morado"><i data-lucide="bar-chart-2"></i><span>Notas</span></a>
-            <a href="/boletines/admin" class="acceso-card acceso-card--azul"><i data-lucide="file-badge"></i><span>Boletines</span></a>
-            <a href="/noticias"        class="acceso-card acceso-card--verde"><i data-lucide="newspaper"></i><span>Noticias</span></a>
-          <%}else if(rol==='docente'){%>
-            <a href="/actividades/docente" class="acceso-card acceso-card--azul"><i data-lucide="clipboard-list"></i><span>Actividades</span></a>
-            <a href="/notas/docente"       class="acceso-card acceso-card--verde"><i data-lucide="bar-chart-2"></i><span>Notas</span></a>
-            <a href="/boletines/docente"   class="acceso-card acceso-card--naranja"><i data-lucide="file-badge"></i><span>Boletines</span></a>
-            <a href="/noticias"            class="acceso-card acceso-card--morado"><i data-lucide="newspaper"></i><span>Noticias</span></a>
-          <%}else if(rol==='estudiante'){%>
-            <a href="/actividades/estudiante" class="acceso-card acceso-card--azul"><i data-lucide="clipboard-list"></i><span>Actividades</span></a>
-            <a href="/notas/estudiante"        class="acceso-card acceso-card--verde"><i data-lucide="bar-chart-2"></i><span>Mis Notas</span></a>
-            <a href="/boletines/estudiante"    class="acceso-card acceso-card--naranja"><i data-lucide="file-badge"></i><span>Mis Boletines</span></a>
-          <%}%>
-        </div>
 
         <%if(noticias&&noticias.length>0){%>
           <div class="noticias-seccion">
