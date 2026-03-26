@@ -66,7 +66,7 @@ const listarMatriculas = async (req, res) => {
 
     // Verificar si el 4to periodo está activo (para mostrar botón de matrícula masiva)
     const añoActual = new Date().getFullYear();
-    const cuartoPeriodo = await Periodo.findOne({ numero: 4, año: añoActual, activo: true });
+    const cuartoPeriodo = await Periodo.findOne({ numero: 4, año: añoActual });
     const puedeMasiva = !!cuartoPeriodo;
 
     res.render('paginas/matriculas', {
@@ -338,7 +338,7 @@ const matriculaMasiva = async (req, res) => {
     const añoNuevo  = añoActual + 1;
 
     // Verificar que el 4to periodo esté activo
-    const cuartoPeriodo = await Periodo.findOne({ numero: 4, año: añoActual, activo: true });
+    const cuartoPeriodo = await Periodo.findOne({ numero: 4, año: añoActual });
     if (!cuartoPeriodo) {
       req.flash('error', 'La matrícula masiva solo está disponible cuando el 4to periodo está activo.');
       return res.redirect('/matriculas');
