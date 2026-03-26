@@ -1,40 +1,45 @@
 /**
  * config/multer.js
  * Configuración de multer para manejar archivos de actividades y entregas.
- * Tipos permitidos: jpg, jpeg, png, pdf, docx, pptx, xlsx, mp3, mp4
  */
 
 const multer  = require('multer');
 const path    = require('path');
 const fs      = require('fs');
+const upath   = require('upath'); // 🔥 NUEVO (reemplaza os)
 
 // ─── Tipos MIME permitidos ────────────────────────────────────────────────────
 const TIPOS_PERMITIDOS = {
-  'image/jpeg':                                                    'jpg',
-  'image/png':                                                     'png',
-  'application/pdf':                                               'pdf',
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'application/pdf': 'pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
-  'application/msword':                                            'doc',
+  'application/msword': 'doc',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
-  'application/vnd.ms-powerpoint':                                 'ppt',
+  'application/vnd.ms-powerpoint': 'ppt',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
-  'application/vnd.ms-excel':                                      'xls',
-  'audio/mpeg':                                                    'mp3',
-  'audio/mp3':                                                     'mp3',
-  'video/mp4':                                                     'mp4',
+  'application/vnd.ms-excel': 'xls',
+  'audio/mpeg': 'mp3',
+  'audio/mp3': 'mp3',
+  'video/mp4': 'mp4',
 };
 
 // ─── Función genérica para crear storage ─────────────────────────────────────
 const crearStorage = (subcarpeta) => multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = path.join(__dirname, `../public/uploads/${subcarpeta}`);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const dir = path.join(__dirname, '..', 'public', 'uploads', subcarpeta);
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
     cb(null, dir);
   },
   filename: (req, file, cb) => {
     const ext       = path.extname(file.originalname).toLowerCase();
     const timestamp = Date.now();
     const random    = Math.round(Math.random() * 1e6);
+
     cb(null, `${subcarpeta}_${timestamp}_${random}${ext}`);
   },
 });
@@ -48,23 +53,20 @@ const filtroArchivos = (req, file, cb) => {
   }
 };
 
-// ─── Exportar instancias de multer por contexto ───────────────────────────────
-
-// Para archivos adjuntos que publica el docente en la actividad (máx 5 archivos, 50MB c/u)
+// ─── Subidas ────────────────────────────────────────────────────────────────
 const subirArchivosActividad = multer({
-  storage:  crearStorage('actividades'),
+  storage: crearStorage('actividades'),
   fileFilter: filtroArchivos,
   limits: { fileSize: 50 * 1024 * 1024 },
 }).array('archivos', 5);
 
-// Para entregas de estudiantes (máx 5 archivos, 50MB c/u)
 const subirArchivosEntrega = multer({
-  storage:  crearStorage('entregas'),
+  storage: crearStorage('entregas'),
   fileFilter: filtroArchivos,
   limits: { fileSize: 50 * 1024 * 1024 },
 }).array('archivos', 5);
 
-// ─── Middleware con manejo de errores de multer ───────────────────────────────
+// ─── Middleware con manejo de errores ────────────────────────────────────────
 const manejarSubidaActividad = (req, res, next) => {
   subirArchivosActividad(req, res, (err) => {
     if (err instanceof multer.MulterError) {
@@ -91,21 +93,34 @@ const manejarSubidaEntrega = (req, res, next) => {
   });
 };
 
-// ─── Helper: construir objeto archivo desde req.file ─────────────────────────
-const mapearArchivo = (file) => ({
-  nombreOriginal: file.originalname,
-  nombreArchivo:  file.filename,
-  ruta:           `/uploads/${file.destination.split('/uploads/')[1]}/${file.filename}`,
-  tipoMime:       file.mimetype,
-  tamanio:        file.size,
-});
+// ─── 🔥 FUNCIÓN CLAVE (ARREGLADA CON UPATH) ───────────────────────────────────
+const mapearArchivo = (file) => {
+  // Convertir ruta a formato universal (/)
+  const ruta = upath.toUnix(file.path);
 
-// ─── Para importación masiva de usuarios (solo xlsx) ─────────────────────────
+  // Buscar desde /uploads/
+  const partes = ruta.split('/uploads/');
+
+  const rutaPublica = partes[1]
+    ? `/uploads/${partes[1]}`
+    : `/uploads/${file.filename}`;
+
+  return {
+    nombreOriginal: file.originalname,
+    nombreArchivo: file.filename,
+    ruta: rutaPublica,
+    tipoMime: file.mimetype,
+    tamanio: file.size,
+  };
+};
+
+// ─── Excel ──────────────────────────────────────────────────────────────────
 const filtroSoloExcel = (req, file, cb) => {
   const mimesExcel = [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
   ];
+
   if (mimesExcel.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -114,9 +129,9 @@ const filtroSoloExcel = (req, file, cb) => {
 };
 
 const subirExcelUsuarios = multer({
-  storage: multer.memoryStorage(), // en memoria, no se guarda en disco
+  storage: multer.memoryStorage(),
   fileFilter: filtroSoloExcel,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB máx
+  limits: { fileSize: 5 * 1024 * 1024 },
 }).single('archivoExcel');
 
 const manejarSubidaExcelUsuarios = (req, res, next) => {
@@ -132,6 +147,7 @@ const manejarSubidaExcelUsuarios = (req, res, next) => {
   });
 };
 
+// ─── Exportaciones ───────────────────────────────────────────────────────────
 module.exports = {
   manejarSubidaActividad,
   manejarSubidaEntrega,
