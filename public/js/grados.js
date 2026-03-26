@@ -148,3 +148,46 @@ function abrirPanelDrawer() {
 function confirmarEliminar(nombre) {
   return confirm(`¿Eliminar el grado "${nombre}"?\nEsta acción no se puede deshacer.`);
 }
+
+lucide.createIcons();
+
+    // Acordeón nivel educativo
+    function toggleFiltroNivel() {
+      const panel   = document.getElementById('nivelPanel');
+      const chevron = document.getElementById('nivelChevron');
+      const trigger = document.getElementById('btnNivelTrigger');
+      const abierto = panel.classList.toggle('filtro-nivel__panel--abierto');
+      trigger.classList.toggle('filtro-nivel__trigger--activo', abierto);
+      chevron.style.transform = abierto ? 'rotate(180deg)' : '';
+    }
+
+    // Si ya hay un nivel filtrado, abrir el panel al cargar
+    if (typeof filtroNivel !== "undefined" && filtroNivel) { 
+      document.getElementById('nivelPanel').classList.add('filtro-nivel__panel--abierto');
+      document.getElementById('btnNivelTrigger').classList.add('filtro-nivel__trigger--activo');
+      document.getElementById('nivelChevron').style.transform = 'rotate(180deg)';
+    } 
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  const selectEstado = document.getElementById("filtroEstado");
+  if (!selectEstado) return;
+
+  selectEstado.addEventListener("change", function () {
+
+    const valor = this.value;
+    const filas = document.querySelectorAll(".tabla__fila-card");
+
+    filas.forEach(fila => {
+      const estado = fila.getAttribute("data-estado");
+
+      if (valor === "" || estado === valor) {
+        fila.style.display = "";
+      } else {
+        fila.style.display = "none";
+      }
+    });
+
+  });
+
+});
