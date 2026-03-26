@@ -62,15 +62,17 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 15% 20%, rgba(191, 219, 254, 0.45) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 70% at 85% 10%, rgba(187, 247, 208, 0.35) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 50% at 50% 90%, rgba(254, 240, 138, 0.25) 0%, transparent 50%),
-    radial-gradient(ellipse 40% 40% at 90% 70%, rgba(251, 207, 232, 0.30) 0%, transparent 50%),
-    linear-gradient(145deg, #f0f7ff 0%, #f8fffe 40%, #fffaf0 70%, #fdf2f8 100%);
+  background: linear-gradient(
+    145deg,
+    #dbeafe 0%,
+    #cbe2ff3f 45%,
+    #e0f2fe 100%
+  );
   z-index: -2;
 }
-html {
+
+
+body {
   font-size: 15px;
   -webkit-font-smoothing: antialiased;
 }
@@ -413,6 +415,8 @@ input, select, textarea {
   border-radius: var(--radio-lg);
   box-shadow: 0 4px 24px rgba(59, 130, 246, 0.08), 0 1px 4px rgba(0,0,0,0.04);
 }
+
+
 /* Cuando el sidebar hace hover, el contenido se corre */
 .sidebar:hover ~ .contenedor-principal {
   margin-left: var(--sidebar-ancho);   /* 240px */
@@ -549,8 +553,8 @@ input, select, textarea {
 }
 
 .cabecera-pagina__titulo {
-  font-size: 1.4rem;
-  font-weight: 600;
+  font-size: 3rem;
+  font-weight: bold;
   color: var(--gris-900);
   line-height: 1.3;
 }
@@ -611,7 +615,7 @@ input, select, textarea {
   font-style: italic;
 }
 
-/* ─── Tarjetas de estadísticas ───────────────────────────────────────────────── */
+
 .cuadricula-tarjetas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -2604,4 +2608,8 @@ input, select, textarea {
   border-radius: 12px;
   backdrop-filter: blur(8px);
   box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+}
+
+.est {
+  height: 300px;
 }

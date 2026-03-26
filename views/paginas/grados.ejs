@@ -62,7 +62,13 @@
                 <% }) %>
               </select>
             </div>
-  
+            <div class="barra-filtros__anio-wrap">
+  <select id="filtroEstado" class="barra-filtros__anio-select">
+    <option value="">Todos</option>
+    <option value="activo">Activos</option>
+    <option value="inactivo">Inactivos</option>
+  </select>
+</div>
             
             <div class="barra-filtros__acciones">
               <button type="submit" class="btn btn--primario btn--sm"><i data-lucide="search"></i> Buscar</button>
@@ -163,7 +169,7 @@
             </thead>
             <tbody>
               <% grados.forEach(g => { %>
-                <tr class="tabla__fila-card">
+                <tr class="tabla__fila-card" data-estado="<%= g.activo ? 'activo' : 'inactivo' %>">
                   <td>
                     <div class="item-icono">
                       <div class="item-icono__circulo item-icono__circulo--verde">

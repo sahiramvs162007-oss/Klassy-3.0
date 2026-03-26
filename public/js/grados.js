@@ -162,8 +162,32 @@ lucide.createIcons();
     }
 
     // Si ya hay un nivel filtrado, abrir el panel al cargar
-    if (filtroNivel) { 
+    if (typeof filtroNivel !== "undefined" && filtroNivel) { 
       document.getElementById('nivelPanel').classList.add('filtro-nivel__panel--abierto');
       document.getElementById('btnNivelTrigger').classList.add('filtro-nivel__trigger--activo');
       document.getElementById('nivelChevron').style.transform = 'rotate(180deg)';
     } 
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  const selectEstado = document.getElementById("filtroEstado");
+  if (!selectEstado) return;
+
+  selectEstado.addEventListener("change", function () {
+
+    const valor = this.value;
+    const filas = document.querySelectorAll(".tabla__fila-card");
+
+    filas.forEach(fila => {
+      const estado = fila.getAttribute("data-estado");
+
+      if (valor === "" || estado === valor) {
+        fila.style.display = "";
+      } else {
+        fila.style.display = "none";
+      }
+    });
+
+  });
+
+});

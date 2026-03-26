@@ -1,10 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('botones.css');
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   --primary-blue: #4a8df8;
@@ -322,32 +324,6 @@ body {
   display: block;
 }
 
-/* ══════════════════════════════════════
-   BOTONES
-   ══════════════════════════════════════ */
-.btn {
-  width: 100%;
-  padding: 13px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #4a8df8 0%, #2563eb 100%);
-  color: white;
-  font-weight: 700;
-  font-size: 15px;
-  font-family: 'Outfit', sans-serif;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 6px;
-  letter-spacing: 0.3px;
-}
-
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(74, 141, 248, 0.35);
-}
-
-.btn:active { transform: translateY(0); }
-
 /* Divider */
 .divider {
   display: flex;
@@ -387,39 +363,6 @@ body {
 }
 
 .forgot-link:hover { color: var(--accent); }
-
-.back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 6px 14px 6px 10px;
-  color: #374151;
-  font-size: 0.82rem;
-  font-weight: 500;
-  font-family: 'Outfit', sans-serif;
-  cursor: pointer;
-  margin-bottom: 20px;
-  transition: all 0.2s ease;
-}
-
-.back-btn:hover {
-  border-color: var(--accent);
-  color: #111;
-}
-
-.back-btn svg {
-  width: 14px;
-  height: 14px;
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  flex-shrink: 0;
-}
 
 /* ══════════════════════════════════════
    MANCHAS DECORATIVAS
@@ -466,6 +409,12 @@ body {
 .tag-sci  { background: var(--mint);   top: 14%;   right: 10%; animation-delay: 1s; }
 .tag-lit  { background: var(--pink);   bottom: 18%; left: 6%;  animation-delay: 2s; }
 .tag-hist { background: var(--blue);   bottom: 12%; right: 15%; animation-delay: 1.5s; }
+.tag-comp { background: var(--coral);  top: 5%;   left: 20%; animation-delay: 0.5s; }
+.tag-eng  { background: var(--yellow); top: 40%;   right: 20%; animation-delay: 2.5s; }
+.tag-art  { background: var(--mint);   top: 60%;   left: 15%; animation-delay: 1.2s; }
+.tag-music{ background: var(--pink);   top: 50%;   right: 25%; animation-delay: 0.8s; }
+.tag-phys { background: var(--blue);   top: 30%;   left: 25%; animation-delay: 1.8s; }
+.tag-bio  { background: var(--coral);  top: 20%;  right: 5%;  animation-delay: 0.3s; }
 
 /* ══════════════════════════════════════
    LADO DERECHO (SLIDER)
