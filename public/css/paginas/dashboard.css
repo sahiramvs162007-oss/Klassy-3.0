@@ -1,0 +1,758 @@
+/* ─── Encabezado de sección ────────────────────────────── */
+/* Usado en: admin (noticias), docente/estudiante (noticias) */
+.seccion-titulo,
+.noticias-seccion__titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #64748b;
+}
+.seccion-titulo svg,
+.noticias-seccion__titulo svg {
+  width: 14px;
+  height: 14px;
+  stroke: #94a3b8;
+  flex-shrink: 0;
+}
+
+/* ─── Chip de conteo ───────────────────────────────────── */
+.seccion-conteo {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: rgba(59, 130, 246, 0.10);
+  color: #3b82f6;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+/* ─── Imágenes de estudiantes (compartido admin e ilustración mv) ── */
+.est-1, .est-2 {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.est-1 { margin-right: -6rem; z-index: 1; }
+.est-2 { z-index: 2; }
+
+.est-hero {
+  height: 410px;
+  width: auto;
+  object-fit: contain;
+  object-position: bottom;
+  display: block;
+  filter: drop-shadow(0 20px 32px rgba(116, 148, 255, 0.355));
+  transition: transform 0.3s ease;
+}
+.est-1:hover .est-hero,
+.est-2:hover .est-hero {
+  transform: translateY(-8px) scale(1.03);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   HERO ADMIN
+   ══════════════════════════════════════════════════════ */
+
+.hero-admin {
+  position: relative;
+  border-radius: 24px;
+  min-height: 320px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 55% 45%;
+  align-items: flex-start;
+  padding: 2% 4%;
+  isolation: isolate;
+}
+
+.hero-admin__bienvenida {
+  grid-column: 1 / 2;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 36px;
+}
+
+.hero-admin__titulo {
+  font-family: 'Fraunces', serif;
+  color: #0f2a5e;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+.titu1 { font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 700;}
+.titu2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 400; text-align: center; }
+.hero-admin__titulo em { font-style: italic; color: #2563eb; }
+
+.hero-admin__sub {
+  font-size: 0.95rem;
+  color: #475569;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.hero-admin__acciones {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.hero-admin__ilustracion {
+  position: relative;
+  grid-column: 2 / 3;
+  grid-row: 1 / 3;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   SECCIÓN INFO COLEGIO (#infocolegio) — solo admin
+   ══════════════════════════════════════════════════════ */
+
+#infocolegio, .noticias-seccion {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(135deg, #e8f4ff 0%, #d6ecff 40%, #c5e3ff 70%, #d4eeff 100%);
+  border: 1.5px solid rgba(147, 197, 253, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.5) inset,
+    0 8px 32px rgba(59, 130, 246, 0.12),
+    0 0 60px rgba(147,197,253,0.18);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  transition: box-shadow 0.4s ease, border-color 0.4s ease;
+  animation: pulso-borde 5s ease-in-out infinite;
+  animation-delay: 1s;
+  grid-column: 1 / 3;
+}
+
+.infocolegio__brillo {
+  position: absolute;
+  top: 0;
+  left: -160%;
+  width: 120px;
+  height: 100%;
+  background: linear-gradient(
+    150deg,
+    transparent 0%,
+    rgba(186, 230, 253, 0.60) 40%,
+    rgba(147, 197, 253, 0.45) 50%,
+    rgba(186, 230, 253, 0.60) 60%,
+    transparent 100%
+  );
+  filter: blur(18px);
+  transform: skewX(-20deg);
+  z-index: 0;
+  pointer-events: none;
+  animation: brillo-sweep 5s ease-in-out infinite;
+}
+
+@keyframes brillo-sweep {
+  0%   { left: -160%; opacity: 0; }
+  8%   { opacity: 1; }
+  50%  { left: 160%; opacity: 1; }
+  55%  { opacity: 0; }
+  100% { left: 160%; opacity: 0; }
+}
+
+@keyframes pulso-borde {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.5) inset,
+      0 8px 32px rgba(59, 130, 246, 0.12),
+      0 0 50px rgba(147,197,253,0.15);
+    border-color: rgba(147, 197, 253, 0.55);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.6) inset,
+      0 12px 40px rgba(59, 130, 246, 0.20),
+      0 0 80px rgba(147,197,253,0.30);
+    border-color: rgba(96, 165, 250, 0.70);
+  }
+}
+
+.infocolegio__contenido {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.infocolegio__encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.infocolegio__titulo {
+  font-family: 'Fraunces', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #0f2a5e;
+  letter-spacing: -0.02em;
+}
+
+.infocolegio__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(147,197,253,0.4);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1d4ed8;
+}
+.infocolegio__chip svg { width: 13px; height: 13px; }
+
+.infocolegio__nombre-grande {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0f2a5e;
+}
+
+.infocolegio__contenido-flex {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.infocolegio__logo img {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+}
+
+.tarjeta--vision,
+.tarjeta--mision {
+  background: rgba(255,255,255,0.60) !important;
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.80) !important;
+  border-radius: 16px !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.tarjeta--vision:hover,
+.tarjeta--mision:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(59,130,246,0.12) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   STATS RÁPIDAS (admin)
+   ══════════════════════════════════════════════════════ */
+
+.acceso-rapido-seccion {
+  display: flex;
+  gap: 14px;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   MINI MOSAICO DE NOTICIAS (admin dashboard)
+   ══════════════════════════════════════════════════════ */
+
+.noticias-admin-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mosaico-mini {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.noticia-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: var(--radio);
+  cursor: pointer;
+  transition: background var(--trans-rapida), border-color var(--trans-rapida),
+              transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.noticia-mini:hover {
+  background: var(--azul-50);
+  border-color: rgba(59,130,246,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(59,130,246,0.10);
+}
+
+.noticia-mini__img {
+  width: 46px; height: 36px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.noticia-mini__sin-img {
+  width: 46px; height: 36px;
+  background: var(--azul-50);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--azul-300, #93c5fd);
+  flex-shrink: 0;
+}
+.noticia-mini__sin-img svg { width: 16px; height: 16px; }
+
+.noticia-mini__info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.noticia-mini__titulo {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--gris-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.noticia-mini__fecha { font-size: 0.67rem; color: var(--gris-400); }
+
+
+/* ══════════════════════════════════════════════════════
+   HERO COLEGIO (docente / estudiante)
+   ══════════════════════════════════════════════════════ */
+
+.content_do_est {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-colegio {
+  position: relative;
+  border-radius: 20px;
+  height: 320px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0f2a5e 100%);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.hero-colegio::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 80% 15%, rgba(255,255,255,0.07) 0%, transparent 48%),
+    radial-gradient(circle at 15% 80%, rgba(255,255,255,0.04) 0%, transparent 36%);
+}
+
+.hero-colegio::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 43, 94, 0.155);
+}
+
+.hero-colegio__overlay {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 28px 32px;
+  background: linear-gradient(to top, rgba(0,0,0,0.42) 0%, transparent 100%);
+}
+
+.hero-colegio__info { display: flex; flex-direction: column; gap: 6px; }
+
+.hero-colegio__nombre {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+.hero-colegio__saludo {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.90);
+  font-weight: 400;
+}
+.hero-colegio__saludo em {
+  font-style: italic;
+  font-weight: 600;
+  color: #93c5fd;
+}
+
+.hero-colegio__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.32);
+  border-radius: 20px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  width: fit-content;
+  margin-top: 2px;
+  backdrop-filter: blur(8px);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   SECCIÓN MISIÓN / VISIÓN + ILUSTRACIÓN
+   (docente / estudiante)
+   ══════════════════════════════════════════════════════ */
+
+.mv-seccion {
+  display: grid;
+  grid-template-columns: 45% 55%;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  min-height: 220px;
+}
+
+.mv-tarjetas {
+  display: flex;
+  flex-direction: column;   /* columna: cada tarjeta crece sola */
+  gap: 12px;
+  z-index: 2;
+  padding: 8px 0;
+  align-self: center;
+}
+
+/* Tarjeta base mv-card */
+.mv-card {
+  display: flex;
+  flex-wrap: wrap;           /* permite que el panel interno ocupe toda la fila */
+  align-items: center;
+  gap: 0 14px;              /* solo gap horizontal; panel maneja su espaciado */
+  padding: 16px 18px;
+  width: 100%;
+  border-radius: 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.3s ease,
+              background 0.25s ease;
+  position: relative;
+  overflow: visible;         /* NO hidden: el panel expandido no queda cortado */
+  border: 1px solid transparent;
+  text-decoration: none;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.mv-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.mv-card:hover::before { opacity: 1; }
+.mv-card:not(.mv-card--abierta):hover {
+  transform: translateY(-4px) scale(1.02);
+}
+
+.mv-card__icono {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+.mv-card:hover .mv-card__icono { transform: scale(1.12) rotate(-4deg); }
+.mv-card__icono svg { width: 20px; height: 20px; stroke-width: 1.75; }
+
+.mv-card__datos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+.mv-card__etiqueta {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  opacity: 0.75;
+}
+.mv-card__valor { font-size: 0.88rem; font-weight: 600; }
+
+.mv-card__flecha {
+  width: 16px; height: 16px;
+  opacity: 0.5;
+  flex-shrink: 0;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+}
+.mv-card--abierta .mv-card__flecha {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+/* Colores mv-card — misión */
+.mv-card--mision .mv-card__icono {
+  background: rgba(234,88,12,0.15);
+  color: #ea580c;
+}
+
+/* Colores mv-card — visión */
+.mv-card--vision .mv-card__icono {
+  background: rgba(59,130,246,0.15);
+  color: #2563eb;
+}
+
+/* ── Panel inline que se despliega DENTRO de la mv-card ── */
+.mv-inline-panel {
+  width: 100%;           /* ocupa el ancho completo gracias al flex-wrap */
+  display: grid;
+  grid-template-rows: 0fr; /* truco: colapsa sin overflow:hidden en la card */
+  opacity: 0;
+  transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.35s ease;
+}
+
+.mv-inline-panel > * {
+  overflow: hidden;       /* el overflow está aquí, solo en el hijo */
+}
+
+.mv-card--abierta .mv-inline-panel {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.mv-inline-panel__texto {
+  font-size: 0.88rem;
+  color: inherit;
+  line-height: 1.7;
+  margin: 0;
+  padding: 14px 0 2px;     /* espacio arriba del texto expandido */
+  border-top: 1px solid rgba(0,0,0,0.10);
+  opacity: 0.85;
+}
+
+/* Ilustración estudiantes — docente/estudiante */
+.mv-ilustracion {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+  min-height: 260px;
+}
+
+.mv-ilustracion .est-1 { margin-right: -5rem; z-index: 1; }
+.mv-ilustracion .est-2 { z-index: 2; }
+
+.mv-ilustracion .est-hero {
+  height: 360px;
+  width: auto;
+  object-fit: contain;
+  object-position: bottom;
+  display: block;
+  filter: drop-shadow(0 16px 28px rgba(116, 148, 255, 0.3));
+  transition: transform 0.3s ease;
+}
+.mv-ilustracion .est-1:hover .est-hero,
+.mv-ilustracion .est-2:hover .est-hero {
+  transform: translateY(-6px) scale(1.03);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   MOSAICO DE NOTICIAS — 3 COLUMNAS (docente/estudiante)
+   ══════════════════════════════════════════════════════ */
+
+.noticias-seccion {
+  padding-top: 3%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mosaico-noticias-3col {
+  display: grid;
+  gap: 14px;
+}
+
+/* ── CAMBIO: quitado grid-auto-rows fijo; el JS asigna row spans explícitos ── */
+.mosaico-noticias-3col.mosaico-activo-3col {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.mosaico-noticias-3col.lista-simple-3col {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-auto-rows: 340px;
+}
+
+.lista-simple-3col .noticia-card__foto { height: 180px; }
+.lista-simple-3col .noticia-card {
+  grid-column: auto !important;
+  grid-row: auto !important;
+}
+
+/* ── NUEVO: alturas por tipo de card en mosaico activo ── */
+.mosaico-activo-3col .noticia-card--tall   { height: 460px; }
+.mosaico-activo-3col .noticia-card--normal { height: 230px; }
+
+.mosaico-activo-3col .noticia-card--wide {
+  flex-direction: row;
+  height: 230px;
+}
+.mosaico-activo-3col .noticia-card--wide .noticia-card__foto {
+  width: 45%;
+  height: 100%;
+  flex-shrink: 0;
+}
+.mosaico-activo-3col .noticia-card--wide .noticia-card__foto--vacia {
+  width: 45%;
+  height: 100%;
+}
+
+/* ── NUEVO: noticia banner (una sola suelta al final) ── */
+.mosaico-activo-3col .noticia-card--banner {
+  flex-direction: row;
+  height: 200px;
+}
+.mosaico-activo-3col .noticia-card--banner .noticia-card__foto {
+  width: 320px;
+  height: 100%;
+  flex-shrink: 0;
+}
+.mosaico-activo-3col .noticia-card--banner .noticia-card__foto--vacia {
+  width: 320px;
+  height: 100%;
+}
+
+
+
+
+
+
+
+
+
+
+/* ══════════════════════════════════════════════════════
+   BORDES DE NOTICIA-CARD SEGÚN ETIQUETA
+   El borde izquierdo refleja el color de la etiqueta
+   ══════════════════════════════════════════════════════ */
+
+.noticia-card:has(.noticia-etiqueta--anuncios)      { border-left: 3px solid #0ea5e9; }
+.noticia-card:has(.noticia-etiqueta--eventos)        { border-left: 3px solid #eab308; }
+.noticia-card:has(.noticia-etiqueta--acad-mico)      { border-left: 3px solid #8b5cf6; }
+.noticia-card:has(.noticia-etiqueta--institucional)  { border-left: 3px solid #3b82f6; }
+.noticia-card:has(.noticia-etiqueta--urgente)        { border-left: 3px solid #ef4444; }
+.noticia-card:has(.noticia-etiqueta--clases)         { border-left: 3px solid #10b981; }
+.noticia-card:has(.noticia-etiqueta--proyectos)      { border-left: 3px solid #ec4899; }
+.noticia-card:has(.noticia-etiqueta--deportes)       { border-left: 3px solid #22c55e; }
+.noticia-card:has(.noticia-etiqueta--cultura)        { border-left: 3px solid #d97706; }
+.noticia-card:has(.noticia-etiqueta--arte-y-m-sica)  { border-left: 3px solid #a855f7; }
+.noticia-card:has(.noticia-etiqueta--bienestar)      { border-left: 3px solid #059669; }
+.noticia-card:has(.noticia-etiqueta--logros)         { border-left: 3px solid #f59e0b; }
+
+/* Al hacer hover, el borde se intensifica */
+.noticia-card:has(.noticia-etiqueta--anuncios):hover      { border-left-color: #0284c7; box-shadow: -2px 6px 20px rgba(14,165,233,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+.noticia-card:has(.noticia-etiqueta--eventos):hover        { border-left-color: #ca8a04; box-shadow: -2px 6px 20px rgba(234,179,8,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+.noticia-card:has(.noticia-etiqueta--acad-mico):hover      { border-left-color: #7c3aed; box-shadow: -2px 6px 20px rgba(139,92,246,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+.noticia-card:has(.noticia-etiqueta--institucional):hover  { border-left-color: #2563eb; box-shadow: -2px 6px 20px rgba(59,130,246,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+.noticia-card:has(.noticia-etiqueta--urgente):hover        { border-left-color: #dc2626; box-shadow: -2px 6px 20px rgba(239,68,68,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+.noticia-card:has(.noticia-etiqueta--clases):hover         { border-left-color: #059669; box-shadow: -2px 6px 20px rgba(16,185,129,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+.noticia-card:has(.noticia-etiqueta--proyectos):hover      { border-left-color: #db2777; box-shadow: -2px 6px 20px rgba(236,72,153,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+.noticia-card:has(.noticia-etiqueta--deportes):hover       { border-left-color: #16a34a; box-shadow: -2px 6px 20px rgba(34,197,94,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+.noticia-card:has(.noticia-etiqueta--cultura):hover        { border-left-color: #b45309; box-shadow: -2px 6px 20px rgba(217,119,6,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+.noticia-card:has(.noticia-etiqueta--arte-y-m-sica):hover  { border-left-color: #9333ea; box-shadow: -2px 6px 20px rgba(168,85,247,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+.noticia-card:has(.noticia-etiqueta--bienestar):hover      { border-left-color: #047857; box-shadow: -2px 6px 20px rgba(5,150,105,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+.noticia-card:has(.noticia-etiqueta--logros):hover         { border-left-color: #d97706; box-shadow: -2px 6px 20px rgba(245,158,11,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+  .hero-admin {
+    grid-template-columns: 1fr;
+    padding: 28px 24px 0;
+  }
+  .hero-admin__ilustracion {
+    justify-content: center;
+    margin-top: 20px;
+  }
+  .est-hero { height: 200px; }
+
+  .mv-seccion {
+    grid-template-columns: 1fr;
+  }
+  .mv-ilustracion { display: none; }
+  .mv-card { max-width: 100%; }
+
+  .mosaico-noticias-3col.mosaico-activo-3col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .noticia-card {
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+  .noticia-card--horizontal { flex-direction: column; }
+  .noticia-card--horizontal .noticia-card__foto { width: 100%; height: 160px; }
+}
+
+@media (max-width: 640px) {
+  .hero-colegio { height: 240px; border-radius: 18px; }
+  .hero-colegio__overlay { padding: 22px; }
+
+  .mosaico-noticias-3col.mosaico-activo-3col {
+    grid-template-columns: 1fr;
+  }
+  .noticia-card--horizontal { flex-direction: column; }
+  .noticia-card--horizontal .noticia-card__foto { width: 100%; height: 140px; }
+}
+
+@media (max-width: 600px) {
+  .hero-admin { grid-template-columns: 1fr; }
+  .hero-admin__ilustracion { justify-content: center; }
+  .accesos-grid { grid-template-columns: repeat(2, 1fr); }
+  #infocolegio { padding: 20px; }
+  .noticias-gestion-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .noticia-card__foto { height: 160px !important; }
+  .accesos-grid { grid-template-columns: repeat(3, 1fr); }
+}

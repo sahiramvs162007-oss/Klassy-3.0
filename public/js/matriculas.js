@@ -27,6 +27,9 @@ async function abrirDrawerCrearMatricula() {
 
   lucide.createIcons();
 
+  // Inicializar picker de estudiantes
+  initEstPickerMat();
+
   // Cargar datos del formulario
   await cargarDatosFormulario(ANO_ACTUAL);
 
@@ -41,79 +44,168 @@ async function abrirDrawerCrearMatricula() {
 
 // Carga estudiantes y grados disponibles desde el servidor
 async function cargarDatosFormulario(año) {
-  const selectEstudiante = document.getElementById('campoEstudianteMatricula');
-  const selectGrado      = document.getElementById('campoGradoMatricula');
-  if (!selectEstudiante) return;
+  const inputId  = document.getElementById('campoEstudianteMatricula');
+  if (!inputId) return;
 
-  selectEstudiante.innerHTML = '<option value="">Cargando...</option>';
-  selectGrado.innerHTML      = '<option value="">Selecciona un estudiante primero</option>';
+  // Resetear picker al cambiar año
+  _resetEstPickerMat();
+
+  const lista = document.getElementById('estListaMat');
+  if (lista) lista.innerHTML = '<li class="est-picker__vacio">Cargando…</li>';
 
   try {
     const res = await fetch(`/matriculas/formulario?año=${año}`);
     if (!res.ok) throw new Error('Error al obtener datos');
     _datosFormulario = await res.json();
 
-    // Llenar estudiantes
-    selectEstudiante.innerHTML = '<option value="">Seleccionar estudiante</option>';
-    if (_datosFormulario.estudiantes.length === 0) {
-      selectEstudiante.innerHTML = '<option value="" disabled>Sin estudiantes disponibles para este año</option>';
-    } else {
-      _datosFormulario.estudiantes.forEach(est => {
-        const opt = document.createElement('option');
-        opt.value = est._id;
-        opt.dataset.nivel = est.ultimoNivelCursado || 0;
-        opt.textContent = `${est.nombre} ${est.apellido} (Nivel actual: ${est.ultimoNivelCursado || 0})`;
-        selectEstudiante.appendChild(opt);
-      });
-    }
-
-    // Actualizar grados al seleccionar estudiante
-    selectEstudiante.onchange = actualizarGradosDisponibles;
+    // Renderizar lista inicial del picker
+    _renderEstListaMat('');
 
   } catch (e) {
     console.error(e);
-    selectEstudiante.innerHTML = '<option value="">Error al cargar estudiantes</option>';
+    const lista = document.getElementById('estListaMat');
+    if (lista) lista.innerHTML = '<li class="est-picker__vacio">Error al cargar estudiantes</li>';
   }
 }
 
-// Filtra grados por nivel correcto según el estudiante seleccionado
-function actualizarGradosDisponibles() {
-  const selectEstudiante = document.getElementById('campoEstudianteMatricula');
-  const selectGrado      = document.getElementById('campoGradoMatricula');
-  const ayudaEstudiante  = document.getElementById('ayudaEstudiante');
-  const ayudaGrado       = document.getElementById('ayudaGrado');
+// ── Picker dinámico de estudiantes en el drawer Crear ──────────────────────
+let _estPickerMatInited = false;
 
-  const optSeleccionada = selectEstudiante.options[selectEstudiante.selectedIndex];
-  if (!optSeleccionada || !optSeleccionada.value) {
-    selectGrado.innerHTML = '<option value="">Selecciona un estudiante primero</option>';
+function _resetEstPickerMat() {
+  _estPickerMatInited = false;
+  const inputId    = document.getElementById('campoEstudianteMatricula');
+  const label      = document.getElementById('estPickerMatLabel');
+  const avatarMini = document.getElementById('estPickerMatAvatarMini');
+  const panel      = document.getElementById('estPickerMatPanel');
+  const trigger    = document.getElementById('estPickerMatTrigger');
+  if (inputId)    inputId.value        = '';
+  if (label)      { label.textContent = 'Seleccionar estudiante…'; label.style.color = 'var(--gris-400)'; }
+  if (avatarMini) avatarMini.style.display = 'none';
+  if (panel)      panel.classList.remove('est-picker__panel--abierto');
+  if (trigger)    trigger.classList.remove('est-picker__trigger--abierto');
+  // Limpiar ayuda y grados
+  const ayudaEstudiante = document.getElementById('ayudaEstudiante');
+  if (ayudaEstudiante) ayudaEstudiante.textContent = '';
+  actualizarGradosDisponibles(null);
+}
+
+function _renderEstListaMat(filtro) {
+  const lista = document.getElementById('estListaMat');
+  if (!lista) return;
+  const q = (filtro || '').toLowerCase();
+  lista.innerHTML = '';
+  const filtrados = (_datosFormulario.estudiantes || []).filter(e =>
+    (`${e.nombre} ${e.apellido}`).toLowerCase().includes(q) ||
+    (e.correo || '').toLowerCase().includes(q)
+  );
+  if (filtrados.length === 0) {
+    lista.innerHTML = '<li class="est-picker__vacio">Sin resultados</li>';
+    return;
+  }
+  filtrados.forEach(e => {
+    const iniciales = (e.nombre.charAt(0) + e.apellido.charAt(0)).toUpperCase();
+    const li = document.createElement('li');
+    li.className = 'est-picker__opcion';
+    li.dataset.id     = e._id;
+    li.dataset.nombre = `${e.apellido}, ${e.nombre}`;
+    li.dataset.nivel  = e.ultimoNivelCursado || 0;
+    li.innerHTML = `
+      <span class="est-picker__avatar">${iniciales}</span>
+      <span class="est-picker__info">
+        <span class="est-picker__nombre">${e.apellido}, ${e.nombre}</span>
+        <span class="est-picker__meta">Nivel actual: ${e.ultimoNivelCursado || 0}</span>
+      </span>`;
+    lista.appendChild(li);
+  });
+}
+
+function initEstPickerMat() {
+  const trigger    = document.getElementById('estPickerMatTrigger');
+  const panel      = document.getElementById('estPickerMatPanel');
+  const buscador   = document.getElementById('estBuscadorMat');
+  const lista      = document.getElementById('estListaMat');
+  const inputId    = document.getElementById('campoEstudianteMatricula');
+  const label      = document.getElementById('estPickerMatLabel');
+  const avatarMini = document.getElementById('estPickerMatAvatarMini');
+  if (!trigger || _estPickerMatInited) return;
+  _estPickerMatInited = true;
+
+  trigger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const open = panel.classList.toggle('est-picker__panel--abierto');
+    trigger.classList.toggle('est-picker__trigger--abierto', open);
+    if (open) setTimeout(() => buscador.focus(), 50);
+  });
+
+  document.addEventListener('click', function closePanelMat(e) {
+    if (!panel.contains(e.target) && e.target !== trigger) {
+      panel.classList.remove('est-picker__panel--abierto');
+      trigger.classList.remove('est-picker__trigger--abierto');
+    }
+  });
+
+  panel.addEventListener('click', e => e.stopPropagation());
+
+  buscador.addEventListener('input', () => _renderEstListaMat(buscador.value));
+
+  lista.addEventListener('click', function(e) {
+    const opt = e.target.closest('.est-picker__opcion');
+    if (!opt) return;
+
+    // Actualizar input hidden y UI del picker
+    inputId.value       = opt.dataset.id;
+    label.textContent   = opt.dataset.nombre;
+    label.style.color   = 'var(--gris-900)';
+    const iniciales     = opt.querySelector('.est-picker__avatar').textContent;
+    avatarMini.textContent    = iniciales;
+    avatarMini.style.display  = 'flex';
+
+    lista.querySelectorAll('.est-picker__opcion').forEach(li => li.classList.remove('est-picker__opcion--activa'));
+    opt.classList.add('est-picker__opcion--activa');
+    panel.classList.remove('est-picker__panel--abierto');
+    trigger.classList.remove('est-picker__trigger--abierto');
+    buscador.value = '';
+    _renderEstListaMat('');
+
+    // Disparar actualización de grados con el nivel del estudiante elegido
+    actualizarGradosDisponibles(parseInt(opt.dataset.nivel, 10) || 0);
+  });
+}
+
+// Filtra grados por nivel correcto según el estudiante seleccionado
+// Recibe nivelActual como número (desde el picker) o null para limpiar
+function actualizarGradosDisponibles(nivelActual) {
+  const ayudaEstudiante = document.getElementById('ayudaEstudiante');
+  const ayudaGrado      = document.getElementById('ayudaGrado');
+
+  // El picker de grado usa su propio picker visual (grado-picker.js),
+  // pero el input hidden sigue siendo campoGradoMatricula.
+  // Refresca el picker de grado filtrando por nivel requerido.
+  if (nivelActual === null || nivelActual === undefined) {
+    if (ayudaEstudiante) ayudaEstudiante.textContent = '';
+    if (_pickerGradoMatricula) _pickerGradoMatricula.refresh(
+      parseInt(document.getElementById('campoAnioMatricula')?.value, 10) || ANO_ACTUAL
+    );
     return;
   }
 
-  const nivelActual  = parseInt(optSeleccionada.dataset.nivel, 10) || 0;
-  const nivelReq     = nivelActual + 1;
+  const nivelReq = nivelActual + 1;
 
-  ayudaEstudiante.textContent = `Nivel actual: ${nivelActual} → debe matricularse en nivel ${nivelReq}`;
-  ayudaEstudiante.style.color = 'var(--azul-700)';
+  if (ayudaEstudiante) {
+    ayudaEstudiante.textContent = `Nivel actual: ${nivelActual} → debe matricularse en nivel ${nivelReq}`;
+    ayudaEstudiante.style.color = 'var(--azul-700)';
+  }
 
-  // Filtrar grados por nivel requerido
-  const gradosFiltrados = _datosFormulario.grados.filter(g => g.nivel === nivelReq);
-
-  selectGrado.innerHTML = '';
-  if (gradosFiltrados.length === 0) {
-    selectGrado.innerHTML = `<option value="" disabled>No hay grados de nivel ${nivelReq} disponibles</option>`;
-    ayudaGrado.textContent = `⚠ No existen grados de nivel ${nivelReq} para este año.`;
-    ayudaGrado.style.color = 'var(--rojo-600)';
-  } else {
-    selectGrado.innerHTML = '<option value="">Seleccionar grado</option>';
-    gradosFiltrados.forEach(g => {
-      const opt  = document.createElement('option');
-      opt.value  = g._id;
-      const cupoInfo = g.cupo > 0 ? ` — Cupo: ${g.cupo}` : '';
-      opt.textContent = `${g.nombre} (Nivel ${g.nivel}${cupoInfo})`;
-      selectGrado.appendChild(opt);
-    });
-    ayudaGrado.textContent = `Solo grados de nivel ${nivelReq} disponibles.`;
+  if (ayudaGrado) {
+    ayudaGrado.textContent = `Solo se muestran grados de nivel ${nivelReq}.`;
     ayudaGrado.style.color = 'var(--gris-500)';
+  }
+
+  if (_pickerGradoMatricula) {
+    _pickerGradoMatricula.refresh(
+      parseInt(document.getElementById('campoAnioMatricula')?.value, 10) || ANO_ACTUAL,
+      nivelReq
+    );
   }
 }
 
@@ -269,3 +361,82 @@ function abrirPanelDrawer() {
   document.getElementById('drawerOverlay').classList.add('drawer-overlay--visible');
   document.body.style.overflow = 'hidden';
 }
+
+// ─── Paginación ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  iniciarPaginacion('tbodyMatriculas', { filasPorPagina: 10 });
+});
+
+// Cargar grados disponibles al abrir el drawer de edición
+  async function cargarGradosDisponibles(matriculaId, gradoActualId) {
+    const select = document.getElementById('campoGradoEditar');
+    if (!select) return;
+    try {
+      const resp = await fetch(`/matriculas/${matriculaId}/grados-disponibles`);
+      const data = await resp.json();
+      select.innerHTML = '<option value="">-- Mantener grado actual --</option>';
+      (data.grados || []).forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g._id;
+        opt.selected = g._id === gradoActualId;
+        opt.textContent = `${g.nombre} (Nivel ${g.nivel} — Cupo: ${g.matriculados}/${g.cupo > 0 ? g.cupo : '∞'})`;
+        select.appendChild(opt);
+      });
+      if (!data.grados || data.grados.length === 0) {
+        select.innerHTML = '<option value="">Sin otros grados disponibles con cupo</option>';
+      }
+    } catch(e) {
+      select.innerHTML = '<option value="">Error al cargar grados</option>';
+    }
+  }
+
+// ── Inicializar filtro de grado en la página ─────────────────────────────
+  document.addEventListener('DOMContentLoaded', function () {
+    initFiltroGradoPicker({
+      gradosData:        GRADOS_DATA_MAT,
+      filtroGradoActivo: FILTRO_GRADO_ACTIVO_MAT,
+      formId:            'formFiltrosMatriculas',
+      inputHiddenId:     'inputFiltroGrado',
+      anioSelectName:    'filtroAnio',
+      triggerBtnId:      'btnFiltroGradoMatriculas',
+      panelId:           'panelFiltroGradoMatriculas',
+    });
+  });
+
+  // ── Picker de grado en drawer Crear ──────────────────────────────────────
+  // Se inicializa cuando se abre el drawer y se sabe el año
+  let _pickerGradoMatricula = null;
+
+  // Sobreescribir la función original para integrar el picker
+  const _origCargarDatosFormulario = cargarDatosFormulario;
+  cargarDatosFormulario = async function (año) {
+    await _origCargarDatosFormulario(año);
+    // Inicializar o refrescar el picker
+    const contenedor = document.getElementById('pickerGradoMatricula');
+    const inputHidden = document.getElementById('campoGradoMatricula');
+    if (!contenedor || !inputHidden) return;
+
+    if (!_pickerGradoMatricula) {
+      _pickerGradoMatricula = createGradoPicker({
+        contenedor,
+        inputHidden,
+        gradosData: GRADOS_DATA_MAT,
+        getAnio:    () => año,
+        prefijo:    'pkMat',
+      });
+      _pickerGradoMatricula.init(año);
+    } else {
+      _pickerGradoMatricula.refresh(año);
+    }
+    // Crear iconos lucide recién generados
+    lucide.createIcons();
+  };
+
+  // Resetear picker al cerrar drawer
+  const _origCerrarDrawer = window.cerrarDrawer;
+  if (_origCerrarDrawer) {
+    window.cerrarDrawer = function () {
+      _origCerrarDrawer();
+      _pickerGradoMatricula = null;
+    };
+  }

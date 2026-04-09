@@ -49,6 +49,9 @@ async function abrirDrawerEditar(id) {
           <span>Imagen actual — sube otra para reemplazarla</span>
         </div>`;
     }
+    if (n.etiqueta) {
+      form.querySelector('#campoEtiqueta').value = n.etiqueta;
+    }
 
     document.getElementById('drawerTitulo').textContent = `Editar: ${n.titulo}`;
     document.getElementById('drawerCuerpo').innerHTML   = '';

@@ -9,7 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
-  <link rel="stylesheet" href="/css/actividades.css" />
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/paginas/actividades.css" />
 </head>
 <body>
 
@@ -53,10 +54,23 @@
         <% } %>
 
         <div class="bloques-materias">
-          <% bloques.forEach((bloque, i) => { %>
-            <% const colores = ['bloque--azul', 'bloque--verde', 'bloque--morado', 'bloque--naranja', 'bloque--rojo']; %>
-            <% const color = colores[i % colores.length]; %>
-            <div class="bloque-materia <%= color %>">
+          <% bloques.forEach((bloque, bIdx) => { %>
+            <%
+              const colores = ['bloque--azul','bloque--verde','bloque--morado','bloque--naranja','bloque--rojo'];
+              const colorCls = 'bloque--' + (bloque.color || bloque.materia.color || colores[bIdx % colores.length].replace('bloque--',''));
+              const soloUnGrado = bloque.grados.length === 1;
+
+              // Agrupar grados por nivel para el picker multinivel
+              const gradosPorNivel = {};
+              bloque.grados.forEach(g => {
+                const n = g.grado.nivel;
+                if (!gradosPorNivel[n]) gradosPorNivel[n] = [];
+                gradosPorNivel[n].push(g);
+              });
+              const nivelesOrdenados = Object.keys(gradosPorNivel).map(Number).sort((a,b) => a-b);
+              const mId = bloque.materia._id.toString().replace(/[^a-z0-9]/gi,'');
+            %>
+            <div class="bloque-materia <%= colorCls %>">
               <div class="bloque-materia__cabecera">
                 <div class="bloque-materia__icono">
                   <i data-lucide="book-open"></i>
@@ -66,18 +80,78 @@
                   <p class="bloque-materia__desc"><%= bloque.materia.descripcion %></p>
                 <% } %>
               </div>
+
               <div class="bloque-materia__grados">
-                <span class="bloque-materia__grados-label">Elige el grado:</span>
-                <% bloque.grados.forEach(g => { %>
+
+                <% if (soloUnGrado) { %>
+                  <%/* Un solo grado: barra directa como enlace */%>
                   <a
-                    href="/actividades/docente?materiaId=<%= bloque.materia._id %>&gradoId=<%= g.grado._id %>"
-                    class="bloque-grado"
+                    href="/actividades/docente?materiaId=<%= bloque.materia._id %>&gradoId=<%= bloque.grados[0].grado._id %>"
+                    class="grado-picker-barra grado-picker-barra--unico"
                   >
-                    <i data-lucide="graduation-cap"></i>
-                    <span><%= g.grado.nombre %></span>
-                    <span class="bloque-grado__nivel">Nivel <%= g.grado.nivel %></span>
+                    <span class="grado-picker-barra__icono"><i data-lucide="graduation-cap"></i></span>
+                    <span class="grado-picker-barra__nombre"><%= bloque.grados[0].grado.nombre %></span>
+                    <span class="grado-picker-barra__nivel">Nivel <%= bloque.grados[0].grado.nivel %></span>
+                    <span class="grado-picker-barra__arrow"><i data-lucide="arrow-right"></i></span>
                   </a>
-                <% }) %>
+
+                <% } else { %>
+                  <%/* Múltiples grados: picker de dos pasos */%>
+                  <div class="grado-picker-multi" id="picker-<%= mId %>">
+
+                    <%/* Paso 1: chips de nivel */%>
+                    <div class="grado-picker-multi__paso1" id="paso1-<%= mId %>">
+                      <span class="grado-picker-multi__label">
+                        <i data-lucide="map-pin"></i> Selecciona el nivel
+                      </span>
+                      <div class="grado-picker-multi__niveles">
+                        <% nivelesOrdenados.forEach(nivel => { %>
+                          <button
+                            type="button"
+                            class="grado-nivel-chip"
+                            onclick="mostrarSalones('<%= mId %>', <%= nivel %>)"
+                          >
+                            <%= nivel %>°
+                            <% if (gradosPorNivel[nivel].length > 1) { %>
+                              <span class="grado-nivel-chip__count"><%= gradosPorNivel[nivel].length %></span>
+                            <% } %>
+                          </button>
+                        <% }) %>
+                      </div>
+                    </div>
+
+                    <%/* Paso 2: salones por nivel (ocultos hasta seleccionar) */%>
+                    <% nivelesOrdenados.forEach(nivel => { %>
+                      <div
+                        class="grado-picker-multi__paso2"
+                        id="salones-<%= mId %>-<%= nivel %>"
+                        style="display:none"
+                      >
+                        <button
+                          type="button"
+                          class="grado-picker-multi__volver"
+                          onclick="volverNiveles('<%= mId %>', <%= nivel %>)"
+                        >
+                          <i data-lucide="arrow-left"></i>
+                          <span><%= nivel %>° grado</span>
+                        </button>
+                        <div class="grado-picker-multi__salones">
+                          <% gradosPorNivel[nivel].forEach(g => { %>
+                            <a
+                              href="/actividades/docente?materiaId=<%= bloque.materia._id %>&gradoId=<%= g.grado._id %>"
+                              class="grado-salon-chip"
+                            >
+                              <i data-lucide="graduation-cap"></i>
+                              <%= g.grado.nombre %>
+                            </a>
+                          <% }) %>
+                        </div>
+                      </div>
+                    <% }) %>
+
+                  </div><%/* /grado-picker-multi */%>
+                <% } %>
+
               </div>
             </div>
           <% }) %>
@@ -300,6 +374,37 @@
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
   <script src="/js/actividades-docente.js"></script>
-  <script>lucide.createIcons();</script>
+  <script>
+  // ── Picker de grado multinivel ────────────────────────────────────────────
+  function mostrarSalones(mId, nivel) {
+    // Ocultar paso 1
+    const paso1 = document.getElementById('paso1-' + mId);
+    if (paso1) paso1.style.display = 'none';
+    // Mostrar el paso 2 del nivel correcto
+    const salones = document.getElementById('salones-' + mId + '-' + nivel);
+    if (salones) {
+      salones.style.display = 'block';
+      // Animación entrada
+      salones.style.animation = 'none';
+      salones.offsetHeight; // reflow
+      salones.style.animation = 'pickerSlideIn 0.2s ease';
+    }
+  }
+
+  function volverNiveles(mId, nivel) {
+    // Ocultar paso 2
+    const salones = document.getElementById('salones-' + mId + '-' + nivel);
+    if (salones) salones.style.display = 'none';
+    // Mostrar paso 1
+    const paso1 = document.getElementById('paso1-' + mId);
+    if (paso1) {
+      paso1.style.display = '';
+      paso1.style.animation = 'none';
+      paso1.offsetHeight;
+      paso1.style.animation = 'pickerSlideIn 0.18s ease';
+    }
+  }
+  lucide.createIcons();
+  </script>
 </body>
 </html>

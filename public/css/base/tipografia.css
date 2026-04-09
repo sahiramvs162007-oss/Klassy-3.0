@@ -1,0 +1,78 @@
+/* ══════════════════════════════════════
+   KLASSY — Tipografía y cabeceras
+   ══════════════════════════════════════ */
+
+/* ─── Cabecera de página ─────────────── */
+.cabecera-pagina {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cabecera-pagina__titulo {
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--gris-900);
+  line-height: 1.3;
+}
+
+.cabecera-pagina__subtitulo {
+  font-size: 0.85rem;
+  color: var(--gris-500);
+  margin-top: 2px;
+}
+
+.cabecera-pagina__acciones {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ─── Utilidades de texto ────────────── */
+.texto-secundario { color: var(--gris-500); }
+.texto-sm         { font-size: 0.8rem; }
+.texto-error      { color: var(--rojo-600); font-size: 0.875rem; }
+.texto-vacio      { color: var(--gris-400); font-style: italic; font-size: 0.8rem; }
+
+/* ─── Página de error ────────────────── */
+.pagina-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--gris-50);
+}
+
+.error-contenedor { text-align: center; padding: 40px 24px; }
+
+.error-codigo {
+  display: block;
+  font-size: 5rem;
+  font-weight: 700;
+  font-family: var(--fuente-marca);
+  color: var(--azul-600);
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.error-titulo  { font-size: 1.3rem; font-weight: 600; color: var(--gris-900); margin-bottom: 8px; }
+.error-mensaje { font-size: 0.9rem; color: var(--gris-500); margin-bottom: 24px; }
+
+.hero-admin__titulo {
+  font-family: 'Fraunces', serif;
+  color: #0f2a5e;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+.titu1 { font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 700;}
+.titu2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 400; text-align: center; }
+.hero-admin__titulo em { font-style: italic; color: #2563eb; }
+
+.hero-admin__sub {
+  font-size: 0.95rem;
+  color: #475569;
+  font-weight: 400;
+  line-height: 1.5;
+}

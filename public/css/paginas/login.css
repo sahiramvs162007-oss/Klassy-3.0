@@ -1,27 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
-@import url('botones.css');
-
+@import url('../base/variables.css');
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-
-:root {
-  --primary-blue: #4a8df8;
-  --text-dark: #333;
-  --bg-light: #f8fafc;
-  --pink:   #FF8FAB;
-  --coral:  #FF6B6B;
-  --blue:   #A8D8F0;
-  --yellow: #FFD95A;
-  --mint:   #B5EAD7;
-  --white:  #FDFCFA;
-  --accent:    #4a8df8;
-  --accent-2:  #2563eb;
-  --glow:      rgba(74, 141, 248, 0.45);
-}
 
 body {
   font-family: 'Outfit', sans-serif;
@@ -36,7 +20,57 @@ body {
   position: relative;
   overflow: hidden;
 }
+.btn {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #4a8df8 0%, #2563eb 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 15px;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 6px;
+  letter-spacing: 0.3px;
+}
 
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(74, 141, 248, 0.35);
+}
+
+.btn:active { transform: translateY(0); }
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 6px 14px 6px 10px;
+  color: #374151;
+  font-size: 0.82rem;
+  font-weight: 500;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.back-btn:hover {
+  color: blue;
+}
+
+.back-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
 /* ══════════════════════════════════════
    LADO IZQUIERDO — Fondo azul claro
    ══════════════════════════════════════ */
@@ -44,8 +78,8 @@ body {
   grid-column: 1;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 48px 40px;
+  align-items: flex-start;
+  padding: 22% 40px;
   position: relative;
   overflow: hidden;
 

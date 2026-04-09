@@ -82,3 +82,8 @@ async function guardarNotaAdmin(notaId, valor, inputEl, btnEl) {
     inputEl.title = 'Error de conexión';
   }
 }
+
+// ─── Paginación ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  iniciarPaginacion('tbodyNotasAdmin', { filasPorPagina: 10 });
+});

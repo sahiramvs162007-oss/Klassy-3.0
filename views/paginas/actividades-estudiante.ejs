@@ -6,10 +6,11 @@
   <title>KLASSY — Mis Actividades</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
-  <link rel="stylesheet" href="/css/actividades.css" />
+  <link rel="stylesheet" href="/css/paginas/actividades.css" />
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
 
@@ -47,103 +48,245 @@
           <h3>Sin matrícula activa</h3>
           <p>No tienes matrícula activa para el año <%= new Date().getFullYear() %>. Contacta al director.</p>
         </div>
+
+      <% } else if (!materiaIdActiva) { %>
+
+        <!-- ── SELECCIÓN DE MATERIA ── -->
+        <% if (bloques.length === 0) { %>
+          <div class="estado-vacio">
+            <i data-lucide="book-x"></i>
+            <h3>Sin materias asignadas</h3>
+            <p>Tu grado aún no tiene materias asignadas por los docentes.</p>
+          </div>
+        <% } else { %>
+          <p class="texto-secundario texto-sm" style="margin-bottom:18px;">Selecciona una materia para ver sus actividades.</p>
+          <div class="bloques-materias">
+            <% const colores = ['materia-card--azul','materia-card--verde','materia-card--morado','materia-card--naranja','materia-card--rojo']; %>
+            <% bloques.forEach(function(bloque, i) { %>
+              <%
+                var colorCls = colores[i % colores.length];
+                var estiloFondo = '';
+                if (bloque.fondoTipo === 'color' && bloque.fondoValor) {
+                  estiloFondo = bloque.fondoValor;
+                }
+              %>
+              <a
+                href="/actividades/estudiante?materiaId=<%= bloque.materia._id %>"
+                class="materia-card <%= estiloFondo ? '' : colorCls %>"
+                <% if (estiloFondo) { %>style="background:<%= estiloFondo %>;"<% } %>
+              >
+                <div class="materia-card__body">
+                  <div class="materia-card__icono-wrap">
+                    <i data-lucide="book-open"></i>
+                  </div>
+                  <h3 class="materia-card__nombre"<% if (bloque.colorTitulo) { %> style="color:<%= bloque.colorTitulo %>;"<% } %>>
+                    <%= bloque.materia.nombre %>
+                  </h3>
+                  <% if (bloque.materia.descripcion) { %>
+                    <p class="materia-card__desc"><%= bloque.materia.descripcion %></p>
+                  <% } %>
+                  <% if (bloque.docente) { %>
+                    <span class="materia-card__docente">
+                      <i data-lucide="user"></i>
+                      <%= bloque.docente.nombre %> <%= bloque.docente.apellido %>
+                    </span>
+                  <% } %>
+                </div>
+                <div class="materia-card__footer">
+                  <span>Ver actividades</span>
+                  <span class="materia-card__footer-cta">
+                    <i data-lucide="arrow-right"></i>
+                  </span>
+                </div>
+              </a>
+            <% }); %>
+          </div>
+        <% } %>
+
       <% } else { %>
 
-        <!-- Filtros -->
-        <form method="GET" action="/actividades/estudiante" class="barra-filtros">
-          <div class="barra-filtros__grupo">
-            <select name="filtroMateria" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-              <option value="">Todas las materias</option>
-              <% materias.forEach(m => { %>
-                <option value="<%= m._id %>" <%= filtroMateria === m._id.toString() ? 'selected' : '' %>><%= m.nombre %></option>
-              <% }) %>
-            </select>
-            <select name="filtroPeriodo" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-              <option value="">Todos los periodos</option>
-              <% periodos.forEach(p => { %>
-                <option value="<%= p._id %>" <%= filtroPeriodo === p._id.toString() ? 'selected' : '' %>><%= p.nombre %></option>
-              <% }) %>
-            </select>
+        <!-- ── ACTIVIDADES DE LA MATERIA ── -->
+        <div class="actividades-header">
+          <a href="/actividades/estudiante" class="btn-back">
+            <i data-lucide="arrow-left"></i> Mis materias
+          </a>
+          <div class="actividades-header__info">
+            <div class="actividades-header__tags">
+              <span class="chip chip--materia"><i data-lucide="book-open"></i> <%= materiaSeleccionada?.nombre %></span>
+              <span class="chip chip--grado"><i data-lucide="graduation-cap"></i> <%= matricula.gradoId?.nombre %></span>
+            </div>
           </div>
-          <div class="barra-filtros__acciones">
-            <% if (filtroMateria || filtroPeriodo) { %>
-              <a href="/actividades/estudiante" class="btn btn--secundario btn--sm">
-                <i data-lucide="x"></i> Limpiar
-              </a>
-            <% } %>
-          </div>
+        </div>
+
+        <!-- Filtro periodo -->
+        <form method="GET" action="/actividades/estudiante" class="barra-filtros-est">
+          <input type="hidden" name="materiaId" value="<%= materiaIdActiva %>" />
+          <select name="filtroPeriodo" class="barra-filtros-est__select" onchange="this.form.submit()">
+            <option value="">Todos los periodos</option>
+            <% periodos.forEach(function(p) { %>
+              <option value="<%= p._id %>" <%= filtroPeriodo === p._id.toString() ? 'selected' : '' %>><%= p.nombre %></option>
+            <% }); %>
+          </select>
+          <% if (filtroPeriodo) { %>
+            <a href="/actividades/estudiante?materiaId=<%= materiaIdActiva %>" class="btn btn--secundario btn--sm">
+              <i data-lucide="x"></i> Limpiar
+            </a>
+          <% } %>
         </form>
 
-        <!-- Lista de actividades -->
         <% if (actividades.length === 0) { %>
           <div class="estado-vacio">
             <i data-lucide="clipboard-list"></i>
             <h3>Sin actividades</h3>
-            <p>Tus docentes aún no han publicado actividades.</p>
+            <p>Tu docente aún no ha publicado actividades en esta materia.</p>
           </div>
         <% } else { %>
-          <div class="lista-actividades-estudiante">
-            <% actividades.forEach(act => { %>
-              <%
-                const vencida     = act._vencida;
-                const calificada  = act._estaCalificada;
-                const tieneEntrega = act._tieneEntrega;
-                let estadoClase = '';
-                let estadoLabel = '';
-                let estadoBadge = '';
-                if (calificada) {
-                  estadoClase = 'actividad-est--calificada';
-                  estadoLabel = 'Calificada';
-                  estadoBadge = 'badge--activo';
-                } else if (tieneEntrega) {
-                  estadoClase = 'actividad-est--entregada';
-                  estadoLabel = 'Entregada';
-                  estadoBadge = 'badge--azul';
-                } else if (vencida) {
-                  estadoClase = 'actividad-est--vencida';
-                  estadoLabel = 'Vencida';
-                  estadoBadge = 'badge--inactivo';
-                } else {
-                  estadoClase = 'actividad-est--pendiente';
-                  estadoLabel = 'Pendiente';
-                  estadoBadge = 'badge--pendiente';
-                }
-              %>
-              <a href="/actividades/estudiante/<%= act._id %>" class="tarjeta-actividad-est <%= estadoClase %>">
-                <div class="tarjeta-actividad-est__icono">
-                  <i data-lucide="clipboard-list"></i>
+
+          <%
+            var pendientes = [];
+            var entregadas = [];
+            actividades.forEach(function(act) {
+              if (act._estaCalificada || act._tieneEntrega) {
+                entregadas.push(act);
+              } else {
+                pendientes.push(act);
+              }
+            });
+          %>
+
+          <!-- ── Tabla con tabs ── -->
+          <div class="actividades-tabla-wrap">
+
+            <!-- Tabs header -->
+            <div class="act-tabs" role="tablist">
+              <button
+                class="act-tab act-tab--activo"
+                id="tab-pendientes"
+                role="tab"
+                aria-selected="true"
+                aria-controls="panel-pendientes"
+                onclick="cambiarTab('pendientes')"
+              >
+                <span class="act-tab__icono"><i data-lucide="clock"></i></span>
+                Pendientes
+                <span class="act-tab__badge" id="badge-pendientes"><%= pendientes.length %></span>
+              </button>
+              <button
+                class="act-tab"
+                id="tab-entregadas"
+                role="tab"
+                aria-selected="false"
+                aria-controls="panel-entregadas"
+                onclick="cambiarTab('entregadas')"
+              >
+                <span class="act-tab__icono"><i data-lucide="check-circle-2"></i></span>
+                Entregadas
+                <span class="act-tab__badge" id="badge-entregadas"><%= entregadas.length %></span>
+              </button>
+            </div>
+
+            <!-- Panel PENDIENTES -->
+            <div class="act-panel act-panel--visible" id="panel-pendientes" role="tabpanel">
+              <% if (pendientes.length === 0) { %>
+                <div class="act-vacio">
+                  <i data-lucide="check-circle-2" style="color:#22c55e;"></i>
+                  <p class="act-vacio__titulo">¡Al día!</p>
+                  <p class="act-vacio__sub">No tienes actividades pendientes.</p>
                 </div>
-                <div class="tarjeta-actividad-est__body">
-                  <div class="tarjeta-actividad-est__top">
-                    <h3 class="tarjeta-actividad-est__titulo"><%= act.titulo %></h3>
-                    <span class="badge <%= estadoBadge %>"><%= estadoLabel %></span>
-                  </div>
-                  <div class="tarjeta-actividad-est__meta">
-                    <span class="chip chip--materia">
-                      <i data-lucide="book-open"></i> <%= act.materiaId?.nombre %>
-                    </span>
-                    <span class="texto-secundario texto-sm">
-                      <i data-lucide="user" style="width:12px;height:12px;"></i>
-                      <%= act.docenteId ? act.docenteId.nombre + ' ' + act.docenteId.apellido : '—' %>
-                    </span>
-                    <span class="tarjeta-actividad-est__fecha <%= vencida ? 'texto-error' : '' %>">
-                      <i data-lucide="clock"></i>
-                      <%= vencida ? 'Venció: ' : 'Límite: ' %>
-                      <%= new Date(act.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) %>
-                    </span>
-                  </div>
-                  <% if (calificada && act._mejorNota > 0) { %>
-                    <div class="tarjeta-actividad-est__nota">
-                      <span class="nota-chip nota-chip--grande nota-chip--<%= act._mejorNota >= 3 ? 'ok' : 'mal' %>">
-                        <%= act._mejorNota.toFixed(1) %>
-                      </span>
-                    </div>
-                  <% } %>
+              <% } else { %>
+                <div class="act-lista">
+                  <% pendientes.forEach(function(act) { %>
+                    <%
+                      var vencida = act._vencida;
+                      var badgeCls   = vencida ? 'badge--inactivo' : 'badge--pendiente';
+                      var badgeLabel = vencida ? 'Vencida' : 'Pendiente';
+                      var iconoCls   = vencida ? 'act-item__icono--vencida' : 'act-item__icono--pendiente';
+                      var iconoNombre = vencida ? 'alert-circle' : 'clock';
+                    %>
+                    <a href="/actividades/estudiante/<%= act._id %>" class="act-item">
+                      <div class="act-item__icono <%= iconoCls %>">
+                        <i data-lucide="<%= iconoNombre %>"></i>
+                      </div>
+                      <div class="act-item__contenido">
+                        <span class="act-item__titulo"><%= act.titulo %></span>
+                        <div class="act-item__meta">
+                          <% if (act.docenteId) { %>
+                            <span class="act-item__meta-item">
+                              <i data-lucide="user"></i>
+                              <%= act.docenteId.nombre %> <%= act.docenteId.apellido %>
+                            </span>
+                          <% } %>
+                          <span class="act-item__meta-item <%= vencida ? 'act-item__meta-item--vencida' : '' %>">
+                            <i data-lucide="calendar"></i>
+                            <%= vencida ? 'Venció: ' : 'Límite: ' %><%= new Date(act.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) %>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="act-item__derecha">
+                        <span class="badge <%= badgeCls %>"><%= badgeLabel %></span>
+                      </div>
+                      <div class="act-item__arrow"><i data-lucide="chevron-right"></i></div>
+                    </a>
+                  <% }); %>
                 </div>
-                <i data-lucide="chevron-right" class="tarjeta-actividad-est__arrow"></i>
-              </a>
-            <% }) %>
-          </div>
+              <% } %>
+            </div>
+
+            <!-- Panel ENTREGADAS -->
+            <div class="act-panel" id="panel-entregadas" role="tabpanel">
+              <% if (entregadas.length === 0) { %>
+                <div class="act-vacio">
+                  <i data-lucide="inbox" style="color:#94a3b8;"></i>
+                  <p class="act-vacio__titulo">Nada por aquí aún</p>
+                  <p class="act-vacio__sub">Aún no has entregado ninguna actividad.</p>
+                </div>
+              <% } else { %>
+                <div class="act-lista">
+                  <% entregadas.forEach(function(act) { %>
+                    <%
+                      var calificada = act._estaCalificada;
+                      var badgeCls   = calificada ? 'badge--activo' : 'badge--azul';
+                      var badgeLabel = calificada ? 'Calificada' : 'Entregada';
+                      var iconoCls   = calificada ? 'act-item__icono--calificada' : 'act-item__icono--entregada';
+                      var iconoNombre = calificada ? 'star' : 'check-circle-2';
+                    %>
+                    <a href="/actividades/estudiante/<%= act._id %>" class="act-item">
+                      <div class="act-item__icono <%= iconoCls %>">
+                        <i data-lucide="<%= iconoNombre %>"></i>
+                      </div>
+                      <div class="act-item__contenido">
+                        <span class="act-item__titulo"><%= act.titulo %></span>
+                        <div class="act-item__meta">
+                          <% if (act.docenteId) { %>
+                            <span class="act-item__meta-item">
+                              <i data-lucide="user"></i>
+                              <%= act.docenteId.nombre %> <%= act.docenteId.apellido %>
+                            </span>
+                          <% } %>
+                          <span class="act-item__meta-item">
+                            <i data-lucide="calendar"></i>
+                            <%= new Date(act.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) %>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="act-item__derecha">
+                        <span class="badge <%= badgeCls %>"><%= badgeLabel %></span>
+                        <% if (calificada && act._mejorNota > 0) { %>
+                          <span class="act-item__nota act-item__nota--<%= act._mejorNota >= 3 ? 'ok' : 'mal' %>">
+                            <i data-lucide="star" style="width:10px;height:10px;"></i>
+                            <%= act._mejorNota.toFixed(1) %>
+                          </span>
+                        <% } %>
+                      </div>
+                      <div class="act-item__arrow"><i data-lucide="chevron-right"></i></div>
+                    </a>
+                  <% }); %>
+                </div>
+              <% } %>
+            </div>
+
+          </div><!-- /actividades-tabla-wrap -->
+
         <% } %>
 
       <% } %>
@@ -153,6 +296,6 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
-  <script>lucide.createIcons();</script>
+  <script src="/js/actividades-estudiante.js"></script>
 </body>
 </html>

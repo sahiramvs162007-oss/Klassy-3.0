@@ -1,0 +1,30 @@
+/* ══════════════════════════════════════
+   KLASSY — Reset
+   ══════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Fondo degradado global */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(145deg, var(--azul-100) 0%, #cbe2ff3f 45%, #e0f2fe 100%);
+  z-index: -2;
+}
+
+body {
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  font-family: var(--fuente-ui);
+  background-color: var(--gris-50);
+  color: var(--gris-900);
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+a { text-decoration: none; color: inherit; }

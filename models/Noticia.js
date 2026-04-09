@@ -29,6 +29,15 @@ const noticiaSchema = new mongoose.Schema(
       type:    Boolean,
       default: true,
     },
+    etiqueta: {
+      type: String,
+      default: 'Anuncios',
+      enum: [
+        'Anuncios', 'Eventos', 'Académico', 'Institucional',
+        'Urgente', 'Clases', 'Proyectos', 'Deportes',
+        'Cultura', 'Arte y Música', 'Bienestar', 'Logros'
+      ],
+    },
   },
   { timestamps: true }
 );

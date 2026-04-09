@@ -12,22 +12,42 @@
       <p class="texto-secundario">Reporte académico por grado</p>
     </div>
     <a href="/boletines/reporte/grado/pdf?gradoId=<%= typeof gradoIdActivo !== 'undefined' ? gradoIdActivo : '' %>&periodoId=<%= typeof periodoIdActivo !== 'undefined' ? periodoIdActivo : '' %>&año=<%= reporte.año || '' %>"
-      target="_blank" class="btn btn--primario btn--sm">
+      target="_blank" class="btn btn--primario">
       <i data-lucide="download"></i> Descargar PDF
     </a>
   </div>
 
   <!-- Stats del grado -->
   <div class="reporte-stats">
-    <div class="reporte-stat"><span class="reporte-stat__num"><%= reporte.total %></span><span class="reporte-stat__label">Total</span></div>
-    <div class="reporte-stat reporte-stat--ok"><span class="reporte-stat__num"><%= reporte.aprobados %></span><span class="reporte-stat__label">Aprobados</span></div>
-    <div class="reporte-stat reporte-stat--mal"><span class="reporte-stat__num"><%= reporte.reprobados %></span><span class="reporte-stat__label">Reprobados</span></div>
-    <div class="reporte-stat"><span class="reporte-stat__num"><%= Math.round(reporte.aprobados/reporte.total*100) %>%</span><span class="reporte-stat__label">% Aprob.</span></div>
-    <div class="reporte-stat"><span class="reporte-stat__num"><%= reporte.promedioGrupo %></span><span class="reporte-stat__label">Prom. grupo</span></div>
+    <div class="reporte-stat acceso-card--azul">
+      <div class="reporte-stat__icono"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <span class="reporte-stat__num"><%= reporte.total %></span>
+      <span class="reporte-stat__label">Total</span>
+    </div>
+    <div class="reporte-stat reporte-stat--aprobados acceso-card--verde">
+      <div class="reporte-stat__icono"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <span class="reporte-stat__num"><%= reporte.aprobados %></span>
+      <span class="reporte-stat__label">Aprobados</span>
+    </div>
+    <div class="reporte-stat reporte-stat--reprobados acceso-card--naranja">
+      <div class="reporte-stat__icono"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+      <span class="reporte-stat__num"><%= reporte.reprobados %></span>
+      <span class="reporte-stat__label">Reprobados</span>
+    </div>
+    <div class="reporte-stat reporte-stat--pct acceso-card--azul">
+      <div class="reporte-stat__icono"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></div>
+      <span class="reporte-stat__num"><%= Math.round(reporte.aprobados/reporte.total*100) %>%</span>
+      <span class="reporte-stat__label">% Aprob.</span>
+    </div>
+    <div class="reporte-stat reporte-stat--promedio acceso-card--morado">
+      <div class="reporte-stat__icono"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+      <span class="reporte-stat__num"><%= reporte.promedioGrupo %></span>
+      <span class="reporte-stat__label">Prom. grupo</span>
+    </div>
   </div>
 
   <!-- Tabla de estudiantes -->
-  <div class="tabla-contenedor">
+  <div class="tabla-contenedor tabla-contenedor--scroll">
     <table class="tabla">
       <thead>
         <tr>
@@ -41,7 +61,7 @@
           <th>Estado</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="tbodyReporteGrado">
         <% reporte.filas.forEach(f => { %>
           <tr>
             <td><strong><%= f.nombre %></strong></td>

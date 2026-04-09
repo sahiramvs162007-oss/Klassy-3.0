@@ -54,7 +54,7 @@ const panelDocente = async (req, res) => {
       año:    AÑO_ACTUAL,
       estado: 'activo',
     })
-      .populate('materiaId', 'nombre descripcion')
+      .populate('materiaId', 'nombre descripcion color')
       .populate('gradoId',   'nombre nivel año');
 
     // Agrupar por materia para los bloques del panel
@@ -63,9 +63,19 @@ const panelDocente = async (req, res) => {
       const mId = asig.materiaId._id.toString();
       if (!materiaMap[mId]) {
         materiaMap[mId] = {
-          materia:  asig.materiaId,
-          grados:   [],
+          materia:     asig.materiaId,
+          grados:      [],
+          color:       asig.materiaId.color || 'azul',
+          fondoTipo:   asig.fondoTipo   || '',
+          fondoValor:  asig.fondoValor  || '',
+          colorTitulo: asig.colorTitulo || '',
         };
+      }
+      // Actualizar personalización si tiene valor (toma la primera que encuentre)
+      if (!materiaMap[mId].fondoTipo && asig.fondoTipo) {
+        materiaMap[mId].fondoTipo   = asig.fondoTipo;
+        materiaMap[mId].fondoValor  = asig.fondoValor;
+        materiaMap[mId].colorTitulo = asig.colorTitulo;
       }
       materiaMap[mId].grados.push({
         asignacionId: asig._id,
@@ -436,7 +446,7 @@ const calificarEntrega = async (req, res) => {
 // VISTAS ESTUDIANTE
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Panel del estudiante: todas las actividades de su grado activo */
+/** Panel del estudiante: selección de materia → actividades */
 const panelEstudiante = async (req, res) => {
   try {
     const estudianteId = req.session.usuario._id;
@@ -450,65 +460,103 @@ const panelEstudiante = async (req, res) => {
 
     if (!matricula) {
       return res.render('paginas/actividades-estudiante', {
-        titulo:       'Mis Actividades',
-        paginaActual: 'actividades',
-        actividades:  [],
-        materias:     [],
-        periodos:     [],
-        matricula:    null,
-        filtroMateria:  '',
-        filtroPeriodo:  '',
-        mensajeExito:   req.flash('exito'),
-        mensajeError:   req.flash('error'),
+        titulo:            'Mis Actividades',
+        paginaActual:      'actividades',
+        actividades:       [],
+        bloques:           [],
+        periodos:          [],
+        matricula:         null,
+        materiaSeleccionada: null,
+        filtroPeriodo:     '',
+        mensajeExito:      req.flash('exito'),
+        mensajeError:      req.flash('error'),
       });
     }
 
-    const { filtroMateria = '', filtroPeriodo = '' } = req.query;
+    const { materiaId = '', filtroPeriodo = '' } = req.query;
 
-    const filtro = {
+    // Materias del grado con personalización del docente
+    // Buscar asignaciones activas para el grado del estudiante
+    const asignaciones = await AsignacionDocente.find({
       gradoId: matricula.gradoId._id,
-    };
-    if (filtroMateria) filtro.materiaId = filtroMateria;
-    if (filtroPeriodo) filtro.periodoId = filtroPeriodo;
+      año:     AÑO_ACTUAL,
+      estado:  'activo',
+    })
+      .populate('materiaId', 'nombre descripcion color')
+      .populate('docenteId', 'nombre apellido');
 
-    const actividades = await Actividad.find(filtro)
-      .populate('materiaId', 'nombre')
-      .populate('periodoId', 'nombre numero')
-      .populate('docenteId', 'nombre apellido')
-      .sort({ createdAt: -1 });
-
-    // Para cada actividad, verificar si el estudiante tiene entrega
-    for (const act of actividades) {
-      const entregas = await EntregaActividad.find({
-        actividadId:  act._id,
-        estudianteId,
-      }).sort({ fechaEntrega: -1 });
-
-      act._misEntregas      = entregas;
-      act._tieneEntrega     = entregas.length > 0;
-      act._estaCalificada   = entregas.some(e => e.estado === 'calificada');
-      act._mejorNota        = entregas.reduce((max, e) => e.nota > max ? e.nota : max, 0);
-      act._vencida          = new Date() > act.fechaLimite;
+    // Agrupar por materia (igual que el docente) tomando la personalización
+    const materiaMap = {};
+    for (const asig of asignaciones) {
+      if (!asig.materiaId) continue;
+      const mId = asig.materiaId._id.toString();
+      if (!materiaMap[mId]) {
+        materiaMap[mId] = {
+          materia:     asig.materiaId,
+          docente:     asig.docenteId,
+          color:       asig.materiaId.color || 'azul',
+          fondoTipo:   asig.fondoTipo   || '',
+          fondoValor:  asig.fondoValor  || '',
+          colorTitulo: asig.colorTitulo || '',
+        };
+      }
+      // Tomar la primera personalización que tenga valor
+      if (!materiaMap[mId].fondoTipo && asig.fondoTipo) {
+        materiaMap[mId].fondoTipo   = asig.fondoTipo;
+        materiaMap[mId].fondoValor  = asig.fondoValor;
+        materiaMap[mId].colorTitulo = asig.colorTitulo;
+      }
     }
+    const bloques = Object.values(materiaMap);
 
-    // Materias y periodos para los filtros
-    const materias = await Materia.find({
-      _id: { $in: matricula.gradoId.materias },
-    }).select('nombre');
+    // Si hay materia seleccionada, cargar sus actividades
+    let actividades = [];
+    let materiaSeleccionada = null;
+
+    if (materiaId) {
+      materiaSeleccionada = await Materia.findById(materiaId).select('nombre descripcion');
+
+      const filtro = {
+        gradoId:   matricula.gradoId._id,
+        materiaId,
+      };
+      if (filtroPeriodo) filtro.periodoId = filtroPeriodo;
+
+      actividades = await Actividad.find(filtro)
+        .populate('materiaId', 'nombre')
+        .populate('periodoId', 'nombre numero')
+        .populate('docenteId', 'nombre apellido')
+        .sort({ createdAt: -1 });
+
+      // Para cada actividad, verificar si el estudiante tiene entrega
+      for (const act of actividades) {
+        const entregas = await EntregaActividad.find({
+          actividadId:  act._id,
+          estudianteId,
+        }).sort({ fechaEntrega: -1 });
+
+        act._misEntregas    = entregas;
+        act._tieneEntrega   = entregas.length > 0;
+        act._estaCalificada = entregas.some(e => e.estado === 'calificada');
+        act._mejorNota      = entregas.reduce((max, e) => e.nota > max ? e.nota : max, 0);
+        act._vencida        = new Date() > act.fechaLimite;
+      }
+    }
 
     const periodos = await Periodo.find({ año: AÑO_ACTUAL }).select('nombre numero activo');
 
     res.render('paginas/actividades-estudiante', {
-      titulo:         'Mis Actividades',
-      paginaActual:   'actividades',
+      titulo:              'Mis Actividades',
+      paginaActual:        'actividades',
       actividades,
-      materias,
+      bloques,
       periodos,
       matricula,
-      filtroMateria,
+      materiaSeleccionada,
+      materiaIdActiva:     materiaId || null,
       filtroPeriodo,
-      mensajeExito:   req.flash('exito'),
-      mensajeError:   req.flash('error'),
+      mensajeExito:        req.flash('exito'),
+      mensajeError:        req.flash('error'),
     });
   } catch (error) {
     console.error('Error en panelEstudiante:', error);
@@ -646,6 +694,26 @@ const redirigirPorRol = (req, res) => {
   res.redirect('/dashboard');
 };
 
+/** Guarda la personalización (fondo + color título) de una materia para el docente */
+const personalizarMateria = async (req, res) => {
+  try {
+    const docenteId = req.session.usuario._id;
+    const { materiaId } = req.params;
+    const { fondoTipo = '', fondoValor = '', colorTitulo = '' } = req.body;
+
+    // Actualizar TODAS las asignaciones del docente para esa materia en el año actual
+    await AsignacionDocente.updateMany(
+      { docenteId, materiaId, año: AÑO_ACTUAL },
+      { fondoTipo, fondoValor, colorTitulo }
+    );
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Error en personalizarMateria:', error);
+    res.status(500).json({ ok: false, error: 'Error al guardar personalización' });
+  }
+};
+
 module.exports = {
   panelDocente,
   detalleActividadDocente,
@@ -659,4 +727,5 @@ module.exports = {
   subirEntrega,
   comentarActividadEstudiante,
   redirigirPorRol,
+  personalizarMateria,
 };

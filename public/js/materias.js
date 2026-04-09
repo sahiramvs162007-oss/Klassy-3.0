@@ -65,3 +65,8 @@ function abrirPanelDrawer() {
 function confirmarEliminar(nombre) {
   return confirm(`¿Eliminar "${nombre}"?\nSe eliminará también de todos los grados que la tengan asignada.`);
 }
+
+// ─── Paginación ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  iniciarPaginacion('tbodyMaterias', { filasPorPagina: 10 });
+});

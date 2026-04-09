@@ -38,39 +38,39 @@
     {
       seccion: 'Principal',
       items: [
-        { clave: 'dashboard',    etiqueta: 'Dashboard',    icono: 'layout-dashboard', rutaBase: '/dashboard' },
+        { clave: 'dashboard',    etiqueta: 'Dashboard',    icono: 'layout-dashboard', rutaBase: '/dashboard',    color: '#3b82f6' },
       ]
     },
     {
       seccion: 'Académico',
       items: [
-        { clave: 'grados',       etiqueta: 'Grados',       icono: 'graduation-cap',   rutaBase: '/grados' },
-        { clave: 'materias',     etiqueta: 'Materias',     icono: 'book-open',        rutaBase: '/materias' },
-        { clave: 'periodos',     etiqueta: 'Periodos',     icono: 'calendar',         rutaBase: '/periodos' },
+        { clave: 'grados',       etiqueta: 'Grados',       icono: 'graduation-cap',   rutaBase: '/grados',       color: '#ea580c' },
+        { clave: 'materias',     etiqueta: 'Materias',     icono: 'book-open',        rutaBase: '/materias',     color: '#7c3aed' },
+        { clave: 'periodos',     etiqueta: 'Periodos',     icono: 'calendar',         rutaBase: '/periodos',     color: '#16a34a' },
       ]
     },
     {
       seccion: 'Personas',
       items: [
-        { clave: 'usuarios',     etiqueta: 'Usuarios',     icono: 'users',            rutaBase: '/usuarios' },
-        { clave: 'matriculas',   etiqueta: 'Matrículas',   icono: 'file-text',        rutaBase: '/matriculas' },
-        { clave: 'asignaciones', etiqueta: 'Asignaciones', icono: 'link',             rutaBase: '/asignaciones' },
-        { clave: 'retiros',      etiqueta: 'Retiros',       icono: 'user-x',           rutaBase: '/retiros' },
+        { clave: 'usuarios',     etiqueta: 'Usuarios',     icono: 'users',            rutaBase: '/usuarios',     color: '#3b82f6' },
+        { clave: 'matriculas',   etiqueta: 'Matrículas',   icono: 'file-text',        rutaBase: '/matriculas',   color: '#ea580c' },
+        { clave: 'asignaciones', etiqueta: 'Asignaciones', icono: 'link',             rutaBase: '/asignaciones', color: '#16a34a' },
+        { clave: 'retiros',      etiqueta: 'Retiros',       icono: 'user-x',           rutaBase: '/retiros',      color: '#ea580c' },
       ]
     },
     {
       seccion: 'Aula',
       items: [
-        { clave: 'actividades',  etiqueta: 'Actividades',  icono: 'clipboard-list',   rutaBase: '/actividades' },
-        { clave: 'notas',        etiqueta: 'Notas',        icono: 'bar-chart-2',      rutaBase: '/notas' },
-        { clave: 'boletines',    etiqueta: 'Boletines',    icono: 'file-badge',       rutaBase: '/boletines' },
+        { clave: 'actividades',  etiqueta: 'Actividades',  icono: 'clipboard-list',   rutaBase: '/actividades',  color: '#f59e0b' },
+        { clave: 'notas',        etiqueta: 'Notas',        icono: 'bar-chart-2',      rutaBase: '/notas',        color: '#7c3aed' },
+        { clave: 'boletines',    etiqueta: 'Boletines',    icono: 'file-badge',       rutaBase: '/boletines',    color: '#3b82f6' },
       ]
     },
     {
       seccion: 'Más',
       items: [
-        { clave: 'noticias',     etiqueta: 'Noticias',     icono: 'newspaper',        rutaBase: '/noticias' },
-        { clave: 'analitica',    etiqueta: 'Analítica IA', icono: 'trending-up',      rutaBase: '/analitica' },
+        { clave: 'noticias',     etiqueta: 'Noticias',     icono: 'newspaper',        rutaBase: '/noticias',     color: '#3b82f6' },
+        { clave: 'analitica',    etiqueta: 'Analítica IA', icono: 'trending-up',      rutaBase: '/analitica',    color: '#7c3aed' },
       ]
     }
   ];
@@ -113,6 +113,7 @@
                 <a
                   href="<%= ruta(item.clave, item.rutaBase) %>"
                   class="sidebar__enlace <%= (typeof paginaActual !== 'undefined' && paginaActual === item.clave) ? 'sidebar__enlace--activo' : '' %>"
+                  style="--item-color: <%= item.color || '#3b82f6' %>"
                 >
                   <i data-lucide="<%= item.icono %>" class="sidebar__icono"></i>
                   <span class="sidebar__texto"><%= item.etiqueta %></span>

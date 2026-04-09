@@ -9,8 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
-  <link rel="stylesheet" href="/css/actividades.css" />
-  <link rel="stylesheet" href="/css/notas.css" />
+  <link rel="stylesheet" href="/css/paginas/notas.css" />
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/actividades.css" /> 
 </head>
 <body>
 
@@ -157,7 +158,7 @@
                   <th class="th-promedio">Promedio</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="tbodyNotasDocente">
                 <% tabla.filas.forEach(fila => { %>
                   <tr>
                     <td class="td-estudiante">
@@ -261,6 +262,7 @@
   <script src="/js/drawer.js"></script>
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
+  <script src="/js/paginacion.js"></script>
   <script src="/js/notas-docente.js"></script>
   <script>lucide.createIcons();</script>
 </body>

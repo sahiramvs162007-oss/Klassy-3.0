@@ -155,3 +155,8 @@ function actualizarCamposRol() {
 function confirmarEliminar(nombreUsuario) {
   return confirm(`¿Estás seguro de que deseas eliminar a "${nombreUsuario}"?\nEsta acción no se puede deshacer.`);
 }
+
+// ─── Paginación ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  iniciarPaginacion('tbodyUsuarios', { filasPorPagina: 10 });
+});

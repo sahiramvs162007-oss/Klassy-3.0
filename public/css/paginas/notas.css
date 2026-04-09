@@ -1,0 +1,885 @@
+/* ═══════════════════════════════════════════════════════
+   KLASSY — CSS del Módulo de Notas (Sprint 10)
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Cabecera de notas ────────────────────────────────── */
+.notas-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.notas-header__tags {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+}
+
+.notas-header__periodo-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.notas-header__periodo-form .campo__select {
+  min-width: 180px;
+}
+
+/* ─── Resumen estadístico ──────────────────────────────── */
+.notas-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: start;
+}
+
+.resumen-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 12px 12px;
+  background: #fff;
+  border-radius: var(--radio-lg);
+  border: 1.5px solid var(--azul-100);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.07), var(--sombra-sm);
+  transition: box-shadow var(--trans-rapida);
+}
+
+.resumen-stat:hover {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14), var(--sombra-sm);
+}
+
+.resumen-stat:last-of-type {
+  border-right: none;
+}
+
+.resumen-stat__num {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: var(--fuente-marca);
+  line-height: 1;
+}
+
+.resumen-stat__label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+/* ─── Tabla de notas ───────────────────────────────────── */
+.tabla-notas-contenedor {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #fff;
+  border: 1.5px solid rgba(147, 197, 253, 0.55);
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.5) inset,
+    0 8px 32px rgba(59, 130, 246, 0.12),
+    0 0 60px rgba(147,197,253,0.18);
+}
+
+.tabla-notas {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  min-width: 600px;
+}
+
+/* Cabecera */
+.tabla-notas thead {
+  background: var(--azul-900);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tabla-notas thead tr th {
+  padding: 10px 12px;
+  text-align: center;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  white-space: nowrap;
+}
+
+.tabla-notas thead tr th:last-child {
+  border-right: none;
+}
+
+/* Columna de estudiante: fija a la izquierda */
+.th-estudiante,
+.td-estudiante {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  text-align: left !important;
+  min-width: 180px;
+}
+
+.th-estudiante {
+  background: var(--azul-900) !important;
+  z-index: 11;
+  text-align: left !important;
+}
+
+.td-estudiante {
+  background: #fff;
+  border-right: 2px solid var(--gris-200);
+  color: var(--gris-700);
+  font-weight: 500;
+}
+
+.tabla-notas tbody tr:hover .td-estudiante {
+  background: var(--gris-50);
+}
+
+/* Columnas de actividad */
+.th-actividad {
+  min-width: 90px;
+  max-width: 120px;
+}
+
+.th-actividad__nombre {
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.th-actividad__fecha {
+  font-size: 0.65rem;
+  opacity: 0.65;
+  font-weight: 400;
+}
+
+/* Columna de promedio */
+.th-promedio,
+.td-promedio {
+  background: var(--azul-50);
+  min-width: 80px;
+  text-align: center;
+  font-weight: 600;
+  border-left: 2px solid var(--azul-100);
+}
+
+.th-promedio {
+  background: rgba(59,130,246,0.2) !important;
+}
+
+/* Celdas de datos */
+.tabla-notas tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--gris-100);
+  border-right: 1px solid var(--gris-50);
+  vertical-align: middle;
+  text-align: center;
+}
+
+.tabla-notas tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla-notas tbody tr:hover td {
+  background: var(--gris-50);
+}
+
+/* Fila de promedios por actividad */
+.fila-promedios td {
+  background: var(--gris-50) !important;
+  border-top: 2px solid var(--gris-200);
+}
+
+.fila-promedios .td-estudiante {
+  background: var(--gris-50) !important;
+}
+
+/* ─── Celda de nota editable ───────────────────────────── */
+.nota-celda {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.nota-valor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  padding: 3px 6px;
+  border-radius: var(--radio);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--fuente-marca);
+}
+
+.nota-valor--ok  { background: transparent; color: var(--verde-600); }
+.nota-valor--mal { background: transparent; color: var(--rojo-600); }
+
+.nota-vacia {
+  color: var(--gris-300);
+  font-size: 0.9rem;
+}
+
+.nota-promedio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 4px 8px;
+  border-radius: var(--radio);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--fuente-marca);
+}
+
+.nota-promedio--ok     { background: transparent; color: var(--verde-600); }
+.nota-promedio--mal    { background: transparent; color: var(--rojo-600); }
+.nota-promedio--neutro { background: transparent; color: var(--gris-500); }
+.nota-promedio--grande { font-size: 1.1rem; padding: 6px 12px; }
+
+/* Botón de editar nota (aparece al hover) */
+.nota-editar-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: var(--gris-400);
+  cursor: pointer;
+  background: none;
+  border: none;
+  opacity: 0;
+  transition: opacity var(--trans-rapida), background var(--trans-rapida), color var(--trans-rapida);
+  flex-shrink: 0;
+}
+
+.nota-editar-btn svg { width: 11px; height: 11px; stroke-width: 2; }
+
+.nota-celda:hover .nota-editar-btn {
+  opacity: 1;
+}
+
+.nota-editar-btn:hover {
+  background: var(--azul-100);
+  color: var(--azul-600);
+}
+
+/* Input inline para edición de nota */
+.nota-input-inline {
+  width: 56px;
+  padding: 3px 6px;
+  border: 1.5px solid var(--azul-500);
+  border-radius: var(--radio);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--fuente-marca);
+  text-align: center;
+  color: var(--gris-900);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  outline: none;
+}
+
+/* ─── Selector de periodo (drawer docente) ─────────────── */
+.selector-periodo-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.selector-periodo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--gris-50);
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--trans-rapida), border-color var(--trans-rapida);
+}
+
+.selector-periodo-item:hover {
+  background: var(--azul-50);
+  border-color: var(--azul-200);
+}
+
+.selector-periodo-item--cerrado {
+  opacity: 0.7;
+}
+
+.selector-periodo-item__num {
+  width: 32px;
+  height: 32px;
+  background: var(--azul-600);
+  color: #fff;
+  border-radius: var(--radio);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fuente-marca);
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.selector-periodo-item--cerrado .selector-periodo-item__num {
+  background: var(--gris-400);
+}
+
+.selector-periodo-item__info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.selector-periodo-item__nombre {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gris-900);
+}
+
+/* ─── Vista estudiante ─────────────────────────────────── */
+.notas-resumen-est {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.notas-resumen-est__prom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-right: 24px;
+  border-right: 2px solid var(--gris-200);
+}
+
+.notas-resumen-est__num {
+  font-family: var(--fuente-marca);
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.notas-resumen-est__num--ok  { color: var(--verde-600); }
+.notas-resumen-est__num--mal { color: var(--rojo-600); }
+
+.notas-resumen-est__label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gris-400);
+  font-weight: 600;
+}
+
+.notas-resumen-est__stats {
+  display: flex;
+  gap: 20px;
+}
+
+.notas-resumen-est__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.notas-resumen-est__stat-num {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--gris-900);
+  font-family: var(--fuente-marca);
+}
+
+.notas-resumen-est__stat-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gris-400);
+  font-weight: 600;
+}
+
+.notas-materias-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notas-materia-seccion {
+  padding: 0;
+  overflow: hidden;
+}
+
+.notas-materia-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gris-100);
+  flex-wrap: wrap;
+}
+
+.notas-materia-cabecera__info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notas-materia-cabecera__nombre {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gris-900);
+}
+
+.notas-materia-cabecera__docente {
+  font-size: 0.75rem;
+  color: var(--gris-500);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.notas-materia-cabecera__prom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notas-tabla-est {
+  padding: 0;
+}
+
+.notas-tabla-est .tabla td,
+.notas-tabla-est .tabla th {
+  text-align: center;
+}
+
+.notas-tabla-est .tabla td:first-child,
+.notas-tabla-est .tabla th:first-child {
+  text-align: left;
+}
+
+/* Enlace a la actividad */
+.enlace-actividad {
+  color: var(--azul-600);
+  text-decoration: none;
+  font-size: 0.83rem;
+}
+
+.enlace-actividad:hover {
+  text-decoration: underline;
+}
+
+/* Badge error */
+
+@media (max-width: 768px) {
+  .notas-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notas-resumen {
+    gap: 8px;
+  }
+
+  .notas-resumen-est {
+    gap: 12px;
+  }
+}
+/* ═══════════════════════════════════════════════════════
+   NUEVOS ESTILOS — Materia Picker, Filtros Recordatorio,
+   Periodo Badge, Tabla mejorada
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Materia Picker con búsqueda ──────────────────────── */
+.materia-picker-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.materia-picker__trigger {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border: 1px solid rgba(209,213,219,0.8);
+  border-radius: var(--radio);
+  background: rgba(255,255,255,0.85);
+  font-family: var(--fuente-ui);
+  font-size: 0.855rem;
+  font-weight: 500;
+  color: var(--gris-700);
+  cursor: pointer;
+  min-width: 180px;
+  max-width: 240px;
+  transition: border-color var(--trans-rapida), box-shadow var(--trans-rapida), background var(--trans-rapida);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.materia-picker__trigger:hover {
+  border-color: var(--azul-500);
+  background: #fff;
+}
+
+.materia-picker__trigger--abierto {
+  border-color: var(--azul-500);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  background: #fff;
+}
+
+.materia-picker__trigger > span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.materia-picker__chevron {
+  transition: transform var(--trans-rapida);
+  color: var(--gris-400);
+  flex-shrink: 0;
+}
+
+.materia-picker__trigger--abierto .materia-picker__chevron {
+  transform: rotate(180deg);
+  color: var(--azul-500);
+}
+
+.materia-picker__panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  min-width: 240px;
+  max-width: 300px;
+  background: #fff;
+  border: 1.5px solid rgba(147,197,253,0.6);
+  border-radius: 14px;
+  box-shadow:
+    0 4px 24px rgba(59,130,246,0.13),
+    0 1px 4px rgba(0,0,0,0.06);
+  overflow: hidden;
+  animation: picker-in 0.15s ease;
+}
+
+.materia-picker__panel--abierto {
+  display: block;
+}
+
+@keyframes picker-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.materia-picker__search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--gris-100);
+  background: var(--azul-50);
+}
+
+.materia-picker__search {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: var(--fuente-ui);
+  font-size: 0.84rem;
+  color: var(--gris-900);
+  background: transparent;
+}
+
+.materia-picker__search::placeholder {
+  color: var(--gris-400);
+}
+
+.materia-picker__lista {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.materia-picker__lista::-webkit-scrollbar { width: 4px; }
+.materia-picker__lista::-webkit-scrollbar-track { background: transparent; }
+.materia-picker__lista::-webkit-scrollbar-thumb { background: var(--gris-200); border-radius: 4px; }
+
+.materia-picker__opcion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  color: var(--gris-700);
+  cursor: pointer;
+  transition: background var(--trans-rapida), color var(--trans-rapida);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.materia-picker__opcion:hover {
+  background: var(--azul-50);
+  color: var(--azul-700);
+}
+
+.materia-picker__opcion--activa {
+  background: var(--azul-600) !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+/* ─── Filtros Recordatorio (reemplaza estado-vacio) ────── */
+.filtros-recordatorio {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, rgba(239,246,255,0.9) 0%, rgba(219,234,254,0.6) 100%);
+  border: 1.5px solid rgba(147,197,253,0.5);
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.6) inset,
+    0 4px 16px rgba(59,130,246,0.08);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.filtros-recordatorio__icono {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--azul-600);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+}
+
+.filtros-recordatorio__icono svg {
+  width: 22px;
+  height: 22px;
+}
+
+.filtros-recordatorio__texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.filtros-recordatorio__texto h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--azul-700);
+  margin: 0 0 4px;
+}
+
+.filtros-recordatorio__texto p {
+  font-size: 0.84rem;
+  color: var(--gris-500);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.filtros-recordatorio__pasos {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filtros-paso {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1.5px solid var(--gris-200);
+  background: rgba(255,255,255,0.7);
+  color: var(--gris-400);
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: all var(--trans-rapida);
+}
+
+.filtros-paso svg {
+  width: 13px;
+  height: 13px;
+}
+
+.filtros-paso--ok {
+  border-color: var(--verde-600);
+  background: var(--verde-100);
+  color: var(--verde-600);
+}
+
+/* ─── Resumen stat periodo (reemplaza badge suelto) ──────── */
+.resumen-stat--periodo {
+  border: 1.5px solid var(--gris-200);
+  flex-direction: column;
+}
+
+.resumen-stat--activo {
+  border-color: rgba(22,163,74,0.4) !important;
+  box-shadow: 0 0 0 3px rgba(22,163,74,0.08), var(--sombra-sm) !important;
+}
+
+.resumen-stat--cerrado {
+  border-color: var(--gris-200) !important;
+  opacity: 0.75;
+}
+
+.resumen-stat__icono-periodo {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 2px;
+}
+
+.resumen-stat--activo .resumen-stat__icono-periodo {
+  color: var(--verde-600);
+}
+
+.resumen-stat--cerrado .resumen-stat__icono-periodo {
+  color: var(--gris-400);
+}
+
+.resumen-stat__num--periodo {
+  font-size: 1rem !important;
+  letter-spacing: 0.02em;
+}
+
+.resumen-stat--activo .resumen-stat__num--periodo {
+  color: var(--verde-600) !important;
+}
+
+.resumen-stat--cerrado .resumen-stat__num--periodo {
+  color: var(--gris-500) !important;
+}
+
+/* ─── Tabla de notas — mejoras de diseño ──────────────── */
+
+/* Encabezado: centrar TODOS los th incluyendo promedio */
+.tabla-notas thead tr th {
+  text-align: center !important;
+  padding: 12px 14px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.95);
+  background: var(--azul-900);
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Columna estudiante: alineación izquierda solo en body */
+.th-estudiante {
+  text-align: left !important;
+  padding-left: 16px !important;
+}
+
+/* Columna promedio: destacar más */
+.th-promedio {
+  background: rgba(30, 74, 173, 0.95) !important;
+  border-left: 2px solid rgba(255,255,255,0.15) !important;
+  color: #fff !important;
+  font-size: 0.74rem !important;
+}
+
+.td-promedio {
+  background: rgba(59,130,246,0.06) !important;
+  border-left: 2px solid var(--azul-100) !important;
+  text-align: center !important;
+}
+
+/* Filas del body: más respiración */
+.tabla-notas tbody td {
+  padding: 11px 14px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Líneas alternadas suaves */
+.tabla-notas tbody tr:nth-child(even) td {
+  background-color: rgba(239,246,255,0.35);
+}
+
+.tabla-notas tbody tr:nth-child(even) .td-estudiante {
+  background-color: rgba(239,246,255,0.35);
+}
+
+/* Hover row */
+.tabla-notas tbody tr:hover td {
+  background: rgba(59,130,246,0.06) !important;
+}
+
+.tabla-notas tbody tr:hover .td-estudiante {
+  background: rgba(59,130,246,0.06) !important;
+}
+
+/* Fila de promedios de actividad */
+.fila-promedios td {
+  background: rgba(239,246,255,0.7) !important;
+  border-top: 2px solid var(--azul-100) !important;
+}
+
+.fila-promedios .td-estudiante {
+  background: rgba(239,246,255,0.7) !important;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--azul-700) !important;
+}
+
+/* Notas con fondo suave para mejor lectura */
+.nota-valor--ok {
+  background: var(--verde-100);
+  color: var(--verde-600);
+  border-radius: 6px;
+}
+
+.nota-valor--mal {
+  background: var(--rojo-100);
+  color: var(--rojo-600);
+  border-radius: 6px;
+}
+
+.nota-promedio--ok {
+  background: var(--verde-100);
+  color: var(--verde-600);
+  border-radius: 6px;
+}
+
+.nota-promedio--mal {
+  background: var(--rojo-100);
+  color: var(--rojo-600);
+  border-radius: 6px;
+}
+
+/* Contenedor tabla: borde más definido */
+.tabla-notas-contenedor {
+  border-radius: 16px;
+  border: 1.5px solid rgba(37,99,235,0.18);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.6) inset,
+    0 8px 32px rgba(59,130,246,0.1),
+    0 2px 8px rgba(0,0,0,0.04);
+  overflow: hidden;
+}

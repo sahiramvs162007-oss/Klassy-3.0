@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/componentes/busqueda-panel.css">
 </head>
 <body>
 
@@ -37,9 +39,6 @@
       <div class="cabecera-pagina">
         <div>
           <h1 class="cabecera-pagina__titulo">Gestión de Usuarios</h1>
-          <p class="cabecera-pagina__subtitulo">
-            <%= usuarios.length %> usuario<%= usuarios.length !== 1 ? 's' : '' %> encontrado<%= usuarios.length !== 1 ? 's' : '' %>
-          </p>
         </div>
         <div class="cabecera-pagina__acciones">
           <button class="btn btn--secundario" onclick="abrirModalImportar()">
@@ -53,21 +52,25 @@
         </div>
       </div>
 
-      <!-- Filtros -->
-      <form method="GET" action="/usuarios" class="barra-filtros">
-        <div class="barra-filtros__grupo">
-          <div class="barra-filtros__buscar">
-            <i data-lucide="search" class="barra-filtros__icono-buscar"></i>
+      <!-- Panel de búsqueda -->
+      <div class="busqueda-panel">
+        <!-- Stat card -->
+        <div class="acceso-card acceso-card--azul"><div class="tarjeta-stat__icono tarjeta-stat__icono--azul"><i data-lucide="users"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= usuarios.length %></span><span class="tarjeta-stat__etiqueta">Usuarios registrados</span></div></div>
+
+        <!-- Barra de búsqueda -->
+        <form method="GET" action="/usuarios" class="busqueda-panel__barra busqueda-panel__barra--azul" >
+          <div class="busqueda-panel__campo">
+            <i data-lucide="search" class="busqueda-panel__icono-buscar"></i>
             <input
               type="text"
               name="buscar"
               value="<%= buscar %>"
               placeholder="Buscar por nombre, apellido o correo..."
-              class="barra-filtros__entrada"
+              class="busqueda-panel__entrada"
             />
           </div>
 
-          <select name="filtroRol" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+          <select name="filtroRol" class="busqueda-panel__select" onchange="this.form.submit()">
             <option value="">Todos los roles</option>
             <% if (usuarioActual.rol === 'admin') { %>
               <option value="admin"      <%= filtroRol === 'admin'      ? 'selected' : '' %>>Administrador</option>
@@ -76,19 +79,19 @@
             <option value="docente"    <%= filtroRol === 'docente'    ? 'selected' : '' %>>Docente</option>
             <option value="estudiante" <%= filtroRol === 'estudiante' ? 'selected' : '' %>>Estudiante</option>
           </select>
-        </div>
 
-        <div class="barra-filtros__acciones">
-          <button type="submit" class="btn btn--primario btn--sm">
-            <i data-lucide="search"></i> Buscar
-          </button>
-          <% if (buscar || filtroRol) { %>
-            <a href="/usuarios" class="btn btn--secundario btn--sm">
-              <i data-lucide="x"></i> Limpiar
-            </a>
-          <% } %>
-        </div>
-      </form>
+          <div class="busqueda-panel__acciones">
+            <button type="submit" class="btn btn--primario btn--sm">
+              <i data-lucide="search"></i> Buscar
+            </button>
+            <% if (buscar || filtroRol) { %>
+              <a href="/usuarios" class="btn btn--secundario btn--sm">
+                <i data-lucide="x"></i> Limpiar
+              </a>
+            <% } %>
+          </div>
+        </form>
+      </div>
 
       <!-- Tabla de usuarios -->
       <div class="tabla-contenedor">
@@ -113,7 +116,7 @@
                 <th>Acciones</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="tbodyUsuarios">
               <% usuarios.forEach(u => { %>
                 <tr>
                   <!-- Nombre con avatar -->
@@ -334,68 +337,72 @@
     z-index:1100;
     box-shadow:var(--sombra-lg);
   ">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
-      <h2 style="font-size:1.1rem;font-weight:600;margin:0;">Importar usuarios desde Excel</h2>
-      <button onclick="cerrarModalImportar()" style="background:none;border:none;cursor:pointer;color:var(--color-texto-secundario);">
-        <i data-lucide="x"></i>
-      </button>
-    </div>
+    <div class="modaltotal">
 
-    <!-- Instrucciones -->
-    <div style="background:var(--color-fondo);border-radius:var(--radio-md);padding:1rem;margin-bottom:1.25rem;font-size:0.85rem;color:var(--color-texto-secundario);line-height:1.6;">
-      <p style="margin:0 0 0.5rem;font-weight:600;color:var(--color-texto);">Columnas requeridas en el Excel:</p>
-      <ul style="margin:0;padding-left:1.2rem;">
-        <li><strong>nombre</strong> — Nombre del usuario</li>
-        <li><strong>apellido</strong> — Apellido</li>
-        <li><strong>correo</strong> — Correo electrónico único</li>
-        <li><strong>rol</strong> — admin / director / docente / estudiante</li>
-      </ul>
-      <p style="margin:0.75rem 0 0.25rem;font-weight:600;color:var(--color-texto);">Columnas opcionales:</p>
-      <ul style="margin:0;padding-left:1.2rem;">
-        <li><strong>documentoIdentidad</strong> — Documento de identidad</li>
-        <li><strong>profesion</strong> — Solo para docentes</li>
-        <li><strong>ultimoNivelCursado</strong> — Solo para estudiantes (0–10)</li>
-      </ul>
-      <p style="margin:0.75rem 0 0;padding:0.5rem;background:var(--color-superficie);border-radius:var(--radio-sm);border-left:3px solid var(--color-primario);">
-        🔑 Estudiantes recibirán contraseña numérica aleatoria.<br>
-        Otros roles usarán el documento de identidad como contraseña (o <em>klassy + nº fila</em> si no tiene).
-      </p>
-    </div>
-
-    <!-- Descarga de plantilla -->
-    <div style="margin-bottom:1rem;">
-      <a href="/usuarios/plantilla-excel" class="btn btn--secundario btn--sm" style="width:100%;justify-content:center;text-decoration:none;">
-        <i data-lucide="download"></i>
-        Descargar plantilla de ejemplo
-      </a>
-    </div>
-
-    <!-- Formulario de subida -->
-    <form method="POST" action="/usuarios/importar" enctype="multipart/form-data">
-      <div class="campo" style="margin-bottom:1.25rem;">
-        <label class="campo__etiqueta">Seleccionar archivo Excel *</label>
-        <input
-          type="file"
-          name="archivoExcel"
-          accept=".xlsx,.xls"
-          required
-          class="campo__entrada"
-          style="padding:0.5rem;"
-        />
-      </div>
-      <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
-        <button type="button" class="btn btn--secundario" onclick="cerrarModalImportar()">Cancelar</button>
-        <button type="submit" class="btn btn--primario">
-          <i data-lucide="upload"></i>
-          Importar
+      <div style="display:flex;background:var(--gris-50); justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+        <h2 style="font-size:1.1rem;font-weight:600;margin:0;">Importar usuarios desde Excel</h2>
+        <button onclick="cerrarModalImportar()" style="background:none;border:none;cursor:pointer;color:var(--color-texto-secundario);">
+          <i data-lucide="x"></i>
         </button>
       </div>
-    </form>
+  
+      <!-- Instrucciones -->
+      <div style="border-radius:var(--radio-md);padding:1rem;margin-bottom:1.25rem;font-size:0.85rem;color:var(--color-texto-secundario);line-height:1.6;">
+        <p style="margin:0 0 0.5rem;font-weight:600;color:var(--color-texto);">Columnas requeridas en el Excel:</p>
+        <ul style="margin:0;padding-left:1.2rem;">
+          <li><strong>nombre</strong> — Nombre del usuario</li>
+          <li><strong>apellido</strong> — Apellido</li>
+          <li><strong>correo</strong> — Correo electrónico único</li>
+          <li><strong>rol</strong> — admin / director / docente / estudiante</li>
+        </ul>
+        <p style="margin:0.75rem 0 0.25rem;font-weight:600;color:var(--color-texto);">Columnas opcionales:</p>
+        <ul style="margin:0;padding-left:1.2rem;">
+          <li><strong>documentoIdentidad</strong> — Documento de identidad</li>
+          <li><strong>profesion</strong> — Solo para docentes</li>
+          <li><strong>ultimoNivelCursado</strong> — Solo para estudiantes (0–10)</li>
+        </ul>
+        <p style="margin:0.75rem 0 0;padding:0.5rem;background:var(--color-superficie);border-radius:var(--radio-sm);border-left:3px solid var(--color-primario);">
+          🔑 Estudiantes recibirán contraseña numérica aleatoria.<br>
+          Otros roles usarán el documento de identidad como contraseña (o <em>klassy + nº fila</em> si no tiene).
+        </p>
+      </div>
+  
+      <!-- Descarga de plantilla -->
+      <div style="margin-bottom:1rem;">
+        <a href="/usuarios/plantilla-excel" class="btn btn--secundario btn--sm" style="width:100%;justify-content:center;text-decoration:none;">
+          <i data-lucide="download"></i>
+          Descargar plantilla de ejemplo
+        </a>
+      </div>
+  
+      <!-- Formulario de subida -->
+      <form method="POST" action="/usuarios/importar" enctype="multipart/form-data">
+        <div class="campo" style="margin-bottom:1.25rem;">
+          <label class="campo__etiqueta">Seleccionar archivo Excel *</label>
+          <input
+            type="file"
+            name="archivoExcel"
+            accept=".xlsx,.xls"
+            required
+            class="campo__entrada"
+            style="padding:0.5rem;"
+          />
+        </div>
+        <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+          <button type="button" class="btn btn--secundario" onclick="cerrarModalImportar()">Cancelar</button>
+          <button type="submit" class="btn btn--primario">
+            <i data-lucide="upload"></i>
+            Importar
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- Scripts -->
   <script src="/js/notificaciones.js"></script>
   <script src="/js/drawer.js"></script>
+  <script src="/js/paginacion.js"></script>
   <script src="/js/main.js"></script>
   <script src="/js/usuarios.js"></script>
   <script>

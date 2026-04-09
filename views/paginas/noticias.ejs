@@ -8,7 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Fraunces:wght@700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
-  <link rel="stylesheet" href="/css/dashboard.css" />
+  <link rel="stylesheet" href="/css/paginas/dashboard.css" />
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
 
@@ -37,18 +38,19 @@
       </div>
 
       <!-- Filtro -->
-      <form method="GET" action="/noticias" class="barra-filtros">
-        <div class="barra-filtros__grupo">
-          <select name="filtroEstado" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Todas</option>
-            <option value="activas"   <%= filtroEstado === 'activas'   ? 'selected' : '' %>>Activas</option>
-            <option value="inactivas" <%= filtroEstado === 'inactivas' ? 'selected' : '' %>>Inactivas</option>
-          </select>
-        </div>
-        <% if (filtroEstado) { %>
-          <a href="/noticias" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Limpiar</a>
-        <% } %>
-      </form>
+        <!-- Stat card -->
+        <form method="GET" action="/noticias" class="busqueda-panel__barra busqueda-panel__barra--azul" style="width: 30%;" >
+           <div class="barra-filtros__grupo">
+             <select name="filtroEstado" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+               <option value="">Todas</option>
+               <option value="activas"   <%= filtroEstado === 'activas'   ? 'selected' : '' %>>Activas</option>
+               <option value="inactivas" <%= filtroEstado === 'inactivas' ? 'selected' : '' %>>Inactivas</option>
+             </select>
+           </div>
+           <% if (filtroEstado) { %>
+             <a href="/noticias" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Limpiar</a>
+           <% } %>
+         </form>
 
       <!-- Grid de gestión -->
       <% if (noticias.length === 0) { %>
@@ -155,6 +157,23 @@
           <select name="activo" id="campoActivo" class="campo__select">
             <option value="true">Activa</option>
             <option value="false">Inactiva</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label class="campo__etiqueta">Etiqueta</label>
+          <select name="etiqueta" id="campoEtiqueta" class="campo__select">
+            <option value="Anuncios">📢 Anuncios</option>
+            <option value="Eventos">🗓️ Eventos</option>
+            <option value="Académico">📝 Académico</option>
+            <option value="Institucional">🏫 Institucional</option>
+            <option value="Urgente">⚠️ Urgente</option>
+            <option value="Clases">📚 Clases</option>
+            <option value="Proyectos">🧪 Proyectos</option>
+            <option value="Deportes">⚽ Deportes</option>
+            <option value="Cultura">🎭 Cultura</option>
+            <option value="Arte y Música">🎶 Arte y Música</option>
+            <option value="Bienestar">🧘 Bienestar</option>
+            <option value="Logros">🏆 Logros</option>
           </select>
         </div>
       </div>
