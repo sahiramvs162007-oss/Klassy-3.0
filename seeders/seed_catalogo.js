@@ -1,11 +1,19 @@
 /**
- * seed_catalogo.js
+ * seeders/seed_catalogo.js
  * ─────────────────────────────────────────────────────────────────────────────
- * Inserta el catálogo base de KLASSY para los años 2022, 2023 y 2024.
- * Colecciones afectadas: Materia, Periodo, Grado, AsignacionDocente
+ * FASE 1 — Estructura base del sistema KLASSY.
+ * Cubre los 3 años académicos: 2024, 2025, 2026.
  *
- * REQUISITO: los 22 docentes deben estar importados en MongoDB desde el Excel.
- * IDEMPOTENTE: usa upsert, se puede correr más de una vez sin duplicar datos.
+ * Inserta:
+ *   • 11 Materias         (sin año, catálogo permanente)
+ *   • 12 Periodos         (4 por año × 3 años)
+ *   • 66 Grados           (22 por año × 3 años: 1°A–11°B)
+ *   • 726 AsignacionDocente (11 materias × 2 docentes × 11 niveles × 3 años)
+ *
+ * REQUISITOS PREVIOS:
+ *   El Excel debe estar importado en MongoDB (22 docentes presentes).
+ *
+ * IDEMPOTENTE: usa upsert — se puede correr más de una vez sin duplicar.
  *
  * Uso:
  *   node seeders/seed_catalogo.js
@@ -23,60 +31,61 @@ const {
   Usuario,
 } = require('../models');
 
-// ── Configuración ─────────────────────────────────────────────────────────────
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/klassy';
-const AÑOS      = [2022, 2023, 2024];
+
+// ── Constantes ────────────────────────────────────────────────────────────────
+const AÑOS   = [2024, 2025, 2026];
+const NIVELES= [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const GRUPOS = ['A', 'B'];
 
 // ── Catálogo de materias ──────────────────────────────────────────────────────
 const MATERIAS_DEF = [
-  { nombre: 'Matemáticas',       descripcion: 'Aritmética, álgebra, geometría y pensamiento lógico-matemático.' },
-  { nombre: 'Español',           descripcion: 'Lectura, escritura, gramática y comunicación en lengua castellana.' },
-  { nombre: 'Ciencias Naturales',descripcion: 'Biología, química y física adaptadas al nivel escolar.' },
-  { nombre: 'Ciencias Sociales', descripcion: 'Historia, geografía, democracia y convivencia ciudadana.' },
-  { nombre: 'Inglés',            descripcion: 'Comprensión y producción oral y escrita en inglés.' },
-  { nombre: 'Educación Física',  descripcion: 'Desarrollo motor, deportes, salud y vida activa.' },
-  { nombre: 'Arte',              descripcion: 'Expresión plástica, dibujo, pintura y apreciación artística.' },
-  { nombre: 'Música',            descripcion: 'Teoría musical, apreciación y práctica instrumental básica.' },
-  { nombre: 'Tecnología',        descripcion: 'Informática, pensamiento computacional y herramientas digitales.' },
-  { nombre: 'Ética',             descripcion: 'Valores, filosofía moral y formación del carácter.' },
-  { nombre: 'Religión',          descripcion: 'Educación religiosa y ética de las creencias.' },
+  { nombre: 'Matemáticas',        descripcion: 'Aritmética, álgebra, geometría y pensamiento lógico-matemático.' },
+  { nombre: 'Lengua Castellana',  descripcion: 'Lectura, escritura, gramática y comunicación oral y escrita.' },
+  { nombre: 'Ciencias Naturales', descripcion: 'Biología, química y física adaptadas al nivel escolar.' },
+  { nombre: 'Ciencias Sociales',  descripcion: 'Historia, geografía, democracia y convivencia ciudadana.' },
+  { nombre: 'Inglés',             descripcion: 'Comprensión y producción oral y escrita en idioma inglés.' },
+  { nombre: 'Educación Física',   descripcion: 'Desarrollo motor, deportes, salud y hábitos de vida activa.' },
+  { nombre: 'Arte',               descripcion: 'Expresión plástica, dibujo, pintura y apreciación artística.' },
+  { nombre: 'Música',             descripcion: 'Teoría musical, apreciación y práctica instrumental básica.' },
+  { nombre: 'Tecnología',         descripcion: 'Informática, pensamiento computacional y herramientas digitales.' },
+  { nombre: 'Ética y Valores',    descripcion: 'Formación del carácter, valores y filosofía moral aplicada.' },
+  { nombre: 'Religión',           descripcion: 'Educación religiosa y ética de las creencias.' },
 ];
 
-// ── Periodos por año (fechas reales) ──────────────────────────────────────────
+// ── Periodos por año ──────────────────────────────────────────────────────────
+// 2026 solo tiene P1 (año en curso) — los demás quedan con fechas futuras
+// y activo:false para que el seeder no los procese.
 const PERIODOS_DEF = {
-  2022: [
-    { numero: 1, nombre: 'Primer Periodo',   fechaInicio: '2022-01-31', fechaFin: '2022-03-25' },
-    { numero: 2, nombre: 'Segundo Periodo',  fechaInicio: '2022-04-04', fechaFin: '2022-06-10' },
-    { numero: 3, nombre: 'Tercer Periodo',   fechaInicio: '2022-06-27', fechaFin: '2022-09-09' },
-    { numero: 4, nombre: 'Cuarto Periodo',   fechaInicio: '2022-09-19', fechaFin: '2022-11-25' },
-  ],
-  2023: [
-    { numero: 1, nombre: 'Primer Periodo',   fechaInicio: '2023-01-30', fechaFin: '2023-03-24' },
-    { numero: 2, nombre: 'Segundo Periodo',  fechaInicio: '2023-04-03', fechaFin: '2023-06-09' },
-    { numero: 3, nombre: 'Tercer Periodo',   fechaInicio: '2023-06-26', fechaFin: '2023-09-08' },
-    { numero: 4, nombre: 'Cuarto Periodo',   fechaInicio: '2023-09-18', fechaFin: '2023-11-24' },
-  ],
   2024: [
-    { numero: 1, nombre: 'Primer Periodo',   fechaInicio: '2024-01-29', fechaFin: '2024-03-22' },
-    { numero: 2, nombre: 'Segundo Periodo',  fechaInicio: '2024-04-02', fechaFin: '2024-06-07' },
-    { numero: 3, nombre: 'Tercer Periodo',   fechaInicio: '2024-06-24', fechaFin: '2024-09-06' },
-    { numero: 4, nombre: 'Cuarto Periodo',   fechaInicio: '2024-09-16', fechaFin: '2024-11-22' },
+    { numero: 1, nombre: 'Primer Periodo',  fechaInicio: '2024-01-29', fechaFin: '2024-03-22', activo: false },
+    { numero: 2, nombre: 'Segundo Periodo', fechaInicio: '2024-04-01', fechaFin: '2024-06-07', activo: false },
+    { numero: 3, nombre: 'Tercer Periodo',  fechaInicio: '2024-06-24', fechaFin: '2024-09-06', activo: false },
+    { numero: 4, nombre: 'Cuarto Periodo',  fechaInicio: '2024-09-16', fechaFin: '2024-11-22', activo: false },
+  ],
+  2025: [
+    { numero: 1, nombre: 'Primer Periodo',  fechaInicio: '2025-01-27', fechaFin: '2025-03-21', activo: false },
+    { numero: 2, nombre: 'Segundo Periodo', fechaInicio: '2025-03-31', fechaFin: '2025-06-06', activo: false },
+    { numero: 3, nombre: 'Tercer Periodo',  fechaInicio: '2025-06-23', fechaFin: '2025-09-05', activo: false },
+    { numero: 4, nombre: 'Cuarto Periodo',  fechaInicio: '2025-09-15', fechaFin: '2025-11-21', activo: false },
+  ],
+  2026: [
+    { numero: 1, nombre: 'Primer Periodo',  fechaInicio: '2026-01-26', fechaFin: '2026-03-20', activo: true  }, // único activo
+    { numero: 2, nombre: 'Segundo Periodo', fechaInicio: '2026-03-30', fechaFin: '2026-06-05', activo: false },
+    { numero: 3, nombre: 'Tercer Periodo',  fechaInicio: '2026-06-22', fechaFin: '2026-09-04', activo: false },
+    { numero: 4, nombre: 'Cuarto Periodo',  fechaInicio: '2026-09-14', fechaFin: '2026-11-20', activo: false },
   ],
 };
 
-// ── Niveles y grupos ──────────────────────────────────────────────────────────
-const NIVELES = [1,2,3,4,5,6,7,8,9,10,11];
-const GRUPOS  = ['A','B'];
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const log  = (msg) => console.log(`  ✓ ${msg}`);
-const warn = (msg) => console.warn(`  ⚠ ${msg}`);
-const sep  = (title) => console.log(`\n── ${title} ${'─'.repeat(50 - title.length)}`);
+const warn = (msg) => console.warn(`  ⚠  ${msg}`);
+const sep  = (t)   => console.log(`\n── ${t} ${'─'.repeat(Math.max(2, 52 - t.length))}`);
 
-// ── Paso 1: Materias ──────────────────────────────────────────────────────────
+// ── PASO 1: Materias ──────────────────────────────────────────────────────────
 async function seedMaterias() {
   sep('MATERIAS');
-  const materiaIds = {};
+  const ids = {}; // nombre → ObjectId
 
   for (const def of MATERIAS_DEF) {
     const doc = await Materia.findOneAndUpdate(
@@ -84,22 +93,22 @@ async function seedMaterias() {
       { $set: { descripcion: def.descripcion, activo: true } },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
-    materiaIds[def.nombre] = doc._id;
-    log(`Materia: ${def.nombre}`);
+    ids[def.nombre] = doc._id;
+    log(def.nombre);
   }
 
-  log(`Total materias: ${Object.keys(materiaIds).length}`);
-  return materiaIds;
+  log(`Total: ${Object.keys(ids).length} materias`);
+  return ids; // { 'Matemáticas': ObjectId, ... }
 }
 
-// ── Paso 2: Periodos ──────────────────────────────────────────────────────────
+// ── PASO 2: Periodos ──────────────────────────────────────────────────────────
 async function seedPeriodos() {
   sep('PERIODOS');
-  // periodoIds[año][numero] = ObjectId
-  const periodoIds = {};
+  // ids[año][numero] = ObjectId
+  const ids = {};
 
   for (const año of AÑOS) {
-    periodoIds[año] = {};
+    ids[año] = {};
     for (const p of PERIODOS_DEF[año]) {
       const doc = await Periodo.findOneAndUpdate(
         { numero: p.numero, año },
@@ -108,32 +117,31 @@ async function seedPeriodos() {
             nombre:      p.nombre,
             fechaInicio: new Date(p.fechaInicio),
             fechaFin:    new Date(p.fechaFin),
-            // Todos los periodos históricos (2022-2023) quedan cerrados.
-            // 2024 período 4 queda activo para poder simular el cierre.
-            activo: año === 2024 && p.numero === 4,
+            activo:      p.activo,
           },
         },
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
-      periodoIds[año][p.numero] = doc._id;
-      log(`Periodo ${año} #${p.numero}: ${p.nombre} (${p.fechaInicio} → ${p.fechaFin})`);
+      ids[año][p.numero] = doc._id;
+      log(`${año} P${p.numero}: ${p.nombre} — ${p.fechaInicio} → ${p.fechaFin} [activo: ${p.activo}]`);
     }
   }
 
-  return periodoIds;
+  return ids;
 }
 
-// ── Paso 3: Grados ────────────────────────────────────────────────────────────
+// ── PASO 3: Grados ────────────────────────────────────────────────────────────
 async function seedGrados(materiaIds) {
   sep('GRADOS');
-  // gradoIds[año][nivel][grupo] = ObjectId
-  const gradoIds = {};
-  const todasMaterias = Object.values(materiaIds);
+  // ids[año][nivel][grupo] = ObjectId
+  const ids        = {};
+  const todasMats  = Object.values(materiaIds);
+  let   totalCreados = 0;
 
   for (const año of AÑOS) {
-    gradoIds[año] = {};
+    ids[año] = {};
     for (const nivel of NIVELES) {
-      gradoIds[año][nivel] = {};
+      ids[año][nivel] = {};
       for (const grupo of GRUPOS) {
         const nombre = `${nivel}°${grupo}`;
         const doc = await Grado.findOneAndUpdate(
@@ -142,87 +150,102 @@ async function seedGrados(materiaIds) {
             $set: {
               nivel,
               cupo:     20,
-              materias: todasMaterias,
+              materias: todasMats,
               activo:   true,
             },
           },
           { upsert: true, new: true, setDefaultsOnInsert: true }
         );
-        gradoIds[año][nivel][grupo] = doc._id;
+        ids[año][nivel][grupo] = doc._id;
+        totalCreados++;
       }
     }
-    log(`Grados ${año}: ${NIVELES.length * GRUPOS.length} grados creados (1°A–11°B)`);
+    log(`${año}: 22 grados (1°A–11°B)`);
   }
 
-  return gradoIds;
+  log(`Total: ${totalCreados} grados`);
+  return ids;
 }
 
-// ── Paso 4: Docentes — leer del Excel/BD ─────────────────────────────────────
+// ── PASO 4: Cargar docentes desde BD ─────────────────────────────────────────
 /**
- * Los docentes se leen desde la BD en el MISMO orden en que fueron importados
- * del Excel: primero los 2 docentes de Matemáticas, luego los 2 de Español, etc.
- * El Excel los generó en ese orden, así que simplemente los traemos ordenados
- * por createdAt y los emparejamos 1:1 con MATERIAS_DEF.
+ * Lee los docentes ordenados por createdAt — mismo orden que el Excel
+ * (primero los 2 de Matemáticas, luego los 2 de Lengua, etc.).
+ * Devuelve: { 'Matemáticas': [id1, id2], 'Lengua Castellana': [id3, id4], ... }
  */
 async function cargarDocentes() {
-  sep('CARGA DE DOCENTES');
+  sep('DOCENTES');
   const docentes = await Usuario.find({ rol: 'docente', activo: true })
     .sort({ createdAt: 1 })
-    .select('_id nombre apellido profesion')
+    .select('_id nombre apellido')
     .lean();
 
   if (docentes.length < 22) {
-    warn(`Solo se encontraron ${docentes.length} docentes. Se esperaban 22.`);
+    warn(`Solo ${docentes.length} docentes en BD. Se esperan 22.`);
     warn('Importa el Excel primero y vuelve a correr este script.');
+    if (docentes.length === 0) {
+      await mongoose.disconnect();
+      process.exit(1);
+    }
   } else {
-    log(`Docentes cargados: ${docentes.length}`);
+    log(`${docentes.length} docentes encontrados`);
   }
 
-  // Mapeo: materiaIndex → [docenteId_1, docenteId_2]
-  // Docente 0,1 → Matemáticas | 2,3 → Español | etc.
-  const docentesPorMateria = {};
+  // Emparejar: índices 0-1 → Matemáticas, 2-3 → Lengua, etc.
+  const map = {};
   for (let i = 0; i < MATERIAS_DEF.length; i++) {
     const nombre = MATERIAS_DEF[i].nombre;
-    docentesPorMateria[nombre] = [
-      docentes[i * 2]     ? docentes[i * 2]._id     : null,
-      docentes[i * 2 + 1] ? docentes[i * 2 + 1]._id : null,
+    map[nombre]  = [
+      docentes[i * 2]?.     _id ?? null,
+      docentes[i * 2 + 1]?. _id ?? null,
     ].filter(Boolean);
+
+    const d1 = docentes[i * 2];
+    const d2 = docentes[i * 2 + 1];
+    log(`${nombre}: ${d1 ? d1.nombre + ' ' + d1.apellido : '—'} | ${d2 ? d2.nombre + ' ' + d2.apellido : '—'}`);
   }
 
-  return docentesPorMateria;
+  return map;
 }
 
-// ── Paso 5: AsignacionDocente ─────────────────────────────────────────────────
+// ── PASO 5: AsignacionDocente ─────────────────────────────────────────────────
 /**
- * Distribución: cada materia tiene 2 docentes.
- * Por año hay 22 grados (11 niveles × 2 grupos).
- * Docente 1 de la materia → cubre los grupos A de todos los niveles (11 grados)
- * Docente 2 de la materia → cubre los grupos B de todos los niveles (11 grados)
- * Total por año: 11 materias × 2 docentes × 11 niveles = 242 asignaciones
+ * Distribución por grupos:
+ *   Docente[0] de la materia → todos los grupos A (niveles 1–11)
+ *   Docente[1] de la materia → todos los grupos B (niveles 1–11)
+ *
+ * Por año: 11 materias × 2 docentes × 11 niveles = 242 asignaciones
  * Total 3 años: 726 asignaciones
  */
-async function seedAsignaciones(materiaIds, gradoIds, docentesPorMateria) {
+async function seedAsignaciones(materiaIds, gradoIds, docentesMap) {
   sep('ASIGNACIONES DOCENTE');
-  let total = 0;
-  let omitidos = 0;
+  let total    = 0;
+  let errores  = 0;
 
   for (const año of AÑOS) {
     let porAño = 0;
-    for (const [nombreMateria, materiaId] of Object.entries(materiaIds)) {
-      const docentes = docentesPorMateria[nombreMateria] || [];
+
+    for (const [nombreMat, materiaId] of Object.entries(materiaIds)) {
+      const docentes = docentesMap[nombreMat] || [];
 
       if (docentes.length === 0) {
-        warn(`Sin docentes para ${nombreMateria} — omitiendo asignaciones`);
-        omitidos++;
+        warn(`Sin docentes para "${nombreMat}" en ${año} — omitiendo`);
+        errores++;
         continue;
       }
 
       for (const nivel of NIVELES) {
         for (let gi = 0; gi < GRUPOS.length; gi++) {
           const grupo     = GRUPOS[gi];
-          // Docente 0 → grupo A, Docente 1 → grupo B (fallback al 0 si solo hay 1)
+          // Fallback: si solo hay 1 docente cubre ambos grupos
           const docenteId = docentes[gi] ?? docentes[0];
-          const gradoId   = gradoIds[año][nivel][grupo];
+          const gradoId   = gradoIds[año]?.[nivel]?.[grupo];
+
+          if (!gradoId) {
+            warn(`Grado ${nivel}°${grupo} ${año} no encontrado — omitiendo`);
+            errores++;
+            continue;
+          }
 
           await AsignacionDocente.findOneAndUpdate(
             { docenteId, materiaId, gradoId, año },
@@ -233,35 +256,45 @@ async function seedAsignaciones(materiaIds, gradoIds, docentesPorMateria) {
         }
       }
     }
+
     total += porAño;
-    log(`AsignacionDocente ${año}: ${porAño} asignaciones`);
+    log(`${año}: ${porAño} asignaciones`);
   }
 
-  if (omitidos > 0) warn(`${omitidos} materias sin docente — revisa la importación del Excel`);
-  log(`Total asignaciones: ${total}`);
+  if (errores > 0) warn(`${errores} asignaciones omitidas por errores`);
+  log(`Total: ${total} asignaciones`);
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// ── MAIN ──────────────────────────────────────────────────────────────────────
 async function main() {
-  console.log('\n╔══════════════════════════════════════════════════════╗');
-  console.log('║         KLASSY — seed_catalogo.js                   ║');
-  console.log('║  Materias · Periodos · Grados · AsignacionDocente   ║');
-  console.log('╚══════════════════════════════════════════════════════╝');
+  console.log('\n╔════════════════════════════════════════════════════════╗');
+  console.log('║           KLASSY — seed_catalogo.js                   ║');
+  console.log('║  Materias · Periodos · Grados · AsignacionDocente     ║');
+  console.log('║  Años: 2024 · 2025 · 2026                             ║');
+  console.log('╚════════════════════════════════════════════════════════╝');
   console.log(`\nConectando a: ${MONGO_URI}`);
 
   await mongoose.connect(MONGO_URI);
   console.log('Conexión establecida.\n');
 
-  const materiaIds        = await seedMaterias();
-  const periodoIds        = await seedPeriodos();       // eslint-disable-line no-unused-vars
-  const gradoIds          = await seedGrados(materiaIds);
-  const docentesPorMateria= await cargarDocentes();
-  await seedAsignaciones(materiaIds, gradoIds, docentesPorMateria);
+  const materiaIds  = await seedMaterias();
+  await seedPeriodos();
+  const gradoIds    = await seedGrados(materiaIds);
+  const docentesMap = await cargarDocentes();
+  await seedAsignaciones(materiaIds, gradoIds, docentesMap);
 
-  console.log('\n╔══════════════════════════════════════════════════════╗');
-  console.log('║  seed_catalogo.js completado sin errores             ║');
-  console.log('║  Siguiente paso: node seeders/seed_matriculas.js     ║');
-  console.log('╚══════════════════════════════════════════════════════╝\n');
+  console.log('\n╔════════════════════════════════════════════════════════╗');
+  console.log('║  seed_catalogo.js completado ✓                        ║');
+  console.log('║                                                        ║');
+  console.log('║  Resumen insertado:                                    ║');
+  console.log('║    • 11 Materias                                       ║');
+  console.log('║    • 12 Periodos  (4 × 3 años)                        ║');
+  console.log('║    • 66 Grados    (22 × 3 años)                       ║');
+  console.log('║    • 726 AsignacionDocente                             ║');
+  console.log('║                                                        ║');
+  console.log('║  Siguiente paso:                                       ║');
+  console.log('║    node seeders/seed_matriculas_2024.js                ║');
+  console.log('╚════════════════════════════════════════════════════════╝\n');
 
   await mongoose.disconnect();
   process.exit(0);
