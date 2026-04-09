@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
 
@@ -43,53 +44,112 @@
       </div>
 
       <!-- Filtros -->
-      <form method="GET" action="/asignaciones" class="barra-filtros">
-        <div class="barra-filtros__grupo">
+      <div class="busqueda-panel">
+        <div class="acceso-card acceso-card--verde" style="height: 150px;"><div class="tarjeta-stat__icono tarjeta-stat__icono--verde"><i data-lucide="user-check"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= asignaciones.length %></span><span class="tarjeta-stat__etiqueta">Asignaciones</span></div></div>
+        <form method="GET" action="/asignaciones" class="busqueda-panel__barra busqueda-panel__barra--verde" id="formFiltrosAsig">
 
-          <!-- Filtro por docente -->
-          <select name="filtroDocente" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Todos los docentes</option>
-            <% docentes.forEach(d => { %>
-              <option value="<%= d._id %>" <%= filtroDocente === d._id.toString() ? 'selected' : '' %>>
-                <%= d.nombre %> <%= d.apellido %>
-              </option>
-            <% }) %>
-          </select>
+          <input type="hidden" name="filtroGrado"   id="inputFiltroGradoAsig"   value="<%= filtroGrado %>" />
+          <input type="hidden" name="filtroDocente" id="inputFiltroDocenteAsig" value="<%= filtroDocente %>" />
 
-          <!-- Filtro por grado -->
-          <select name="filtroGrado" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Todos los grados</option>
-            <% grados.forEach(g => { %>
-              <option value="<%= g._id %>" <%= filtroGrado === g._id.toString() ? 'selected' : '' %>>
-                <%= g.nombre %> — <%= g.año %>
-              </option>
-            <% }) %>
-          </select>
+          <div class="barra-filtros__fila-superior">
 
-          <!-- Filtro por año -->
-          <select name="filtroAnio" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Todos los años</option>
-            <% años.forEach(a => { %>
-              <option value="<%= a %>" <%= filtroAnio == a ? 'selected' : '' %>><%= a %></option>
-            <% }) %>
-          </select>
+            <!-- Año -->
+            <i data-lucide="calendar" class="barra-filtros__anio-icono"></i>
+            <span class="barra-filtros__anio-label">Año</span>
+            <div class="barra-filtros__anio-wrap">
+              <select name="filtroAnio" id="selectAnioAsig" class="barra-filtros__anio-select" onchange="this.form.submit()">
+                <option value="">Todos</option>
+                <% años.forEach(a => { %>
+                  <option value="<%= a %>" <%= (filtroAnio == a || (!filtroAnio && a == new Date().getFullYear())) ? 'selected' : '' %>><%= a %></option>
+                <% }) %>
+              </select>
+            </div>
 
-          <!-- Filtro por estado -->
-          <select name="filtroEstado" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Todos los estados</option>
-            <option value="activo"   <%= filtroEstado === 'activo'   ? 'selected' : '' %>>Activo</option>
-            <option value="inactivo" <%= filtroEstado === 'inactivo' ? 'selected' : '' %>>Inactivo</option>
-          </select>
+            <!-- Estado -->
+            <div class="barra-filtros__anio-wrap">
+              <select name="filtroEstado" class="barra-filtros__anio-select" onchange="this.form.submit()">
+                <option value="">Todos los estados</option>
+                <option value="activo"   <%= filtroEstado === 'activo'   ? 'selected' : '' %>>Activo</option>
+                <option value="inactivo" <%= filtroEstado === 'inactivo' ? 'selected' : '' %>>Inactivo</option>
+              </select>
+            </div>
 
-        </div>
-        <div class="barra-filtros__acciones">
-          <% if (filtroDocente || filtroGrado || filtroAnio || filtroEstado) { %>
-            <a href="/asignaciones" class="btn btn--secundario btn--sm">
-              <i data-lucide="x"></i> Limpiar
-            </a>
-          <% } %>
-        </div>
-      </form>
+            <div class="barra-filtros__acciones">
+              <button type="submit" class="btn btn--primario btn--sm">
+                <i data-lucide="search"></i> Buscar
+              </button>
+              <% if (filtroDocente || filtroGrado || filtroAnio || filtroEstado) { %>
+                <a href="/asignaciones" class="btn btn--secundario btn--sm">
+                  <i data-lucide="x"></i> Limpiar
+                </a>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- ── Filtro de docente ──────────────────────────────────── -->
+          <div class="filtro-nivel-wrap">
+            <button type="button" class="filtro-nivel_edu" id="btnFiltroDocenteAsig" onclick="toggleFiltroDocente()">
+              <i data-lucide="users"></i>
+              <span>Docente</span>
+              <% if (filtroDocente) {
+                   const docSel = docentes.find(d => d._id.toString() === filtroDocente);
+                   if (docSel) { %>
+                <span class="filtro-nivel__badge-trigger"><%= docSel.nombre %> <%= docSel.apellido %></span>
+              <% }} %>
+              <i data-lucide="chevron-down" class="filtro-nivel__chevron" id="docenteChevron"></i>
+            </button>
+
+            <div class="filtro-nivel__panel" id="docentePanel">
+              <div class="filtro-docente__buscar">
+                <i data-lucide="search" class="filtro-docente__icono"></i>
+                <input
+                  type="text"
+                  id="inputBuscarDocente"
+                  class="filtro-docente__entrada"
+                  placeholder="Buscar docente..."
+                  oninput="filtrarDocentes(this.value)"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="filtro-docente__lista" id="listaDocentes">
+                <% docentes.forEach(d => { %>
+                  <button
+                    type="button"
+                    class="filtro-docente__chip <%= filtroDocente === d._id.toString() ? 'filtro-docente__chip--activo' : '' %>"
+                    data-id="<%= d._id %>"
+                    data-nombre="<%= (d.nombre + ' ' + d.apellido).toLowerCase() %>"
+                    onclick="seleccionarDocente('<%= d._id %>', '<%= d.nombre %> <%= d.apellido %>')"
+                  >
+                    <span class="filtro-docente__avatar"><%= d.nombre.charAt(0).toUpperCase() %><%= d.apellido.charAt(0).toUpperCase() %></span>
+                    <div class="filtro-docente__info">
+                      <span class="filtro-docente__nombre"><%= d.nombre %> <%= d.apellido %></span>
+                      <% if (d.profesion) { %><span class="filtro-docente__profesion"><%= d.profesion %></span><% } %>
+                    </div>
+                    <% if (filtroDocente === d._id.toString()) { %><i data-lucide="check" class="filtro-docente__check"></i><% } %>
+                  </button>
+                <% }) %>
+                <p class="filtro-docente__vacio" id="msgSinDocentes" style="display:none">Sin resultados</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Filtro de grado visual ─────────────────────────────── -->
+          <div class="filtro-nivel-wrap">
+            <button type="button" class="filtro-nivel_edu" id="btnFiltroGradoAsig">
+              <i data-lucide="book-open"></i>
+              <span>Grado</span>
+              <% if (filtroGrado) {
+                   const gradoSel = grados.find(g => g._id.toString() === filtroGrado);
+                   if (gradoSel) { %>
+                <span class="filtro-nivel__badge-trigger"><%= gradoSel.nombre %></span>
+              <% }} %>
+              <i data-lucide="chevron-down" class="filtro-nivel__chevron"></i>
+            </button>
+            <div class="filtro-nivel__panel" id="panelFiltroGradoAsig"></div>
+          </div>
+
+        </form>
+      </div>
 
       <!-- Tabla -->
       <div class="tabla-contenedor">
@@ -114,7 +174,7 @@
                 <th>Acciones</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="tbodyAsignaciones">
               <% asignaciones.forEach(a => { %>
                 <tr>
                   <!-- Docente -->
@@ -231,19 +291,18 @@
       <!-- Docente -->
       <div class="campo">
         <label class="campo__etiqueta">Docente *</label>
-        <select name="docenteId" id="campoDocenteAsig" class="campo__select" required>
-          <option value="">Seleccionar docente</option>
-        </select>
+        <div class="campo-docente-picker" id="contenedorPickerDocente">
+          <!-- se inyecta dinámicamente por JS -->
+        </div>
+        <input type="hidden" name="docenteId" id="campoDocenteAsig" required />
         <span class="campo__ayuda" id="ayudaEspecialidad"></span>
       </div>
 
       <!-- Grado — al seleccionar carga sus materias -->
       <div class="campo">
         <label class="campo__etiqueta">Grado *</label>
-        <select name="gradoId" id="campoGradoAsig" class="campo__select" required
-          onchange="cargarMateriasDeGrado()">
-          <option value="">Seleccionar grado</option>
-        </select>
+        <div id="pickerGradoAsig"></div>
+        <input type="hidden" name="gradoId" id="campoGradoAsig" required />
       </div>
 
       <!-- Materia — solo las del grado elegido -->
@@ -274,18 +333,22 @@
     }))) %>;
 
     const GRADOS_DISPONIBLES = <%- JSON.stringify(grados.map(g => ({
-      _id:    g._id,
+      _id:    g._id.toString(),
+      id:     g._id.toString(),
       nombre: g.nombre,
       nivel:  g.nivel,
       año:    g.año,
     }))) %>;
 
     const ANO_ACTUAL = <%= añoActual %>;
+    const FILTRO_GRADO_ACTIVO_ASIG = '<%= filtroGrado %>';
   </script>
   <script src="/js/notificaciones.js"></script>
   <script src="/js/drawer.js"></script>
-  <script src="/js/main.js"></script>
+  <script src="/js/paginacion.js"></script>
+  <script src="/js/grado-picker.js"></script>
   <script src="/js/asignaciones.js"></script>
-  <script>lucide.createIcons();</script>
+  <script src="/js/main.js"></script>
+  
 </body>
 </html>

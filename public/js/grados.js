@@ -191,3 +191,8 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
 });
+
+// ─── Paginación ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  iniciarPaginacion('tbodyGrados', { filasPorPagina: 10 });
+});

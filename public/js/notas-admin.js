@@ -82,3 +82,53 @@ async function guardarNotaAdmin(notaId, valor, inputEl, btnEl) {
     inputEl.title = 'Error de conexión';
   }
 }
+
+// ─── Paginación ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  iniciarPaginacion('tbodyNotasAdmin', { filasPorPagina: 10 });
+});
+
+// ── Materia Picker con búsqueda ────────────────────────
+  (function () {
+    const trigger  = document.getElementById('materiaPickerTrigger');
+    const panel    = document.getElementById('materiaPickerPanel');
+    const buscador = document.getElementById('materiaBuscador');
+    const lista    = document.getElementById('materiaLista');
+    const inputId  = document.getElementById('inputMateriaIdNotas');
+    const label    = document.getElementById('materiaPickerLabel');
+    const form     = document.getElementById('formFiltrosNotasAdmin');
+    if (!trigger) return;
+
+    trigger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const open = panel.classList.toggle('materia-picker__panel--abierto');
+      trigger.classList.toggle('materia-picker__trigger--abierto', open);
+      if (open) { setTimeout(() => buscador.focus(), 50); }
+    });
+
+    document.addEventListener('click', function () {
+      panel.classList.remove('materia-picker__panel--abierto');
+      trigger.classList.remove('materia-picker__trigger--abierto');
+    });
+
+    panel.addEventListener('click', e => e.stopPropagation());
+
+    buscador.addEventListener('input', function () {
+      const q = this.value.toLowerCase().trim();
+      lista.querySelectorAll('.materia-picker__opcion').forEach(li => {
+        li.style.display = li.dataset.nombre.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+
+    lista.addEventListener('click', function (e) {
+      const opt = e.target.closest('.materia-picker__opcion');
+      if (!opt) return;
+      inputId.value = opt.dataset.id;
+      label.textContent = opt.dataset.id ? opt.dataset.nombre : 'Seleccionar materia';
+      lista.querySelectorAll('.materia-picker__opcion').forEach(li => li.classList.remove('materia-picker__opcion--activa'));
+      opt.classList.add('materia-picker__opcion--activa');
+      panel.classList.remove('materia-picker__panel--abierto');
+      trigger.classList.remove('materia-picker__trigger--abierto');
+      form.submit();
+    });
+  })();

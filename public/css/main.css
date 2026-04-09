@@ -1,0 +1,17 @@
+/* ================= BASE ================= */
+@import url('./base/variables.css');
+@import url('./base/reset.css');
+@import url('./base/tipografia.css');
+
+/* ================= COMPONENTES ================= */
+@import url('./componentes/botones.css');
+@import url('./componentes/tarjetas.css');
+@import url('./componentes/tablas.css');
+@import url('./componentes/formularios.css');
+@import url('./componentes/badges.css');
+@import url('./componentes/modales-drawer.css');
+
+/* ================= LAYOUTS ================= */
+@import url('./layouts/sidebar.css');
+@import url('./layouts/topbar.css');
+@import url('./layouts/grid-principal.css');

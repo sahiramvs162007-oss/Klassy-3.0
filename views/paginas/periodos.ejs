@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
 
@@ -44,21 +45,24 @@
       </div>
 
       <!-- Filtro por año -->
-      <form method="GET" action="/periodos" class="barra-filtros">
-        <div class="barra-filtros__grupo">
-          <select name="filtroAnio" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Todos los años</option>
-            <% añosDisponibles.forEach(a => { %>
-              <option value="<%= a %>" <%= filtroAnio == a ? 'selected' : '' %>><%= a %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="barra-filtros__acciones">
-          <% if (filtroAnio) { %>
-            <a href="/periodos" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Ver todos</a>
-          <% } %>
-        </div>
-      </form>
+       <div class="busqueda-panel" style="width: 60%;">
+         <div class="acceso-card acceso-card--verde"><div class="tarjeta-stat__icono tarjeta-stat__icono--verde"><i data-lucide="calendar"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= periodos.length %></span><span class="tarjeta-stat__etiqueta">Periodos registrados</span></div></div>
+         <form method="GET" action="/periodos" class="busqueda-panel__barra busqueda-panel__barra--verde">
+           <div class="barra-filtros__grupo">
+             <select name="filtroAnio" class="campo__select barra-filtros__select" onchange="this.form.submit()">
+               <option value="">Todos los años</option>
+               <% añosDisponibles.forEach(a => { %>
+                 <option value="<%= a %>" <%= filtroAnio == a ? 'selected' : '' %>><%= a %></option>
+               <% }) %>
+             </select>
+           </div>
+           <div class="barra-filtros__acciones">
+             <% if (filtroAnio) { %>
+               <a href="/periodos" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Ver todos</a>
+             <% } %>
+           </div>
+         </form>
+       </div>
 
       <!-- Contenido principal -->
       <% if (periodos.length === 0) { %>

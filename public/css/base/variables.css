@@ -1,0 +1,61 @@
+:root {
+  /* Colores principales */
+  --azul-900:   #0f2a5e;
+  --azul-700:   #1a4aad;
+  --azul-600:   #2563eb;
+  --azul-500:   #3b82f6;
+  --azul-100:   #dbeafe;
+  --azul-50:    #eff6ff;
+
+  /* Grises neutros */
+  --gris-900:   #111827;
+  --gris-700:   #374151;
+  --gris-500:   #6b7280;
+  --gris-300:   #d1d5db;
+  --gris-200:   #e5e7eb;
+  --gris-100:   #f3f4f6;
+  --gris-50:    #f9fafb;
+
+  /* Colores de estado */
+  --verde-600:   #16a34a;
+  --verde-100:   #dcfce7;
+  --naranja-600: #ea580c;
+  --naranja-100: #ffedd5;
+  --rojo-600:    #dc2626;
+  --rojo-100:    #fee2e2;
+  --morado-600:  #7c3aed;
+  --morado-100:  #ede9fe;
+
+  /* Colores de materias */
+  --primary-blue: #4a8df8;
+  --text-dark: #333;
+  --bg-light: #f8fafc;
+  --pink:   #FF8FAB;
+  --coral:  #FF6B6B;
+  --blue:   #A8D8F0;
+  --yellow: #FFD95A;
+  --mint:   #B5EAD7;
+  --white:  #FDFCFA;
+  --accent:    #4a8df8;
+  --accent-2:  #2563eb;
+  --glow:      rgba(74, 141, 248, 0.45);
+  
+  /* Tipografía */
+  --fuente-ui:   'DM Sans', sans-serif;
+  --fuente-marca:'Fraunces', serif;
+
+  /* Espaciado */
+  --sidebar-ancho:      240px;
+  --topbar-alto:        60px;
+  --radio:              8px;
+  --radio-lg:           12px;
+
+  /* Sombras (suaves, sin pesadez) */
+  --sombra-xs: 0 1px 2px rgba(0,0,0,0.06);
+  --sombra-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+
+  /* Transiciones */
+  --trans-rapida: 0.15s ease;
+  --trans-normal: 0.25s ease;
+}
+

@@ -9,7 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
-  <link rel="stylesheet" href="/css/boletines.css" />
+  <link rel="stylesheet" href="/css/paginas/boletines.css" />
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
 
@@ -85,44 +86,111 @@
         </a>
       </div>
 
-      <!-- Filtros comunes -->
-      <form method="GET" action="/boletines/admin" class="barra-filtros" id="formFiltros">
-        <div class="barra-filtros__grupo">
+      <!-- Filtros comunes — estilo busqueda-panel igual que otras secciones -->
+      <div class="busqueda-panel" style="width: 70%;">
+
+        <!-- Tarjeta lateral izquierda -->
+        <div class="acceso-card acceso-card--azul" style="min-height:130px; min-width:130px;">
+          <div class="tarjeta-stat__icono tarjeta-stat__icono--azul">
+            <i data-lucide="file-badge"></i>
+          </div>
+          <div class="tarjeta-stat__datos" style="text-align:center;">
+            <span class="tarjeta-stat__etiqueta" style="font-size:0.75rem;color:var(--azul-700);font-weight:600;line-height:1.3;">Consulta boletines<br>y reportes de<br><strong><%= añoSeleccionado %></strong></span>
+          </div>
+        </div>
+
+        <!-- Barra de filtros derecha -->
+        <form method="GET" action="/boletines/admin" class="busqueda-panel__barra busqueda-panel__barra--azul" id="formFiltros" style="flex-direction:column; align-items:stretch; gap:10px;">
           <input type="hidden" name="vista" value="<%= vista %>" />
-          <select name="año" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <% añosDisponibles.forEach(a => { %>
-              <option value="<%= a %>" <%= añoSeleccionado === a ? 'selected' : '' %>><%= a %></option>
-            <% }) %>
-          </select>
-          <select name="gradoId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Todos los grados</option>
-            <% grados.forEach(g => { %>
-              <option value="<%= g._id %>" <%= gradoIdActivo === g._id.toString() ? 'selected' : '' %>><%= g.nombre %></option>
-            <% }) %>
-          </select>
-          <select name="periodoId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Todos los periodos</option>
-            <% periodos.forEach(p => { %>
-              <option value="<%= p._id %>" <%= periodoIdActivo === p._id.toString() ? 'selected' : '' %>><%= p.nombre %> <%= !p.activo ? '' : '(Abierto)' %></option>
-            <% }) %>
-          </select>
-          <% if (vista === 'reporte-materia' && materiasGrado.length > 0) { %>
-            <select name="materiaId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-              <option value="">Seleccionar materia</option>
-              <% materiasGrado.forEach(m => { %>
-                <option value="<%= m._id %>" <%= materiaIdActiva === m._id.toString() ? 'selected' : '' %>><%= m.nombre %></option>
-              <% }) %>
-            </select>
-          <% } %>
-        </div>
-        <div class="barra-filtros__acciones">
-          <% if (gradoIdActivo || periodoIdActivo) { %>
-            <a href="/boletines/admin?año=<%= añoSeleccionado %>&vista=<%= vista %>" class="btn btn--secundario btn--sm">
-              <i data-lucide="x"></i> Limpiar
-            </a>
-          <% } %>
-        </div>
-      </form>
+          <input type="hidden" name="gradoId" id="inputFiltroGradoBol" value="<%= gradoIdActivo %>" />
+
+          <!-- Fila superior: año + periodo + limpiar -->
+          <div class="barra-filtros__fila-superior" style="padding:0; flex-wrap:wrap; gap:10px;">
+
+            <!-- Año -->
+            <div class="barra-filtros__anio-wrap" style="display:flex;align-items:center;gap:6px;">
+              <i data-lucide="calendar" class="barra-filtros__anio-icono"></i>
+              <span class="barra-filtros__anio-label">Año</span>
+              <select name="año" class="barra-filtros__anio-select" id="selectAnioBol" onchange="this.form.submit()">
+                <% añosDisponibles.forEach(a => { %>
+                  <option value="<%= a %>" <%= añoSeleccionado === a ? 'selected' : '' %>><%= a %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <!-- Periodo -->
+            <div class="barra-filtros__anio-wrap">
+              <select name="periodoId" class="barra-filtros__anio-select" onchange="this.form.submit()">
+                <option value="">Todos los periodos</option>
+                <% periodos.forEach(p => { %>
+                  <option value="<%= p._id %>" <%= periodoIdActivo === p._id.toString() ? 'selected' : '' %>><%= p.nombre %> <%= !p.activo ? '' : '(Abierto)' %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <!-- Materia (solo vista reporte-materia) — dropdown dinámico con búsqueda -->
+            <% if (vista === 'reporte-materia' && materiasGrado.length > 0) { %>
+              <input type="hidden" name="materiaId" id="inputMateriaIdBol" value="<%= materiaIdActiva %>" />
+              <div class="materia-picker-wrap" id="materiaPickerBol">
+                <button type="button" class="materia-picker__trigger" id="materiaPickerTriggerBol">
+                  <i data-lucide="book-open" style="width:14px;height:14px;flex-shrink:0;"></i>
+                  <span id="materiaPickerLabelBol">
+                    <% if (materiaIdActiva) {
+                         const mSel = materiasGrado.find(m => m._id.toString() === materiaIdActiva);
+                         if (mSel) { %><%= mSel.nombre %><% } else { %>Seleccionar materia<% } %>
+                    <% } else { %>Seleccionar materia<% } %>
+                  </span>
+                  <i data-lucide="chevron-down" class="materia-picker__chevron" style="width:13px;height:13px;margin-left:auto;"></i>
+                </button>
+                <div class="materia-picker__panel" id="materiaPickerPanelBol">
+                  <div class="materia-picker__search-wrap">
+                    <i data-lucide="search" style="width:13px;height:13px;color:var(--gris-500);flex-shrink:0;"></i>
+                    <input type="text" id="materiaBuscadorBol" class="materia-picker__search" placeholder="Buscar materia…" autocomplete="off" />
+                  </div>
+                  <ul class="materia-picker__lista" id="materiaListaBol">
+                    <li class="materia-picker__opcion" data-id="" data-nombre="Todas las materias">
+                      <i data-lucide="list" style="width:13px;height:13px;flex-shrink:0;"></i>
+                      Todas las materias
+                    </li>
+                    <% materiasGrado.forEach(m => { %>
+                      <li class="materia-picker__opcion <%= materiaIdActiva === m._id.toString() ? 'materia-picker__opcion--activa' : '' %>"
+                          data-id="<%= m._id %>" data-nombre="<%= m.nombre %>">
+                        <i data-lucide="book" style="width:13px;height:13px;flex-shrink:0;"></i>
+                        <%= m.nombre %>
+                      </li>
+                    <% }) %>
+                  </ul>
+                </div>
+              </div>
+            <% } %>
+
+            <!-- Botón limpiar -->
+            <% if (gradoIdActivo || periodoIdActivo) { %>
+              <a href="/boletines/admin?año=<%= añoSeleccionado %>&vista=<%= vista %>" class="btn btn--secundario btn--sm">
+                <i data-lucide="x"></i> Limpiar
+              </a>
+            <% } %>
+          </div>
+
+          <!-- Fila inferior: picker de grado (ancho controlado) -->
+          <div style="width: 100%;">
+            <div class="filtro-nivel-wrap">
+              <button type="button" class="filtro-nivel_edu" id="btnFiltroGradoBol">
+                <i data-lucide="book-open"></i>
+                <span>Grado</span>
+                <% if (gradoIdActivo) {
+                     const gradoSel = grados.find(g => g._id.toString() === gradoIdActivo);
+                     if (gradoSel) { %>
+                  <span class="filtro-nivel__badge-trigger"><%= gradoSel.nombre %></span>
+                <% }} %>
+                <i data-lucide="chevron-down" class="filtro-nivel__chevron"></i>
+              </button>
+              <div class="filtro-nivel__panel" id="panelFiltroGradoBol"></div>
+            </div>
+          </div>
+
+        </form>
+      </div>
 
       <!-- ─── CONTENIDO POR VISTA ──────────────────────────────────────── -->
 
@@ -140,13 +208,13 @@
           <% if (gradoIdActivo && periodoIdActivo) { %>
             <div style="display:flex;gap:8px;margin-bottom:8px;">
               <a href="/boletines/reporte/grado/pdf?gradoId=<%= gradoIdActivo %>&periodoId=<%= periodoIdActivo %>&año=<%= añoSeleccionado %>"
-                target="_blank" class="btn btn--secundario btn--sm">
+                target="_blank" class="btn btn--secundario" style="padding:8px 20px;font-size:0.9rem;">
                 <i data-lucide="download"></i> PDF reporte del grado
               </a>
             </div>
           <% } %>
 
-          <div class="tabla-contenedor">
+          <div class="tabla-contenedor tabla-contenedor--scroll">
             <table class="tabla">
               <thead>
                 <tr>
@@ -159,7 +227,7 @@
                   <th>Acciones</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="tbodyBoletines">
                 <% boletines.forEach(b => { %>
                   <tr>
                     <td><strong><%= b.nombreEstudiante %> <%= b.apellidoEstudiante %></strong></td>
@@ -224,8 +292,36 @@
     </main>
   </div>
 
+    <!-- Datos de grados para el picker -->
+    <script>
+      const GRADOS_DATA_BOL = <%- JSON.stringify(grados.map(g => ({
+        id:     g._id.toString(),
+        _id:    g._id.toString(),
+        nombre: g.nombre,
+        nivel:  g.nivel,
+        año:    g.año
+      }))) %>;
+      const FILTRO_GRADO_ACTIVO_BOL = '<%= gradoIdActivo || "" %>';
+    </script>
+
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
+  <script src="/js/paginacion.js"></script>
+  <script src="/js/grado-picker.js"></script>
+  <script src="/js/boletines.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    initFiltroGradoPicker({
+      gradosData:        GRADOS_DATA_BOL,
+      filtroGradoActivo: FILTRO_GRADO_ACTIVO_BOL,
+      formId:            'formFiltros',
+      inputHiddenId:     'inputFiltroGradoBol',
+      anioSelectName:    'año',
+      triggerBtnId:      'btnFiltroGradoBol',
+      panelId:           'panelFiltroGradoBol',
+    });
+  });
+  </script>
   <script>lucide.createIcons();</script>
 </body>
 </html>

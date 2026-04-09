@@ -16,61 +16,129 @@ function abrirDrawerCrear() {
   // Año por defecto
   form.querySelector('#campoAnioAsig').value = ANO_ACTUAL;
 
-  // Llenar docentes
-  const selectDocente = form.querySelector('#campoDocenteAsig');
-  DOCENTES_DISPONIBLES.forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d._id;
-    opt.textContent = `${d.nombre} ${d.apellido}`;
-    opt.dataset.profesion = d.profesion || '';
-    selectDocente.appendChild(opt);
-  });
-
-  // Mostrar especialidad al elegir docente
-  selectDocente.addEventListener('change', () => {
-    const opt  = selectDocente.options[selectDocente.selectedIndex];
-    const ayuda = form.querySelector('#ayudaEspecialidad');
-    ayuda.textContent = opt.dataset.profesion
-      ? `Especialidad: ${opt.dataset.profesion}`
-      : '';
-  });
-
-  // Llenar grados filtrados por año actual
-  const selectGrado = form.querySelector('#campoGradoAsig');
-  llenarSelectGrados(selectGrado, ANO_ACTUAL);
-
-  // Re-filtrar grados al cambiar año
-  form.querySelector('#campoAnioAsig').addEventListener('change', (e) => {
-    const año = parseInt(e.target.value, 10);
-    llenarSelectGrados(selectGrado, año);
-    form.querySelector('#campoMateriaAsig').innerHTML =
-      '<option value="">Selecciona un grado primero</option>';
-  });
-
   document.getElementById('drawerTitulo').textContent = 'Nueva asignación';
   document.getElementById('drawerCuerpo').innerHTML   = '';
   document.getElementById('drawerCuerpo').appendChild(form);
 
   abrirPanelDrawer();
   lucide.createIcons();
-}
 
-// Llena el select de grados filtrando por año
-function llenarSelectGrados(selectEl, año) {
-  selectEl.innerHTML = '<option value="">Seleccionar grado</option>';
-  const gradosFiltrados = GRADOS_DISPONIBLES.filter(g => g.año === año);
-
-  if (gradosFiltrados.length === 0) {
-    selectEl.innerHTML = `<option value="" disabled>Sin grados para el año ${año}</option>`;
-    return;
+  // ── Picker de docente ──────────────────────────────────────────────────
+  const contenedorDocente = document.getElementById('contenedorPickerDocente');
+  const inputDocente      = document.getElementById('campoDocenteAsig');
+  const ayudaEsp          = document.getElementById('ayudaEspecialidad');
+  if (contenedorDocente && inputDocente) {
+    _renderPickerDocente(contenedorDocente, inputDocente, ayudaEsp);
   }
 
-  gradosFiltrados.forEach(g => {
-    const opt = document.createElement('option');
-    opt.value = g._id;
-    opt.textContent = `${g.nombre} (Nivel ${g.nivel})`;
-    selectEl.appendChild(opt);
-  });
+  // ── Picker de grado ────────────────────────────────────────────────────
+  setTimeout(() => {
+    const contenedorGrado = document.getElementById('pickerGradoAsig');
+    const inputGrado      = document.getElementById('campoGradoAsig');
+    if (!contenedorGrado || !inputGrado) return;
+
+    const anioInput = document.getElementById('campoAnioAsig');
+    const getAnio   = () => parseInt(anioInput?.value, 10) || ANO_ACTUAL;
+
+    const pickerGrado = createGradoPicker({
+      contenedor:  contenedorGrado,
+      inputHidden: inputGrado,
+      gradosData:  GRADOS_DISPONIBLES,
+      getAnio,
+      prefijo:     'pkAsig',
+      onSelect:    () => cargarMateriasDeGrado(),
+    });
+    pickerGrado.init(getAnio());
+
+    if (anioInput) {
+      anioInput.addEventListener('change', () => {
+        pickerGrado.refresh(parseInt(anioInput.value, 10) || ANO_ACTUAL);
+        const selMat = document.getElementById('campoMateriaAsig');
+        if (selMat) selMat.innerHTML = '<option value="">Selecciona un grado primero</option>';
+        lucide.createIcons();
+      });
+    }
+
+    lucide.createIcons();
+  }, 50);
+}
+
+
+// Renderiza el buscador de docente dentro del drawer
+function _renderPickerDocente(contenedor, inputHidden, ayudaEl) {
+  contenedor.innerHTML = `
+    <div class="picker-docente">
+      <div class="picker-docente__buscar">
+        <i data-lucide="search" class="picker-docente__icono"></i>
+        <input
+          type="text"
+          id="drawerBuscarDocente"
+          class="filtro-docente__entrada"
+          placeholder="Buscar docente..."
+          autocomplete="off"
+        />
+      </div>
+      <div class="picker-docente__lista" id="drawerListaDocentes"></div>
+    </div>
+  `;
+
+  lucide.createIcons();
+
+  const lista    = document.getElementById('drawerListaDocentes');
+  const buscador = document.getElementById('drawerBuscarDocente');
+
+  function renderLista(filtro) {
+    lista.innerHTML = '';
+    const term = (filtro || '').trim().toLowerCase();
+    const docentesFiltrados = DOCENTES_DISPONIBLES.filter(d =>
+      !term || (`${d.nombre} ${d.apellido}`).toLowerCase().includes(term)
+    );
+
+    if (docentesFiltrados.length === 0) {
+      lista.innerHTML = '<p class="filtro-docente__vacio">Sin resultados</p>';
+      return;
+    }
+
+    docentesFiltrados.forEach(d => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'filtro-docente__chip filtro-docente__chip--drawer';
+      btn.dataset.id = d._id;
+      btn.innerHTML = `
+        <span class="filtro-docente__avatar filtro-docente__avatar--verde">
+          ${d.nombre.charAt(0).toUpperCase()}${d.apellido.charAt(0).toUpperCase()}
+        </span>
+        <div class="filtro-docente__info">
+          <span class="filtro-docente__nombre">${d.nombre} ${d.apellido}</span>
+          ${d.profesion ? `<span class="filtro-docente__profesion">${d.profesion}</span>` : ''}
+        </div>
+        <i data-lucide="check" class="filtro-docente__check" id="check_${d._id}" style="display:none"></i>
+      `;
+      btn.addEventListener('click', () => {
+        // Desmarcar todos
+        lista.querySelectorAll('.filtro-docente__chip').forEach(c => {
+          c.classList.remove('filtro-docente__chip--activo');
+          const chk = c.querySelector('.filtro-docente__check');
+          if (chk) chk.style.display = 'none';
+        });
+        // Marcar este
+        btn.classList.add('filtro-docente__chip--activo');
+        const chk = btn.querySelector('.filtro-docente__check');
+        if (chk) chk.style.display = '';
+        // Guardar valor
+        inputHidden.value = d._id;
+        if (ayudaEl) {
+          ayudaEl.textContent = d.profesion ? `Especialidad: ${d.profesion}` : '';
+        }
+        lucide.createIcons();
+      });
+      lista.appendChild(btn);
+    });
+    lucide.createIcons();
+  }
+
+  renderLista('');
+  buscador.addEventListener('input', e => renderLista(e.target.value));
 }
 
 // Carga las materias del grado seleccionado vía API
@@ -222,3 +290,80 @@ function abrirPanelDrawer() {
   document.getElementById('drawerOverlay').classList.add('drawer-overlay--visible');
   document.body.style.overflow = 'hidden';
 }
+
+// ─── Paginación ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  iniciarPaginacion('tbodyAsignaciones', { filasPorPagina: 10 });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+
+  // ── Filtro de grado ──
+  if (typeof initFiltroGradoPicker === 'function') {
+    initFiltroGradoPicker({
+      gradosData:        GRADOS_DISPONIBLES,
+      filtroGradoActivo: FILTRO_GRADO_ACTIVO_ASIG,
+      formId:            'formFiltrosAsig',
+      inputHiddenId:     'inputFiltroGradoAsig',
+      anioSelectName:    'filtroAnio',
+      triggerBtnId:      'btnFiltroGradoAsig',
+      panelId:           'panelFiltroGradoAsig',
+    });
+  }
+
+  // ── Paginación ──
+  if (typeof iniciarPaginacion === 'function') {
+    iniciarPaginacion('tbodyAsignaciones', { filasPorPagina: 10 });
+  }
+
+  // ── Iconos ──
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
+});
+
+window.toggleFiltroDocente = function () {
+  const panel   = document.getElementById('docentePanel');
+  const chevron = document.getElementById('docenteChevron');
+  const trigger = document.getElementById('btnFiltroDocenteAsig');
+
+  const abierto = panel.classList.contains('filtro-nivel__panel--abierto');
+
+  panel.classList.toggle('filtro-nivel__panel--abierto', !abierto);
+
+  if (chevron) {
+    chevron.style.transform = abierto ? '' : 'rotate(180deg)';
+  }
+
+  trigger.classList.toggle('filtro-nivel_edu--activo', !abierto);
+
+  if (!abierto) {
+    setTimeout(() => {
+      document.getElementById('inputBuscarDocente')?.focus();
+    }, 80);
+  }
+};
+
+window.filtrarDocentes = function (q) {
+  const term  = q.trim().toLowerCase();
+  const chips = document.querySelectorAll('#listaDocentes .filtro-docente__chip');
+
+  let visibles = 0;
+
+  chips.forEach(chip => {
+    const nombre = chip.dataset.nombre || '';
+    const match  = nombre.includes(term);
+
+    chip.style.display = match ? '' : 'none';
+
+    if (match) visibles++;
+  });
+
+  const msg = document.getElementById('msgSinDocentes');
+  if (msg) msg.style.display = visibles === 0 ? '' : 'none';
+};
+
+window.seleccionarDocente = function (id) {
+  document.getElementById('inputFiltroDocenteAsig').value = id;
+  document.getElementById('formFiltrosAsig').submit();
+};

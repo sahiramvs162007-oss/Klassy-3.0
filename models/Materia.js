@@ -16,6 +16,13 @@ const materiaSchema = new mongoose.Schema(
       type:    Boolean,
       default: true,
     },
+    // Color asignado automáticamente al crear la materia
+    // Valores: 'azul' | 'verde' | 'morado' | 'naranja' | 'rojo'
+    color: {
+      type:    String,
+      enum:    ['azul', 'verde', 'morado', 'naranja', 'rojo'],
+      default: 'azul',
+    },
   },
   {
     timestamps: true,

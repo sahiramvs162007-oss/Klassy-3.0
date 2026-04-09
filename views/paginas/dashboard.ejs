@@ -8,7 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Fraunces:ital,wght@0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
-  <link rel="stylesheet" href="/css/dashboard.css" />
+  <link rel="stylesheet" href="/css/paginas/dashboard.css" />
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
   <%- include('../partials/sidebar') %>
@@ -28,12 +29,10 @@
 
         <%# ── 1. HERO: bienvenida + acciones ── %>
         <div class="hero-admin">
-          
 
           <%# Bienvenida %>
           <div class="hero-admin__bienvenida">
-            <!--<span class="hero-admin__tag">Panel administrativo · <%= new Date().getFullYear() %></span>-->
-            <h1 class="hero-admin__titulo">
+            <h1 class="hero-admin__titulo titu1">
               Bienvenido, <em><%= usuarioActual.nombre %></em> 
             </h1>
             <p class="hero-admin__sub">Gestiona tu institución desde un solo lugar.</p>
@@ -43,7 +42,7 @@
             </div>
           </div>
 
-          <%# Imágenes de estudiantes – protagonistas %>
+          <%# Imágenes de estudiantes %>
           <div class="hero-admin__ilustracion">
             <div class="est-1">
               <img src="imagenes/chico_secundaria.png" alt="Estudiante" class="est-hero" />
@@ -53,153 +52,188 @@
             </div>
           </div>
 
-          <%# ── 3. Información ── %>
-        <section class="acceso-rapido-seccion">
-          <div class="acceso-rapido-seccion">
+          <%# ── Stats ── %>
+          <section class="acceso-rapido-seccion">
+            <div class="acceso-rapido-seccion">
               <div class="acceso-card acceso-card--azul"><div class="tarjeta-stat__icono tarjeta-stat__icono--azul"><i data-lucide="users"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= stats.totalEstudiantes %></span><span class="tarjeta-stat__etiqueta">Estudiantes</span></div></div>
               <div class="acceso-card acceso-card--verde"><div class="tarjeta-stat__icono tarjeta-stat__icono--verde"><i data-lucide="user-check"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= stats.totalDocentes %></span><span class="tarjeta-stat__etiqueta">Docentes</span></div></div>
               <div class="acceso-card acceso-card--naranja"><div class="tarjeta-stat__icono tarjeta-stat__icono--naranja"><i data-lucide="graduation-cap"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= stats.totalGrados %></span><span class="tarjeta-stat__etiqueta">Grados activos</span></div></div>
               <div class="acceso-card acceso-card--morado"><div class="tarjeta-stat__icono tarjeta-stat__icono--morado"><i data-lucide="book-open"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= stats.totalMaterias %></span><span class="tarjeta-stat__etiqueta">Materias</span></div></div>
-          </div>
-        </section>
-
-
-
-        <%# ── 2. INFO COLEGIO: stats + visión/misión ── %>
-        <section id="infocolegio">
-          <div class="infocolegio__brillo"></div>
-          <div class="infocolegio__contenido">
-            <div class="infocolegio__encabezado">
-              <h2 class="infocolegio__titulo">Información Institucional</h2>
-              <span class="infocolegio__chip"><i data-lucide="building-2"></i> <%= (config&&config.nombreColegio) ? config.nombreColegio : 'KLASSY' %></span>
-            </div>
-            <div class="infocolegio__presentacion">
-              <h2 class="infocolegio__nombre-grande"><%= config && config.nombreColegio ? config.nombreColegio : 'Nombre del colegio' %></h2>
-              <div class="infocolegio__contenido-flex">
-                <div class="infocolegio__logo">
-                  <% if(config && config.logo){ %>
-                    <img src="/uploads/<%= config.logo %>" alt="Logo colegio">
-                  <% } %>
-                </div>
-
-              </div>
-
-            </div>
-
-            <div class="cuadricula-2col">
-              <div class="tarjeta tarjeta--vision"><div class="tarjeta__cabecera"><i data-lucide="eye"></i><h3 class="tarjeta__titulo">Visión</h3></div><p class="tarjeta__texto"><% if(config&&config.vision){%><%= config.vision %><%}else{%><em class="texto-vacio">Sin configurar.</em><%}%></p></div>
-              <div class="tarjeta tarjeta--mision"><div class="tarjeta__cabecera"><i data-lucide="target"></i><h3 class="tarjeta__titulo">Misión</h3></div><p class="tarjeta__texto"><% if(config&&config.mision){%><%= config.mision %><%}else{%><em class="texto-vacio">Sin configurar.</em><%}%></p></div>
-            </div>
-          </div>
-        </section>
-
-        <%# ── 4. NOTICIAS ── %>
-        <% if(noticias&&noticias.length>0){%>
-          <section class="noticias-admin-seccion">
-            <div class="seccion-titulo"><i data-lucide="newspaper"></i> Noticias publicadas <span class="seccion-conteo"><%= noticias.length %></span></div>
-            <div class="mosaico-mini">
-              <%noticias.slice(0,4).forEach(n=>{%>
-                <div class="noticia-mini noticia-clickable"
-                  data-titulo="<%= n.titulo %>"
-                  data-fecha="<%= n.fechaPublicacion %>"
-                  data-autor="<%= n.autorId ? n.autorId.nombre+' '+n.autorId.apellido : '' %>"
-                  data-imagen="<%= n.imagen || '' %>">
-                  <%if(n.imagen){%><img src="<%= n.imagen %>" alt="<%= n.titulo %>" class="noticia-mini__img"/><%}else{%><div class="noticia-mini__sin-img"><i data-lucide="image"></i></div><%}%>
-                  <div class="noticia-mini__info">
-                    <span class="noticia-mini__titulo"><%= n.titulo %></span>
-                    <span class="noticia-mini__fecha"><%= new Date(n.fechaPublicacion).toLocaleDateString('es-CO',{day:'2-digit',month:'short'}) %></span>
-                  </div>
-                  <span class="noticia-contenido-oculto" style="display:none"><%= n.contenido %></span>
-                </div>
-              <%})%>
             </div>
           </section>
-        <%}%>
 
-      <% } else { %>
-        <%# ═══════════ DIRECTOR / DOCENTE / ESTUDIANTE ═══════════ %>
-
-        <div class="hero-colegio" style="background: url('/uploads/<%= config && config.fotoInstitucion ? config.fotoInstitucion : '' %>') center/cover no-repeat;">
-          <div class="hero-colegio__overlay">
-            <div class="hero-colegio__info">
-              <h1 class="hero-colegio__nombre"><%= (config&&config.nombreColegio) ? config.nombreColegio : 'KLASSY' %></h1>
-              <p class="hero-colegio__saludo">Bienvenido, <strong><%= usuarioActual.nombre %> <%= usuarioActual.apellido %></strong></p>
-              <span class="hero-colegio__badge"><%= rol.charAt(0).toUpperCase()+rol.slice(1) %></span>
-            </div>
-          </div>
-        </div>
-        <% if(config && config.historia){ %>
-          <p class="hero-colegio__historia">
-            <%= config.historia.length > 120 ? config.historia.substring(0,120) + '...' : config.historia %>
-          </p>
-        <% } %>
-        <% if((config&&config.vision)||(config&&config.mision)){%>
-          <div class="cuadricula-2col">
-            <%if(config&&config.vision){%><div class="tarjeta info-institucional"><div class="info-institucional__icono"><i data-lucide="eye"></i></div><div><h3 class="info-institucional__titulo">Visión</h3><p class="tarjeta__texto"><%= config.vision %></p></div></div><%}%>
-            <%if(config&&config.mision){%><div class="tarjeta info-institucional"><div class="info-institucional__icono"><i data-lucide="target"></i></div><div><h3 class="info-institucional__titulo">Misión</h3><p class="tarjeta__texto"><%= config.mision %></p></div></div><%}%>
-          </div>
-        <%}%>
-
-
-        <%if(noticias&&noticias.length>0){%>
-          <div class="noticias-seccion">
-            <div class="noticias-seccion__titulo">
-              <i data-lucide="newspaper"></i>
-              <span>Noticias del colegio</span>
-              <span class="seccion-conteo"><%= noticias.length %> publicación<%= noticias.length!==1?'es':'' %></span>
-            </div>
-            <div class="mosaico-noticias">
-              <% noticias.forEach(function(n, idx) {
-                const grupo    = Math.floor(idx / 5);
-                const pos      = idx % 5;
-                const filaBase = grupo * 2 + 1;
-                let colStart, colEnd, rowStart, rowEnd, claseExtra;
-                if (pos === 0) {
-                  colStart = 1; colEnd = 2; rowStart = filaBase; rowEnd = filaBase + 2; claseExtra = 'noticia-card--vertical';
-                } else if (pos === 1) {
-                  colStart = 2; colEnd = 3; rowStart = filaBase; rowEnd = filaBase + 1; claseExtra = '';
-                } else if (pos === 2) {
-                  colStart = 3; colEnd = 4; rowStart = filaBase; rowEnd = filaBase + 1; claseExtra = '';
-                } else if (pos === 3) {
-                  colStart = 4; colEnd = 5; rowStart = filaBase; rowEnd = filaBase + 2; claseExtra = 'noticia-card--vertical';
-                } else {
-                  colStart = 2; colEnd = 4; rowStart = filaBase + 1; rowEnd = filaBase + 2; claseExtra = 'noticia-card--horizontal';
-                }
-                const estiloGrid = 'grid-column:' + colStart + '/' + colEnd + ';grid-row:' + rowStart + '/' + rowEnd + ';';
-              %>
-              <article class="noticia-card <%= claseExtra %> noticia-clickable"
-                style="<%= estiloGrid %>"
-                data-titulo="<%= n.titulo %>"
-                data-fecha="<%= n.fechaPublicacion %>"
-                data-autor="<%= n.autorId ? n.autorId.nombre+' '+n.autorId.apellido : '' %>"
-                data-imagen="<%= n.imagen || '' %>">
-                <%if(n.imagen){%>
-                  <div class="noticia-card__foto">
-                    <img src="<%= n.imagen %>" alt="<%= n.titulo %>" class="noticia-card__foto-img" loading="lazy"/>
-                  </div>
-                <%}else{%>
-                  <div class="noticia-card__foto noticia-card__foto--vacia"><i data-lucide="image"></i></div>
-                <%}%>
-                <div class="noticia-card__cuerpo">
-                  <time class="noticia-card__fecha"><%= new Date(n.fechaPublicacion).toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'}) %></time>
-                  <h3 class="noticia-card__titulo"><%= n.titulo %></h3>
-                  <p class="noticia-card__texto"><%= n.contenido.length > 130 ? n.contenido.substring(0, 130)+'…' : n.contenido %></p>
-                  <div class="noticia-card__pie">
-                    <i data-lucide="user"></i>
-                    <span><%= n.autorId ? n.autorId.nombre+' '+n.autorId.apellido : '' %></span>
-                    <span class="noticia-card__leer-mas">Ver más <i data-lucide="arrow-right"></i></span>
+          <%# ── INFO COLEGIO: visión/misión ── %>
+          <section id="infocolegio">
+            <div class="infocolegio__brillo"></div>
+            <div class="infocolegio__contenido">
+              <div class="infocolegio__encabezado">
+                <h2 class="infocolegio__titulo">Información Institucional</h2>
+                <span class="infocolegio__chip"><i data-lucide="building-2"></i> <%= (config&&config.nombreColegio) ? config.nombreColegio : 'KLASSY' %></span>
+              </div>
+              <div class="infocolegio__presentacion">
+                <h2 class="infocolegio__nombre-grande"><%= config && config.nombreColegio ? config.nombreColegio : 'Nombre del colegio' %></h2>
+                <div class="infocolegio__contenido-flex">
+                  <div class="infocolegio__logo">
+                    <% if(config && config.logo){ %>
+                      <img src="/uploads/<%= config.logo %>" alt="Logo colegio">
+                    <% } %>
                   </div>
                 </div>
-                <span class="noticia-contenido-oculto" style="display:none"><%= n.contenido %></span>
-              </article>
-              <% }); %>
+              </div>
+              <div class="cuadricula-2col">
+                <div class="tarjeta tarjeta--vision"><div class="tarjeta__cabecera"><i data-lucide="eye"></i><h3 class="tarjeta__titulo">Visión</h3></div><p class="tarjeta__texto"><% if(config&&config.vision){%><%= config.vision %><%}else{%><em class="texto-vacio">Sin configurar.</em><%}%></p></div>
+                <div class="tarjeta tarjeta--mision"><div class="tarjeta__cabecera"><i data-lucide="target"></i><h3 class="tarjeta__titulo">Misión</h3></div><p class="tarjeta__texto"><% if(config&&config.mision){%><%= config.mision %><%}else{%><em class="texto-vacio">Sin configurar.</em><%}%></p></div>
+              </div>
+            </div>
+          </section>
+
+          <%# ── NOTICIAS ── %>
+          <% if(noticias&&noticias.length>0){%>
+            <section class="noticias-admin-seccion">
+              <div class="seccion-titulo"><i data-lucide="newspaper"></i> Noticias publicadas <span class="seccion-conteo"><%= noticias.length %></span></div>
+              <div class="mosaico-mini">
+                <%noticias.slice(0,4).forEach(n=>{%>
+                  <div class="noticia-mini noticia-clickable"
+                    data-titulo="<%= n.titulo %>"
+                    data-etiqueta="<%= n.etiqueta || 'Anuncios' %>"  
+                    data-fecha="<%= n.fechaPublicacion %>"
+                    data-autor="<%= n.autorId ? n.autorId.nombre+' '+n.autorId.apellido : '' %>"
+                    data-imagen="<%= n.imagen || '' %>">
+                    <%if(n.imagen){%><img src="<%= n.imagen %>" alt="<%= n.titulo %>" class="noticia-mini__img"/><%}else{%><div class="noticia-mini__sin-img"><i data-lucide="image"></i></div><%}%>
+                    <div class="noticia-mini__info">
+                      <span class="noticia-mini__titulo"><%= n.titulo %></span>
+                      <span class="noticia-mini__fecha"><%= new Date(n.fechaPublicacion).toLocaleDateString('es-CO',{day:'2-digit',month:'short'}) %></span>
+                    </div>
+                    <span class="noticia-contenido-oculto" style="display:none"><%= n.contenido %></span>
+                  </div>
+                <%})%>
+              </div>
+            </section>
+          <%}%>
+
+        </div><%# /hero-admin %>
+
+      <% } else { %>
+        <%# ═══════════ DOCENTE / ESTUDIANTE ═══════════ %>
+        <section class="content_do_est">
+
+          <%# ── 1. HERO colegio ── %>
+          <div class="hero-colegio" style="background: url('/uploads/<%= config && config.fotoInstitucion ? config.fotoInstitucion : '' %>') center/cover no-repeat;">
+            <div class="hero-colegio__overlay">
+              <div class="hero-colegio__info">
+                <h1 class="hero-colegio__nombre"><%= (config&&config.nombreColegio) ? config.nombreColegio : 'KLASSY' %></h1>
+                <p class="hero-colegio__saludo">
+                  Bienvenido, <em><%= usuarioActual.nombre %> <%= usuarioActual.apellido %></em>
+                </p>
+                <span class="hero-colegio__badge"><%= rol.charAt(0).toUpperCase()+rol.slice(1) %></span>
+              </div>
             </div>
           </div>
-        <%}else{%>
-          <div class="sin-noticias"><i data-lucide="newspaper"></i><p>No hay noticias publicadas actualmente.</p></div>
-        <%}%>
 
+          <%# ── 2. SECCIÓN MISIÓN/VISIÓN + ILUSTRACIÓN ── %>
+          <% if((config&&config.vision)||(config&&config.mision)){%>
+          <div class="mv-seccion">
+            
+            <%# Tarjetas misión y visión (se expanden inline) %>
+            <div class="mv-tarjetas">
+              <h2 class="hero-admin__titulo titu2">Nuestra identidad</h2>
+              <% if(config&&config.mision){ %>
+              <div class="mv-card mv-card--mision mv-expandible" data-tipo="mision">
+                <div class="brillo"></div>
+                <div class="mv-card__icono mv-card__icono--mision">
+                  <i data-lucide="target"></i>
+                </div>
+                <div class="mv-card__datos">
+                  <span class="mv-card__etiqueta">Misión</span>
+                  <span class="mv-card__valor">Ver misión</span>
+                </div>
+                <i data-lucide="chevron-down" class="mv-card__flecha"></i>
+                <%# Panel inline que se despliega dentro de la tarjeta %>
+                <div class="mv-inline-panel" id="panelMision"><div>
+                  <p class="mv-inline-panel__texto"><%= config.mision %></p>
+                </div></div>
+              </div>
+              <% } %>
+
+              <% if(config&&config.vision){ %>
+              <div class="mv-card mv-card--vision mv-expandible" data-tipo="vision">
+                <div class="mv-card__icono mv-card__icono--vision">
+                  <i data-lucide="eye"></i>
+                </div>
+                <div class="mv-card__datos">
+                  <span class="mv-card__etiqueta">Visión</span>
+                  <span class="mv-card__valor">Ver visión</span>
+                </div>
+                <i data-lucide="chevron-down" class="mv-card__flecha"></i>
+                <div class="mv-inline-panel" id="panelVision"><div>
+                  <p class="mv-inline-panel__texto"><%= config.vision %></p>
+                </div></div>
+              </div>
+              <% } %>
+            </div>
+
+            <%# Ilustración estudiantes %>
+            <div class="mv-ilustracion">
+              <div class="est-1">
+                <img src="imagenes/chico_secundaria.png" alt="Estudiante" class="est-hero" />
+              </div>
+              <div class="est-2">
+                <img src="imagenes/chica_est.png" alt="Estudiante" class="est-hero" />
+              </div>
+            </div>
+
+          </div>
+          <% } %>
+
+          <%# ── 3. NOTICIAS ── %>
+          <div class="noticias-seccion">
+            <% if(noticias && noticias.length > 0) { %>
+              <div class="noticias-seccion__titulo">
+                <i data-lucide="newspaper"></i>
+                <span>Noticias del colegio</span>
+                <span class="seccion-conteo"><%= noticias.length %> publicación<%= noticias.length!==1?'es':'' %></span>
+              </div>
+              <%# ── CAMBIO: el loop ya no calcula posiciones; el JS lo hace todo ── %>
+              <div class="mosaico-noticias-3col <%= noticias.length >= 4 ? 'mosaico-activo-3col' : 'lista-simple-3col' %>">
+                <% noticias.forEach(function(n) { %>
+                <article class="noticia-card noticia-clickable"
+                         data-titulo="<%= n.titulo %>"
+                         data-fecha="<%= n.fechaPublicacion %>"
+                         data-autor="<%= n.autorId ? n.autorId.nombre+' '+n.autorId.apellido : '' %>"
+                         data-imagen="<%= n.imagen || '' %>"
+                         data-etiqueta="<%= n.etiqueta %>">
+                  <% if(n.imagen){ %>
+                    <div class="noticia-card__foto">
+                      <img src="<%= n.imagen %>" alt="<%= n.titulo %>" class="noticia-card__foto-img" loading="lazy"/>
+                    </div>
+                  <% } else { %>
+                    <div class="noticia-card__foto noticia-card__foto--vacia"><i data-lucide="image"></i></div>
+                  <% } %>
+                  <div class="noticia-card__cuerpo">
+                    <span class="noticia-etiqueta noticia-etiqueta--<%= (n.etiqueta||'Anuncios').toLowerCase().replace(/ /g,'-').replace(/[^a-z0-9-]/g,'') %>">
+                      <%= n.etiqueta || 'Anuncios' %>
+                    </span>
+                    <time class="noticia-card__fecha"><%= new Date(n.fechaPublicacion).toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'}) %></time>
+                    <h3 class="noticia-card__titulo"><%= n.titulo %></h3>
+                    <p class="noticia-card__texto">
+                      <%= n.contenido ? (n.contenido.length > 110 ? n.contenido.substring(0,110) + '…' : n.contenido) : 'Sin descripción' %>
+                    </p>
+                    <div class="noticia-card__pie">
+                      <i data-lucide="user"></i>
+                      <span><%= n.autorId ? n.autorId.nombre+' '+n.autorId.apellido : '' %></span>
+                      <span class="noticia-card__leer-mas">Ver más <i data-lucide="arrow-right"></i></span>
+                    </div>
+                  </div>
+                  <span class="noticia-contenido-oculto" style="display:none"><%= n.contenido %></span>
+                </article>
+                <% }); %>
+              </div>
+            <% } %>
+          </div>
+
+        </section>
       <% } %>
+
     </main>
   </div>
 
@@ -222,16 +256,23 @@
       <button class="drawer__cerrar" onclick="cerrarConfig()"><i data-lucide="x"></i></button>
     </div>
     <div class="drawer__cuerpo">
-      <form method="POST" action="/dashboard/configuracion?_method=PUT" 
-      enctype="multipart/form-data"
-      class="formulario-grupo">
+      <form method="POST" action="/dashboard/configuracion?_method=PUT" enctype="multipart/form-data">
         <div class="campo"><label class="campo__etiqueta">Nombre del colegio</label><input type="text" name="nombreColegio" class="campo__entrada" value="<%= config&&config.nombreColegio?config.nombreColegio:'' %>" placeholder="Nombre oficial" /></div>
         <div class="campo"><label class="campo__etiqueta">Visión institucional</label><textarea name="vision" class="campo__area" rows="4" placeholder="Visión del colegio..."><%= config&&config.vision?config.vision:'' %></textarea></div>
         <div class="campo"><label class="campo__etiqueta">Misión institucional</label><textarea name="mision" class="campo__area" rows="4" placeholder="Misión del colegio..."><%= config&&config.mision?config.mision:'' %></textarea></div>
         <div class="campo"><label class="campo__etiqueta">Correo del director</label><input type="email" name="correoDirector" class="campo__entrada" value="<%= config&&config.correoDirector?config.correoDirector:'' %>" placeholder="director@colegio.edu.co" /></div>
         <div class="campo">
           <label class="campo__etiqueta">Foto de la institución</label>
-          <input type="file" name="fotoInstitucion" class="campo__entrada" accept="image/*" />
+          <label for="inputFotoInstitucion" class="zona-upload">
+            <i data-lucide="image"></i>
+            <span>Haz clic para seleccionar una imagen</span>
+            <span class="zona-upload__tipos">JPG · PNG · WebP · GIF (máx 10 MB)</span>
+          </label>
+          <input type="file" id="inputFotoInstitucion" name="fotoInstitucion"
+            accept="image/*"
+            onchange="previsualizarFotoInst(this)"
+            style="display:none" />
+          <div id="previewFotoInst" style="margin-top:8px;"></div>
         </div>
         <div class="drawer__pie">
           <button type="button" class="btn btn--secundario" onclick="cerrarConfig()">Cancelar</button>
@@ -246,6 +287,5 @@
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
   <script src="/js/dashboard.js"></script>
-  <script>lucide.createIcons();</script>
 </body>
 </html>

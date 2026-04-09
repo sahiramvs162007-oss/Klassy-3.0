@@ -9,9 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-
   <%- include('../partials/sidebar') %>
 
   <div class="contenedor-principal">
@@ -31,7 +31,6 @@
       <div class="cabecera-pagina">
         <div>
           <h1 class="cabecera-pagina__titulo">Gestión de Grados</h1>
-          <p class="cabecera-pagina__subtitulo"><%= grados.length %> grado<%= grados.length !== 1 ? 's' : '' %> registrado<%= grados.length !== 1 ? 's' : '' %></p>
         </div>
         <div class="cabecera-pagina__acciones">
           <button class="btn btn--primario" onclick="abrirDrawerCrearGrado()">
@@ -40,47 +39,44 @@
         </div>
       </div>
 
-      <!-- Filtros -->
-      <div class="filtros-centro">
-        <form method="GET" action="/grados" class="barra-filtros">
-  
-          <!-- Fila 1: buscador + año + acciones -->
-          <div class="barra-filtros__fila-superior">
+      <!-- Panel de búsqueda -->
+      <div class="busqueda-panel">
+        <!-- Stat card -->
+        <div class="acceso-card acceso-card--naranja"><div class="tarjeta-stat__icono tarjeta-stat__icono--naranja"><i data-lucide="graduation-cap"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= grados.length %></span><span class="tarjeta-stat__etiqueta">Grados registrados</span></div></div>
 
-            <div class="barra-filtros__buscar">
-              <i data-lucide="search" class="barra-filtros__icono-buscar"></i>
-              <input type="text" name="buscar" value="<%= buscar %>" placeholder="Buscar grado..." class="barra-filtros__entrada" />
+        <!-- Barra de búsqueda + filtros -->
+        <form method="GET" action="/grados" class="busqueda-panel__barra busqueda-panel__barra--naranja" style="flex-wrap: wrap; row-gap: 10px;">
+
+          <!-- Fila 1: buscador + selects + acciones -->
+          <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0; flex-wrap:wrap;">
+            <div class="busqueda-panel__campo" style="flex:1; min-width:180px;">
+              <i data-lucide="search" class="busqueda-panel__icono-buscar"></i>
+              <input type="text" name="buscar" value="<%= buscar %>" placeholder="Buscar grado..." class="busqueda-panel__entrada" />
             </div>
-  
-            <i data-lucide="calendar" class="barra-filtros__anio-icono"></i>
-            <span class="barra-filtros__anio-label">Año escolar</span>
-            <div class="barra-filtros__anio-wrap">
-              <select name="filtroAnio" class="barra-filtros__anio-select" onchange="this.form.submit()">
-                <option value="">Todos los años</option>
-                <% añosDisponibles.forEach(a => { %>
-                  <option value="<%= a %>" <%= (filtroAnio == a || (!filtroAnio && a == new Date().getFullYear())) ? 'selected' : '' %>><%= a %></option>
-                <% }) %>
-              </select>
-            </div>
-            <div class="barra-filtros__anio-wrap">
-  <select id="filtroEstado" class="barra-filtros__anio-select">
-    <option value="">Todos</option>
-    <option value="activo">Activos</option>
-    <option value="inactivo">Inactivos</option>
-  </select>
-</div>
-            
-            <div class="barra-filtros__acciones">
+
+            <select name="filtroAnio" class="busqueda-panel__select" onchange="this.form.submit()">
+              <option value="">Todos los años</option>
+              <% añosDisponibles.forEach(a => { %>
+                <option value="<%= a %>" <%= (filtroAnio == a || (!filtroAnio && a == new Date().getFullYear())) ? 'selected' : '' %>><%= a %></option>
+              <% }) %>
+            </select>
+
+            <select id="filtroEstado" class="busqueda-panel__select">
+              <option value="">Todos los estados</option>
+              <option value="activo">Activos</option>
+              <option value="inactivo">Inactivos</option>
+            </select>
+
+            <div class="busqueda-panel__acciones">
               <button type="submit" class="btn btn--primario btn--sm"><i data-lucide="search"></i> Buscar</button>
               <% if (buscar || filtroNivel || filtroAnio) { %>
                 <a href="/grados" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Limpiar</a>
               <% } %>
             </div>
           </div>
-  
-          <!-- Fila 2: selector de nivel educativo como acordeón -->
-          <div class="filtro-nivel-wrap">
-  
+
+          <!-- Fila 2: selector de nivel educativo (acordeón) -->
+          <div class="filtro-nivel-wrap" style="width:100%; margin-top:2px;">
             <button type="button" class="filtro-nivel_edu" id="btnNivelTrigger" onclick="toggleFiltroNivel()">
               <i data-lucide="graduation-cap"></i>
               <span>Nivel educativo</span>
@@ -89,9 +85,9 @@
               <% } %>
               <i data-lucide="chevron-down" class="filtro-nivel__chevron" id="nivelChevron"></i>
             </button>
-  
+
             <div class="filtro-nivel__panel" id="nivelPanel">
-  
+
               <div class="filtro-nivel__categoria">
                 <div class="filtro-nivel__cat-label">
                   <span class="filtro-nivel__dot filtro-nivel__dot--primaria"></span>
@@ -106,9 +102,9 @@
                   <% }) %>
                 </div>
               </div>
-  
+
               <hr class="filtro-nivel__divisor" />
-  
+
               <div class="filtro-nivel__categoria">
                 <div class="filtro-nivel__cat-label">
                   <span class="filtro-nivel__dot filtro-nivel__dot--secundaria"></span>
@@ -123,9 +119,9 @@
                   <% }) %>
                 </div>
               </div>
-  
+
               <hr class="filtro-nivel__divisor" />
-  
+
               <div class="filtro-nivel__categoria">
                 <div class="filtro-nivel__cat-label">
                   <span class="filtro-nivel__dot filtro-nivel__dot--media"></span>
@@ -140,10 +136,10 @@
                   <% }) %>
                 </div>
               </div>
-  
+
             </div>
           </div>
-  
+
         </form>
       </div>
 
@@ -167,7 +163,7 @@
                 <th>Acciones</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="tbodyGrados">
               <% grados.forEach(g => { %>
                 <tr class="tabla__fila-card" data-estado="<%= g.activo ? 'activo' : 'inactivo' %>">
                   <td>
@@ -317,6 +313,7 @@
 
   <script src="/js/notificaciones.js"></script>
   <script src="/js/drawer.js"></script>
+  <script src="/js/paginacion.js"></script>
   <script src="/js/main.js"></script>
   <script src="/js/grados.js"></script>
 

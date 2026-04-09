@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/componentes/busqueda-panel.css">
 </head>
 <body>
 
@@ -31,7 +33,6 @@
       <div class="cabecera-pagina">
         <div>
           <h1 class="cabecera-pagina__titulo">Gestión de Materias</h1>
-          <p class="cabecera-pagina__subtitulo"><%= materias.length %> materia<%= materias.length !== 1 ? 's' : '' %> registrada<%= materias.length !== 1 ? 's' : '' %></p>
         </div>
         <div class="cabecera-pagina__acciones">
           <button class="btn btn--primario" onclick="abrirDrawerCrearMateria()">
@@ -40,21 +41,35 @@
         </div>
       </div>
 
-      <!-- Filtro de búsqueda -->
-      <form method="GET" action="/materias" class="barra-filtros">
-        <div class="barra-filtros__grupo">
-          <div class="barra-filtros__buscar">
-            <i data-lucide="search" class="barra-filtros__icono-buscar"></i>
-            <input type="text" name="buscar" value="<%= buscar %>" placeholder="Buscar materia..." class="barra-filtros__entrada" />
+      <!-- Panel de búsqueda -->
+      <div class="busqueda-panel">
+        <!-- Stat card -->
+        <div class="acceso-card acceso-card--morado"><div class="tarjeta-stat__icono tarjeta-stat__icono--morado"><i data-lucide="book-open"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= materias.length %></span><span class="tarjeta-stat__etiqueta">Materias</span></div></div>
+
+        <!-- Barra de búsqueda -->
+        <form method="GET" action="/materias" class="busqueda-panel__barra busqueda-panel__barra--morado" >
+          <div class="busqueda-panel__campo">
+            <i data-lucide="search" class="busqueda-panel__icono-buscar"></i>
+            <input
+              type="text"
+              name="buscar"
+              value="<%= buscar %>"
+              placeholder="Buscar materia por nombre..."
+              class="busqueda-panel__entrada"
+            />
           </div>
-        </div>
-        <div class="barra-filtros__acciones">
-          <button type="submit" class="btn btn--primario btn--sm"><i data-lucide="search"></i> Buscar</button>
-          <% if (buscar) { %>
-            <a href="/materias" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Limpiar</a>
-          <% } %>
-        </div>
-      </form>
+          <div class="busqueda-panel__acciones">
+            <button type="submit" class="btn btn--primario btn--sm">
+              <i data-lucide="search"></i> Buscar
+            </button>
+            <% if (buscar) { %>
+              <a href="/materias" class="btn btn--secundario btn--sm">
+                <i data-lucide="x"></i> Limpiar
+              </a>
+            <% } %>
+          </div>
+        </form>
+      </div>
 
       <!-- Tabla -->
       <div class="tabla-contenedor">
@@ -73,7 +88,7 @@
                 <th>Acciones</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="tbodyMaterias">
               <% materias.forEach(m => { %>
                 <tr>
                   <td>
@@ -84,7 +99,7 @@
                       <span class="item-icono__texto"><%= m.nombre %></span>
                     </div>
                   </td>
-                  <td class="texto-secundario texto-sm">
+                  <td class="texto-secundario texto-sm" style="text-align: left;">
                     <%= m.descripcion ? m.descripcion : 'Sin descripción' %>
                   </td>
                   <td>
@@ -93,7 +108,7 @@
                     </span>
                   </td>
                   <td>
-                    <div class="acciones-tabla">
+                    <div class="acciones-tabla" >
                       <button class="btn-icono btn-icono--editar" onclick="abrirDrawerEditarMateria('<%= m._id %>')" title="Editar">
                         <i data-lucide="pencil"></i>
                       </button>
@@ -108,6 +123,7 @@
                 </tr>
               <% }) %>
             </tbody>
+            
           </table>
         <% } %>
       </div>
@@ -160,6 +176,7 @@
   <script src="/js/notificaciones.js"></script>
   <script src="/js/drawer.js"></script>
   <script src="/js/main.js"></script>
+  <script src="/js/paginacion.js"></script>
   <script src="/js/materias.js"></script>
   <script>lucide.createIcons();</script>
 </body>

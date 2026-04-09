@@ -70,9 +70,17 @@ const guardarConfiguracion = async (req, res) => {
     config.vision         = vision?.trim()         || '';
     config.mision         = mision?.trim()         || '';
     config.correoDirector = correoDirector?.trim()  || '';
+    
+   
+    if (req.files && req.files.fotoInstitucion) {
+      config.fotoInstitucion = req.files.fotoInstitucion[0].filename;
+    }
+
     await config.save();
+
     req.flash('exito', 'Configuración guardada correctamente.');
     res.redirect('/dashboard');
+    
   } catch (error) {
     console.error('Error al guardar configuración:', error);
     req.flash('error', 'Error al guardar la configuración.');

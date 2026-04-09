@@ -9,7 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
-  <link rel="stylesheet" href="/css/notas.css" />
+  <link rel="stylesheet" href="/css/paginas/notas.css" />
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
 
@@ -36,46 +37,118 @@
         </div>
       </div>
 
-      <!-- Filtros -->
-      <form method="GET" action="/notas/admin" class="barra-filtros">
-        <div class="barra-filtros__grupo">
-          <select name="gradoId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Seleccionar grado</option>
-            <% grados.forEach(g => { %>
-              <option value="<%= g._id %>" <%= gradoIdActivo === g._id.toString() ? 'selected' : '' %>>
-                <%= g.nombre %> (Nivel <%= g.nivel %>)
-              </option>
-            <% }) %>
-          </select>
-          <select name="materiaId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Seleccionar materia</option>
-            <% materias.forEach(m => { %>
-              <option value="<%= m._id %>" <%= materiaIdActiva === m._id.toString() ? 'selected' : '' %>><%= m.nombre %></option>
-            <% }) %>
-          </select>
-          <select name="periodoId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Seleccionar periodo</option>
-            <% periodos.forEach(p => { %>
-              <option value="<%= p._id %>" <%= periodoIdActivo === p._id.toString() ? 'selected' : '' %>>
-                <%= p.nombre %> <%= !p.activo ? '(Cerrado)' : '(Activo)' %>
-              </option>
-            <% }) %>
-          </select>
+      <!-- Filtros — estilo busqueda-panel igual que otras secciones -->
+      <div class="busqueda-panel" style="width: 60%;">
+
+        <!-- Tarjeta lateral izquierda -->
+        <div class="acceso-card acceso-card--morado" style="min-height:130px; min-width:130px;">
+          <div class="tarjeta-stat__icono tarjeta-stat__icono--morado">
+            <i data-lucide="clipboard-list"></i>
+          </div>
+          <div class="tarjeta-stat__datos" style="text-align:center;">
+            <span class="tarjeta-stat__etiqueta" style="font-size:0.75rem;color:var(--morado-600);font-weight:600;line-height:1.3;">Consulta y edita<br>notas de<br><strong>cualquier periodo</strong></span>
+          </div>
         </div>
-        <div class="barra-filtros__acciones">
-          <% if (gradoIdActivo || materiaIdActiva || periodoIdActivo) { %>
-            <a href="/notas/admin" class="btn btn--secundario btn--sm">
-              <i data-lucide="x"></i> Limpiar
-            </a>
-          <% } %>
-        </div>
-      </form>
+
+        <!-- Barra de filtros derecha -->
+        <form method="GET" action="/notas/admin" class="busqueda-panel__barra busqueda-panel__barra--morado" id="formFiltrosNotasAdmin" style="flex-direction:column; align-items:stretch; gap:10px;">
+          <input type="hidden" name="gradoId" id="inputFiltroGradoNotas" value="<%= gradoIdActivo %>" />
+
+          <!-- Fila superior: materia + periodo + limpiar -->
+          <div class="barra-filtros__fila-superior" style="padding:0; flex-wrap:wrap; gap:10px;">
+
+            <!-- Materia — dropdown dinámico con búsqueda -->
+            <input type="hidden" name="materiaId" id="inputMateriaIdNotas" value="<%= materiaIdActiva %>" />
+            <div class="materia-picker-wrap" id="materiaPicker">
+              <button type="button" class="materia-picker__trigger" id="materiaPickerTrigger">
+                <i data-lucide="book-open" style="width:14px;height:14px;flex-shrink:0;"></i>
+                <span id="materiaPickerLabel">
+                  <% if (materiaIdActiva) {
+                       const mSel = materias.find(m => m._id.toString() === materiaIdActiva);
+                       if (mSel) { %><%= mSel.nombre %><% } else { %>Seleccionar materia<% } %>
+                  <% } else { %>Seleccionar materia<% } %>
+                </span>
+                <i data-lucide="chevron-down" class="materia-picker__chevron" style="width:13px;height:13px;margin-left:auto;"></i>
+              </button>
+              <div class="materia-picker__panel" id="materiaPickerPanel">
+                <div class="materia-picker__search-wrap">
+                  <i data-lucide="search" style="width:13px;height:13px;color:var(--gris-500);flex-shrink:0;"></i>
+                  <input type="text" id="materiaBuscador" class="materia-picker__search" placeholder="Buscar materia…" autocomplete="off" />
+                </div>
+                <ul class="materia-picker__lista" id="materiaLista">
+                  <li class="materia-picker__opcion" data-id="" data-nombre="Todas las materias">
+                    <i data-lucide="list" style="width:13px;height:13px;flex-shrink:0;"></i>
+                    Todas las materias
+                  </li>
+                  <% materias.forEach(m => { %>
+                    <li class="materia-picker__opcion <%= materiaIdActiva === m._id.toString() ? 'materia-picker__opcion--activa' : '' %>"
+                        data-id="<%= m._id %>" data-nombre="<%= m.nombre %>">
+                      <i data-lucide="book" style="width:13px;height:13px;flex-shrink:0;"></i>
+                      <%= m.nombre %>
+                    </li>
+                  <% }) %>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Periodo -->
+            <div class="barra-filtros__anio-wrap">
+              <select name="periodoId" class="barra-filtros__anio-select" onchange="this.form.submit()">
+                <option value="">Seleccionar periodo</option>
+                <% periodos.forEach(p => { %>
+                  <option value="<%= p._id %>" <%= periodoIdActivo === p._id.toString() ? 'selected' : '' %>><%= p.nombre %> <%= !p.activo ? '(Cerrado)' : '(Activo)' %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <!-- Botón limpiar -->
+            <% if (gradoIdActivo || materiaIdActiva || periodoIdActivo) { %>
+              <a href="/notas/admin" class="btn btn--secundario btn--sm">
+                <i data-lucide="x"></i> Limpiar
+              </a>
+            <% } %>
+          </div>
+
+          <!-- Fila inferior: picker de grado -->
+          <div style="width: 100%;">
+            <div class="filtro-nivel-wrap">
+              <button type="button" class="filtro-nivel_edu" id="btnFiltroGradoNotas">
+                <i data-lucide="book-open"></i>
+                <span>Grado</span>
+                <% if (gradoIdActivo) {
+                     const gradoSel = grados.find(g => g._id.toString() === gradoIdActivo);
+                     if (gradoSel) { %>
+                  <span class="filtro-nivel__badge-trigger"><%= gradoSel.nombre %></span>
+                <% }} %>
+                <i data-lucide="chevron-down" class="filtro-nivel__chevron"></i>
+              </button>
+              <div class="filtro-nivel__panel" id="panelFiltroGradoNotas"></div>
+            </div>
+          </div>
+
+        </form>
+      </div>
 
       <% if (!gradoIdActivo || !materiaIdActiva || !periodoIdActivo) { %>
-        <div class="estado-vacio">
-          <i data-lucide="sliders-horizontal"></i>
-          <h3>Selecciona los filtros</h3>
-          <p>Elige grado, materia y periodo para ver el libro de notas.</p>
+        <div class="filtros-recordatorio">
+          <div class="filtros-recordatorio__icono">
+            <i data-lucide="sliders-horizontal"></i>
+          </div>
+          <div class="filtros-recordatorio__texto">
+            <h3>Selecciona los filtros</h3>
+            <p>Elige <strong>grado</strong>, <strong>materia</strong> y <strong>periodo</strong> para ver el libro de notas.</p>
+          </div>
+          <div class="filtros-recordatorio__pasos">
+            <span class="filtros-paso <%= gradoIdActivo ? 'filtros-paso--ok' : '' %>">
+              <i data-lucide="<%= gradoIdActivo ? 'check-circle' : 'circle' %>"></i> Grado
+            </span>
+            <span class="filtros-paso <%= materiaIdActiva ? 'filtros-paso--ok' : '' %>">
+              <i data-lucide="<%= materiaIdActiva ? 'check-circle' : 'circle' %>"></i> Materia
+            </span>
+            <span class="filtros-paso <%= periodoIdActivo ? 'filtros-paso--ok' : '' %>">
+              <i data-lucide="<%= periodoIdActivo ? 'check-circle' : 'circle' %>"></i> Periodo
+            </span>
+          </div>
         </div>
       <% } else if (!tabla || tabla.filas.length === 0) { %>
         <div class="estado-vacio">
@@ -94,30 +167,32 @@
 
         <!-- Resumen -->
         <div class="notas-resumen">
-          <div class="resumen-stat">
+          <div class="resumen-stat acceso-card--azul">
             <span class="resumen-stat__num"><%= tabla.filas.length %></span>
             <span class="resumen-stat__label">Estudiantes</span>
           </div>
-          <div class="resumen-stat">
+          <div class="resumen-stat acceso-card--verde">
             <span class="resumen-stat__num"><%= tabla.actividades.length %></span>
             <span class="resumen-stat__label">Actividades</span>
           </div>
-          <div class="resumen-stat">
+          <div class="resumen-stat acceso-card--morado">
             <span class="resumen-stat__num"><%= promGeneral %></span>
             <span class="resumen-stat__label">Promedio grupo</span>
           </div>
-          <div class="resumen-stat">
+          <div class="resumen-stat acceso-card--azul">
             <span class="resumen-stat__num">
               <%= tabla.filas.filter(f => f.promedio !== null && f.promedio >= 3).length %>
             </span>
             <span class="resumen-stat__label">Aprobados</span>
           </div>
           <% if (periodoSeleccionado) { %>
-            <span class="badge <%= periodoSeleccionado.activo ? 'badge--activo' : 'badge--inactivo' %>">
-              <%= periodoSeleccionado.nombre %> — <%= periodoSeleccionado.activo ? 'Abierto' : 'Cerrado' %>
-            </span>
+            <div class="resumen-stat resumen-stat--periodo <%= periodoSeleccionado.activo ? 'resumen-stat--activo' : 'resumen-stat--cerrado' %>">
+              <i data-lucide="<%= periodoSeleccionado.activo ? 'unlock' : 'lock' %>" class="resumen-stat__icono-periodo"></i>
+              <span class="resumen-stat__num resumen-stat__num--periodo"><%= periodoSeleccionado.activo ? 'Abierto' : 'Cerrado' %></span>
+              <span class="resumen-stat__label"><%= periodoSeleccionado.nombre %></span>
+            </div>
             <% if (!periodoSeleccionado.activo) { %>
-              <div class="alerta alerta--info" style="padding:6px 12px;font-size:0.78rem;margin:0;">
+              <div class="alerta alerta--info" style="padding:6px 12px;font-size:0.78rem;margin:0;grid-column:1/-1;">
                 <i data-lucide="info"></i>
                 <span>Admin puede editar notas aunque el periodo esté cerrado.</span>
               </div>
@@ -144,7 +219,7 @@
                 <th class="th-promedio">Promedio</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="tbodyNotasAdmin">
               <% tabla.filas.forEach(fila => { %>
                 <tr>
                   <td class="td-estudiante">
@@ -221,9 +296,36 @@
     </main>
   </div>
 
+  <!-- Datos de grados para el picker -->
+  <script>
+    const GRADOS_DATA_NOTAS = <%- JSON.stringify(grados.map(g => ({
+    id:     g._id.toString(),
+    _id:    g._id.toString(),
+      nombre: g.nombre,
+      nivel:  g.nivel,
+      año:    g.año
+    }))) %>;
+    const FILTRO_GRADO_ACTIVO_NOTAS = '<%= gradoIdActivo || "" %>';
+  </script>
+
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
+  <script src="/js/paginacion.js"></script>
+  <script src="/js/grado-picker.js"></script>
   <script src="/js/notas-admin.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    initFiltroGradoPicker({
+      gradosData:        GRADOS_DATA_NOTAS,
+      filtroGradoActivo: FILTRO_GRADO_ACTIVO_NOTAS,
+      formId:            'formFiltrosNotasAdmin',
+      inputHiddenId:     'inputFiltroGradoNotas',
+      anioSelectName:    'gradoId',
+      triggerBtnId:      'btnFiltroGradoNotas',
+      panelId:           'panelFiltroGradoNotas',
+    });
+  });
+  </script>
   <script>lucide.createIcons();</script>
 </body>
 </html>

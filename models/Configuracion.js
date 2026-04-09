@@ -23,8 +23,8 @@ const configuracionSchema = new mongoose.Schema(
       trim:    true,
       default: '',
     },
-    // Ruta del logo del colegio
-    logo: {
+    // Ruta de la foto del colegio
+    fotoInstitucion: {
       type:    String,
       default: null,
     },

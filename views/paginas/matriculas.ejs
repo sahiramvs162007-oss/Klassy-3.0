@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/componentes/busqueda-panel.css">
 </head>
 <body>
 
@@ -34,7 +36,6 @@
       <div class="cabecera-pagina">
         <div>
           <h1 class="cabecera-pagina__titulo">Gestión de Matrículas</h1>
-          <p class="cabecera-pagina__subtitulo"><%= matriculas.length %> matrícula<%= matriculas.length !== 1 ? 's' : '' %> encontrada<%= matriculas.length !== 1 ? 's' : '' %></p>
         </div>
         <div class="cabecera-pagina__acciones">
           <% if (puedeMasiva) { %>
@@ -52,55 +53,74 @@
       </div>
 
       <!-- Filtros -->
-      <form method="GET" action="/matriculas" class="barra-filtros">
-        <div class="barra-filtros__grupo">
+      <div class="busqueda-panel">
+        <div class="acceso-card acceso-card--naranja"><div class="tarjeta-stat__icono tarjeta-stat__icono--naranja"><i data-lucide="file-text"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= matriculas.length %></span><span class="tarjeta-stat__etiqueta">Matrículas</span></div></div>
+        <form method="GET" action="/matriculas" class="busqueda-panel__barra busqueda-panel__barra--naranja" id="formFiltrosMatriculas">
 
-          <!-- Buscar por nombre -->
-          <div class="barra-filtros__buscar">
-            <i data-lucide="search" class="barra-filtros__icono-buscar"></i>
-            <input type="text" name="buscar" value="<%= buscar %>"
-              placeholder="Buscar estudiante..." class="barra-filtros__entrada" />
+          <!-- Hidden para el grado seleccionado -->
+          <input type="hidden" name="filtroGrado" id="inputFiltroGrado" value="<%= filtroGrado %>" />
+
+          <!-- Fila superior: búsqueda + año + estado + acciones -->
+          <div class="barra-filtros__fila-superior">
+
+            <div class="busqueda-panel__campo">
+              <i data-lucide="search" class="barra-filtros__icono-buscar"></i>
+              <input type="text" name="buscar" value="<%= buscar %>"
+                placeholder="Buscar estudiante..." class="barra-filtros__entrada" />
+            </div>
+
+            <!-- Año -->
+            <i data-lucide="calendar" class="barra-filtros__anio-icono"></i>
+            <span class="barra-filtros__anio-label">Año</span>
+            <div class="barra-filtros__anio-wrap">
+              <select name="filtroAnio" id="selectAnioMatriculas" class="barra-filtros__anio-select" onchange="this.form.submit()">
+                <option value="">Todos</option>
+                <% años.forEach(a => { %>
+                  <option value="<%= a %>" <%= filtroAnio == a ? 'selected' : '' %>><%= a %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <!-- Estado -->
+            <div class="barra-filtros__anio-wrap">
+              <select name="filtroEstado" class="barra-filtros__anio-select" onchange="this.form.submit()">
+                <option value="">Todos los estados</option>
+                <option value="activa"     <%= filtroEstado === 'activa'     ? 'selected' : '' %>>Activa</option>
+                <option value="suspendida" <%= filtroEstado === 'suspendida' ? 'selected' : '' %>>Suspendida</option>
+                <option value="inactiva"   <%= filtroEstado === 'inactiva'   ? 'selected' : '' %>>Inactiva</option>
+                <option value="graduado"   <%= filtroEstado === 'graduado'   ? 'selected' : '' %>>Graduado</option>
+              </select>
+            </div>
+
+            <div class="barra-filtros__acciones">
+              <button type="submit" class="btn btn--primario btn--sm">
+                <i data-lucide="search"></i> Buscar
+              </button>
+              <% if (buscar || filtroGrado || filtroEstado || filtroAnio) { %>
+                <a href="/matriculas" class="btn btn--secundario btn--sm">
+                  <i data-lucide="x"></i> Limpiar
+                </a>
+              <% } %>
+            </div>
           </div>
 
-          <!-- Filtro por grado -->
-          <select name="filtroGrado" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Todos los grados</option>
-            <% grados.forEach(g => { %>
-              <option value="<%= g._id %>" <%= filtroGrado === g._id.toString() ? 'selected' : '' %>>
-                <%= g.nombre %> (Nivel <%= g.nivel %> — <%= g.año %>)
-              </option>
-            <% }) %>
-          </select>
+          <!-- ── Filtro de grado (delegado a grado-picker.js) ───────── -->
+          <div class="filtro-nivel-wrap">
+            <button type="button" class="filtro-nivel_edu" id="btnFiltroGradoMatriculas">
+              <i data-lucide="book-open"></i>
+              <span>Grado</span>
+              <% if (filtroGrado) {
+                   const gradoSel = grados.find(g => g._id.toString() === filtroGrado);
+                   if (gradoSel) { %>
+                <span class="filtro-nivel__badge-trigger"><%= gradoSel.nombre %></span>
+              <% }} %>
+              <i data-lucide="chevron-down" class="filtro-nivel__chevron"></i>
+            </button>
+            <div class="filtro-nivel__panel" id="panelFiltroGradoMatriculas"></div>
+          </div>
 
-          <!-- Filtro por estado -->
-          <select name="filtroEstado" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Todos los estados</option>
-            <option value="activa"      <%= filtroEstado === 'activa'      ? 'selected' : '' %>>Activa</option>
-            <option value="suspendida"  <%= filtroEstado === 'suspendida'  ? 'selected' : '' %>>Suspendida</option>
-            <option value="inactiva"    <%= filtroEstado === 'inactiva'    ? 'selected' : '' %>>Inactiva</option>
-            <option value="graduado"    <%= filtroEstado === 'graduado'    ? 'selected' : '' %>>Graduado</option>
-          </select>
-
-          <!-- Filtro por año -->
-          <select name="filtroAnio" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Todos los años</option>
-            <% años.forEach(a => { %>
-              <option value="<%= a %>" <%= filtroAnio == a ? 'selected' : '' %>><%= a %></option>
-            <% }) %>
-          </select>
-
-        </div>
-        <div class="barra-filtros__acciones">
-          <button type="submit" class="btn btn--primario btn--sm">
-            <i data-lucide="search"></i> Buscar
-          </button>
-          <% if (buscar || filtroGrado || filtroEstado || filtroAnio) { %>
-            <a href="/matriculas" class="btn btn--secundario btn--sm">
-              <i data-lucide="x"></i> Limpiar
-            </a>
-          <% } %>
-        </div>
-      </form>
+        </form>
+      </div>
 
       <!-- Tabla -->
       <div class="tabla-contenedor">
@@ -125,7 +145,7 @@
                 <th>Acciones</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="tbodyMatriculas">
               <% matriculas.forEach(m => { %>
                 <%
                   const nombreEstudiante = m.estudianteId
@@ -255,22 +275,35 @@
         </span>
       </div>
 
-      <!-- Selector de estudiante -->
+      <!-- Selector de estudiante (picker dinámico) -->
       <div class="campo">
         <label class="campo__etiqueta">Estudiante *</label>
-        <select name="estudianteId" id="campoEstudianteMatricula" class="campo__select" required
-          onchange="actualizarGradosDisponibles()">
-          <option value="">Cargando estudiantes...</option>
-        </select>
+        <input type="hidden" name="estudianteId" id="campoEstudianteMatricula" required />
+        <div class="est-picker-wrap" id="estPickerMat">
+          <button type="button" class="est-picker__trigger" id="estPickerMatTrigger">
+            <span class="est-picker__avatar-mini" id="estPickerMatAvatarMini" style="display:none;"></span>
+            <span id="estPickerMatLabel" style="color:var(--gris-400);">Seleccionar estudiante…</span>
+            <i data-lucide="chevron-down" class="est-picker__chevron"></i>
+          </button>
+          <div class="est-picker__panel" id="estPickerMatPanel">
+            <div class="est-picker__search-wrap">
+              <i data-lucide="search" style="width:13px;height:13px;color:var(--gris-400);flex-shrink:0;"></i>
+              <input type="text" id="estBuscadorMat" class="est-picker__search" placeholder="Buscar por nombre…" autocomplete="off" />
+            </div>
+            <ul class="est-picker__lista" id="estListaMat">
+              <li class="est-picker__vacio">Ingresa el año para cargar estudiantes</li>
+            </ul>
+          </div>
+        </div>
         <span class="campo__ayuda" id="ayudaEstudiante"></span>
       </div>
 
       <!-- Selector de grado -->
       <div class="campo">
         <label class="campo__etiqueta">Grado *</label>
-        <select name="gradoId" id="campoGradoMatricula" class="campo__select" required>
-          <option value="">Selecciona un estudiante primero</option>
-        </select>
+        <!-- El picker visual se inyecta aquí -->
+        <div id="pickerGradoMatricula"></div>
+        <input type="hidden" name="gradoId" id="campoGradoMatricula" required />
         <span class="campo__ayuda" id="ayudaGrado">Solo se muestran grados del nivel correcto.</span>
       </div>
 
@@ -327,39 +360,28 @@
       </div>
     </form>
   </template>
-
+ <!-- Datos de grados para el JS -->
+      <script>
+        const GRADOS_DATA_MAT = <%- JSON.stringify(grados.map(g => ({
+          id:     g._id.toString(),
+          _id:    g._id.toString(),
+          nombre: g.nombre,
+          nivel:  g.nivel,
+          año:    g.año
+        }))) %>;
+        const FILTRO_GRADO_ACTIVO_MAT = '<%= filtroGrado %>';
+        const FILTRO_ANIO_ACTIVO_MAT  = <%= filtroAnio ? filtroAnio : 'null' %>;
+      </script>
   <!-- Datos del año actual para el JS -->
   <script>
     const ANO_ACTUAL = <%= añoActual %>;
   </script>
   <script src="/js/notificaciones.js"></script>
   <script src="/js/drawer.js"></script>
+  <script src="/js/paginacion.js"></script>
   <script src="/js/main.js"></script>
+  <script src="/js/grado-picker.js"></script>
   <script src="/js/matriculas.js"></script>
-  <script>
-  // Cargar grados disponibles al abrir el drawer de edición
-  async function cargarGradosDisponibles(matriculaId, gradoActualId) {
-    const select = document.getElementById('campoGradoEditar');
-    if (!select) return;
-    try {
-      const resp = await fetch(`/matriculas/${matriculaId}/grados-disponibles`);
-      const data = await resp.json();
-      select.innerHTML = '<option value="">-- Mantener grado actual --</option>';
-      (data.grados || []).forEach(g => {
-        const opt = document.createElement('option');
-        opt.value = g._id;
-        opt.selected = g._id === gradoActualId;
-        opt.textContent = `${g.nombre} (Nivel ${g.nivel} — Cupo: ${g.matriculados}/${g.cupo > 0 ? g.cupo : '∞'})`;
-        select.appendChild(opt);
-      });
-      if (!data.grados || data.grados.length === 0) {
-        select.innerHTML = '<option value="">Sin otros grados disponibles con cupo</option>';
-      }
-    } catch(e) {
-      select.innerHTML = '<option value="">Error al cargar grados</option>';
-    }
-  }
-  </script>
   <script>lucide.createIcons();</script>
 </body>
 </html>

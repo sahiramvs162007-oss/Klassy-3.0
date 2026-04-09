@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/componentes/busqueda-panel.css">
 </head>
 <body>
 
@@ -40,24 +42,42 @@
         </div>
       </div>
 
-      <!-- Buscador -->
-      <form method="GET" action="/retiros" class="barra-filtros">
-        <div class="barra-filtros__grupo">
-          <div class="barra-filtros__buscar">
-            <i data-lucide="search" class="barra-filtros__icono-buscar"></i>
-            <input type="text" name="buscar" value="<%= buscar %>"
-              placeholder="Buscar por nombre o documento..." class="barra-filtros__entrada" />
+            <!-- Panel de búsqueda -->
+      <div class="busqueda-panel-wrap">
+        <div class="busqueda-panel">
+          <!-- Stat card — mismo estilo que dashboard -->
+          <div class="acceso-card acceso-card--naranja">
+            <div class="tarjeta-stat__icono tarjeta-stat__icono--naranja">
+              <i data-lucide="user-x"></i>
+            </div>
+            <div class="tarjeta-stat__datos">
+              <span class="tarjeta-stat__valor"><%= retiros.length %></span>
+              <span class="tarjeta-stat__etiqueta">Retiros</span>
+            </div>
           </div>
-        </div>
-        <div class="barra-filtros__acciones">
-          <button type="submit" class="btn btn--primario btn--sm"><i data-lucide="search"></i> Buscar</button>
-          <% if (buscar) { %>
-            <a href="/retiros" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Limpiar</a>
-          <% } %>
-        </div>
-      </form>
 
-      <!-- ── Tabla historial de retiros ── -->
+          <!-- Barra de búsqueda -->
+          <form method="GET" action="/retiros" class="busqueda-panel__barra busqueda-panel__barra--naranja">
+            <div class="busqueda-panel__campo">
+              <i data-lucide="search" class="busqueda-panel__icono-buscar"></i>
+              <input type="text" name="buscar" value="<%= buscar %>"
+                placeholder="Buscar por nombre o documento..." class="busqueda-panel__entrada" />
+            </div>
+            <div class="busqueda-panel__acciones">
+              <button type="submit" class="btn btn--primario btn--sm">
+                <i data-lucide="search"></i> Buscar
+              </button>
+              <% if (buscar) { %>
+                <a href="/retiros" class="btn btn--secundario btn--sm">
+                  <i data-lucide="x"></i> Limpiar
+                </a>
+              <% } %>
+            </div>
+          </form>
+        </div>
+      </div>
+
+<!-- ── Tabla historial de retiros ── -->
       <h2 style="font-size:1rem;font-weight:600;margin:1.5rem 0 0.75rem;">Historial de retiros</h2>
       <div class="tabla-contenedor">
         <% if (retiros.length === 0) { %>
@@ -128,7 +148,7 @@
   </div>
 
   <!-- Drawer -->
-  <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
+  <div class="btn btn--secundario" id="drawerOverlay" onclick="cerrarDrawer()"></div>
   <div class="drawer" id="drawer">
     <div class="drawer__cabecera">
       <h2 class="drawer__titulo" id="drawerTitulo">Retirar estudiante</h2>
@@ -137,24 +157,45 @@
     <div class="drawer__cuerpo" id="drawerCuerpo"></div>
   </div>
 
+  <!-- Datos de estudiantes para el picker -->
+  <script>
+    const ESTUDIANTES_DATA = <%- JSON.stringify(estudiantesActivos.map(e => ({
+      id:       e._id.toString(),
+      nombre:   e.nombre,
+      apellido: e.apellido,
+      doc:      e.documentoIdentidad || '',
+      nivel:    e.ultimoNivelCursado || 0
+    }))) %>;
+  </script>
+
   <!-- Template formulario de retiro -->
   <template id="templateRetirar">
     <form method="POST" action="/retiros" class="formulario-grupo">
 
       <div class="campo">
         <label class="campo__etiqueta">Estudiante a retirar *</label>
-        <select name="estudianteId" class="campo__select" required>
-          <option value="">Seleccionar estudiante...</option>
-          <% estudiantesActivos.forEach(e => { %>
-            <option value="<%= e._id %>">
-              <%= e.apellido %>, <%= e.nombre %>
-              <% if (e.documentoIdentidad) { %> — Doc: <%= e.documentoIdentidad %><% } %>
-              (Nivel <%= e.ultimoNivelCursado || 0 %>)
-            </option>
-          <% }) %>
-        </select>
+
         <% if (estudiantesActivos.length === 0) { %>
-          <span class="campo__ayuda" style="color:var(--color-error)">No hay estudiantes activos para retirar.</span>
+          <span class="campo__ayuda" style="color:var(--rojo-600)">No hay estudiantes activos para retirar.</span>
+        <% } else { %>
+          <!-- Picker dinámico con búsqueda -->
+          <input type="hidden" name="estudianteId" id="inputEstudianteId" required />
+          <div class="est-picker-wrap" id="estPicker">
+            <button type="button" class="est-picker__trigger" id="estPickerTrigger">
+              <span class="est-picker__avatar-mini" id="estPickerAvatarMini" style="display:none;"></span>
+              <span id="estPickerLabel" style="color:var(--gris-400);">Seleccionar estudiante…</span>
+              <i data-lucide="chevron-down" class="est-picker__chevron"></i>
+            </button>
+            <div class="est-picker__panel" id="estPickerPanel">
+              <div class="est-picker__search-wrap">
+                <i data-lucide="search" style="width:13px;height:13px;color:var(--gris-400);flex-shrink:0;"></i>
+                <input type="text" id="estBuscador" class="est-picker__search" placeholder="Buscar por nombre o documento…" autocomplete="off" />
+              </div>
+              <ul class="est-picker__lista" id="estLista">
+                <!-- Se llena por JS -->
+              </ul>
+            </div>
+          </div>
         <% } %>
       </div>
 
@@ -170,8 +211,10 @@
       </div>
 
       <div class="drawer__pie">
-        <button type="button" class="btn btn--secundario" onclick="cerrarDrawer()">Cancelar</button>
-        <button type="submit" class="btn btn--error">
+        <button type="button" class="btn btn--secundario" onclick="cerrarDrawer()">
+          <i data-lucide="x"></i> Cancelar
+        </button>
+        <button type="submit" class="btn btn--primario">
           <i data-lucide="user-x"></i> Confirmar retiro
         </button>
       </div>
@@ -181,22 +224,7 @@
   <script src="/js/notificaciones.js"></script>
   <script src="/js/drawer.js"></script>
   <script src="/js/main.js"></script>
-  <script>
-    function abrirDrawerRetirar() {
-      const template = document.getElementById('templateRetirar');
-      const clon = template.content.cloneNode(true);
-      document.getElementById('drawerTitulo').textContent = 'Retirar estudiante';
-      document.getElementById('drawerCuerpo').innerHTML = '';
-      document.getElementById('drawerCuerpo').appendChild(clon);
-      document.getElementById('drawerOverlay').classList.add('activo');
-      document.getElementById('drawer').classList.add('activo');
-      lucide.createIcons();
-    }
-    function cerrarDrawer() {
-      document.getElementById('drawerOverlay').classList.remove('activo');
-      document.getElementById('drawer').classList.remove('activo');
-    }
-  </script>
+  <script src="/js/retiros.js"></script>
   <script>lucide.createIcons();</script>
 </body>
 </html>

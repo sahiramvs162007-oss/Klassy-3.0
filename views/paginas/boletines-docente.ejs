@@ -9,7 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
-  <link rel="stylesheet" href="/css/boletines.css" />
+  <link rel="stylesheet" href="/css/paginas/boletines.css" />
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
 
@@ -33,27 +34,57 @@
       </div>
 
       <!-- Filtros para ver boletines de su grado -->
-      <form method="GET" action="/boletines/docente" class="barra-filtros">
-        <div class="barra-filtros__grupo">
-          <select name="gradoId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Seleccionar grado</option>
-            <% [...new Map(asignaciones.map(a => [a.gradoId._id.toString(), a])).values()].forEach(a => { %>
-              <option value="<%= a.gradoId._id %>" <%= gradoIdActivo === a.gradoId._id.toString() ? 'selected' : '' %>>
-                <%= a.gradoId.nombre %> (Nivel <%= a.gradoId.nivel %>)
-              </option>
-            <% }) %>
-          </select>
-          <select name="periodoId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-            <option value="">Seleccionar periodo</option>
-            <% periodos.filter(p => !p.activo).forEach(p => { %>
-              <option value="<%= p._id %>" <%= periodoIdActivo === p._id.toString() ? 'selected' : '' %>><%= p.nombre %></option>
-            <% }) %>
-          </select>
+      <div class="busqueda-panel">
+
+        <div class="acceso-card acceso-card--azul" style="min-height:130px; min-width:130px;">
+          <div class="tarjeta-stat__icono tarjeta-stat__icono--azul">
+            <i data-lucide="file-text"></i>
+          </div>
+          <div class="tarjeta-stat__datos" style="text-align:center;">
+            <span class="tarjeta-stat__etiqueta" style="font-size:0.75rem;color:var(--azul-700);font-weight:600;line-height:1.3;">Consulta los<br>boletines de<br><strong>tus estudiantes</strong></span>
+          </div>
         </div>
-        <% if (gradoIdActivo || periodoIdActivo) { %>
-          <a href="/boletines/docente" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Limpiar</a>
-        <% } %>
-      </form>
+
+        <form method="GET" action="/boletines/docente" class="busqueda-panel__barra busqueda-panel__barra--azul" id="formFiltrosBoletinesDocente" style="flex-direction:column; align-items:stretch; gap:10px;">
+          <input type="hidden" name="gradoId" id="inputFiltroGradoBolDoc" value="<%= gradoIdActivo %>" />
+
+          <!-- Fila superior: periodo + limpiar -->
+          <div class="barra-filtros__fila-superior" style="padding:0; flex-wrap:wrap; gap:10px;">
+            <div class="barra-filtros__anio-wrap">
+              <select name="periodoId" class="barra-filtros__anio-select" onchange="this.form.submit()">
+                <option value="">Seleccionar periodo</option>
+                <% periodos.filter(p => !p.activo).forEach(p => { %>
+                  <option value="<%= p._id %>" <%= periodoIdActivo === p._id.toString() ? 'selected' : '' %>><%= p.nombre %></option>
+                <% }) %>
+              </select>
+            </div>
+            <% if (gradoIdActivo || periodoIdActivo) { %>
+              <a href="/boletines/docente" class="btn btn--secundario btn--sm">
+                <i data-lucide="x"></i> Limpiar
+              </a>
+            <% } %>
+          </div>
+
+          <!-- Fila inferior: picker de grado -->
+          <div style="max-width:420px;">
+            <div class="filtro-nivel-wrap">
+              <button type="button" class="filtro-nivel_edu" id="btnFiltroGradoBolDoc">
+                <i data-lucide="book-open"></i>
+                <span>Grado</span>
+                <% if (gradoIdActivo) {
+                     const gradoSel = [...new Map(asignaciones.map(a => [a.gradoId._id.toString(), a])).values()]
+                                        .find(a => a.gradoId._id.toString() === gradoIdActivo);
+                     if (gradoSel) { %>
+                  <span class="filtro-nivel__badge-trigger"><%= gradoSel.gradoId.nombre %></span>
+                <% }} %>
+                <i data-lucide="chevron-down" class="filtro-nivel__chevron"></i>
+              </button>
+              <div class="filtro-nivel__panel" id="panelFiltroGradoBolDoc"></div>
+            </div>
+          </div>
+
+        </form>
+      </div>
 
       <!-- Lista de boletines del grado -->
       <% if (boletines.length > 0) { %>
@@ -140,6 +171,31 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
+  <script src="/js/paginacion.js"></script>
+  <script src="/js/grado-picker.js"></script>
+  <script>
+    const GRADOS_DATA_BOL_DOC = <%- JSON.stringify([...new Map(asignaciones.map(a => [a.gradoId._id.toString(), a])).values()].map(a => ({
+      id:     a.gradoId._id.toString(),
+      _id:    a.gradoId._id.toString(),
+      nombre: a.gradoId.nombre,
+      nivel:  a.gradoId.nivel,
+      año:    a.año
+    }))) %>;
+    const FILTRO_GRADO_ACTIVO_BOL_DOC = '<%= gradoIdActivo || "" %>';
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      initFiltroGradoPicker({
+        gradosData:        GRADOS_DATA_BOL_DOC,
+        filtroGradoActivo: FILTRO_GRADO_ACTIVO_BOL_DOC,
+        formId:            'formFiltrosBoletinesDocente',
+        inputHiddenId:     'inputFiltroGradoBolDoc',
+        anioSelectName:    'periodoId',
+        triggerBtnId:      'btnFiltroGradoBolDoc',
+        panelId:           'panelFiltroGradoBolDoc',
+      });
+    });
+  </script>
   <script>lucide.createIcons();</script>
 </body>
 </html>

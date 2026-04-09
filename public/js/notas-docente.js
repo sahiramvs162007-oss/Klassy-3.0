@@ -138,3 +138,8 @@ function mostrarErrorInline(inputEl, mensaje) {
   inputEl.title = mensaje;
   inputEl.focus();
 }
+
+// ─── Paginación ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  iniciarPaginacion('tbodyNotasDocente', { filasPorPagina: 10 });
+});

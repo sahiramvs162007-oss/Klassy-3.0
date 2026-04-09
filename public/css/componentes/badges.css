@@ -1,0 +1,69 @@
+/* ══════════════════════════════════════
+   KLASSY — Badges y etiquetas
+   ══════════════════════════════════════ */
+
+/* ─── Badge base ────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+.badge svg { width: 11px; height: 11px; stroke-width: 2; margin-right: 3px; vertical-align: middle; }
+
+/* Estados */
+.badge--activo      { background-color: var(--verde-100);   color: var(--verde-600); }
+.badge--inactivo    { background-color: var(--gris-100);    color: var(--gris-500); }
+.badge--suspendido  { background-color: var(--naranja-100); color: var(--naranja-600); }
+.badge--pendiente   { background-color: var(--azul-100);    color: var(--azul-700); }
+.badge--error       { background-color: var(--rojo-100);    color: var(--rojo-600); }
+
+/* Colores adicionales (roles) */
+.badge--azul    { background-color: var(--azul-100);    color: var(--azul-700); }
+.badge--morado  { background-color: var(--morado-100);  color: var(--morado-600); }
+.badge--verde   { background-color: var(--verde-100);   color: var(--verde-600); }
+.badge--naranja { background-color: var(--naranja-100); color: var(--naranja-600); }
+
+/* Sección titulada con conteo */
+.seccion-titulo { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: #64748b; }
+.seccion-titulo svg { width: 14px; height: 14px; stroke: #94a3b8; flex-shrink: 0; }
+.seccion-conteo { display: inline-flex; align-items: center; padding: 2px 8px; background: rgba(59,130,246,0.10); color: #3b82f6; border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-left: 6px; }
+
+/* ─── Etiquetas de noticias ─────────── */
+.noticia-etiqueta {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  width: fit-content; flex-shrink: 0;
+}
+.noticia-etiqueta--drawer { font-size: 0.72rem; padding: 4px 12px; margin-bottom: 4px; }
+
+.noticia-etiqueta--anuncios       { background: #e0f2fe; color: #0369a1; }
+.noticia-etiqueta--eventos        { background: #fef9c3; color: #854d0e; }
+.noticia-etiqueta--acad-mico      { background: #ede9fe; color: #6d28d9; }
+.noticia-etiqueta--institucional  { background: #dbeafe; color: #1d4ed8; }
+.noticia-etiqueta--urgente        { background: #fee2e2; color: #b91c1c; }
+.noticia-etiqueta--clases         { background: #d1fae5; color: #065f46; }
+.noticia-etiqueta--proyectos      { background: #fce7f3; color: #9d174d; }
+.noticia-etiqueta--deportes       { background: #dcfce7; color: #15803d; }
+.noticia-etiqueta--cultura        { background: #faf0e6; color: #92400e; }
+.noticia-etiqueta--arte-y-m-sica  { background: #fdf4ff; color: #7e22ce; }
+.noticia-etiqueta--bienestar      { background: #ecfdf5; color: #047857; }
+.noticia-etiqueta--logros         { background: #fffbeb; color: #b45309; }
+
+/* Hover con box-shadow del color de etiqueta */
+.noticia-card[data-etiqueta="Anuncios"]:hover      { box-shadow: 0 18px 40px rgba(3,105,161,0.18); }
+.noticia-card[data-etiqueta="Eventos"]:hover       { box-shadow: 0 18px 40px rgba(133,77,14,0.18); }
+.noticia-card[data-etiqueta="Académico"]:hover     { box-shadow: 0 18px 40px rgba(109,40,217,0.18); }
+.noticia-card[data-etiqueta="Institucional"]:hover { box-shadow: 0 18px 40px rgba(29,78,216,0.18); }
+.noticia-card[data-etiqueta="Urgente"]:hover       { box-shadow: 0 18px 40px rgba(185,28,28,0.20); }
+.noticia-card[data-etiqueta="Clases"]:hover        { box-shadow: 0 18px 40px rgba(6,95,70,0.16); }
+.noticia-card[data-etiqueta="Proyectos"]:hover     { box-shadow: 0 18px 40px rgba(157,23,77,0.18); }
+.noticia-card[data-etiqueta="Deportes"]:hover      { box-shadow: 0 18px 40px rgba(21,128,61,0.18); }
+.noticia-card[data-etiqueta="Cultura"]:hover       { box-shadow: 0 18px 40px rgba(146,64,14,0.16); }
+.noticia-card[data-etiqueta="Arte y Música"]:hover { box-shadow: 0 18px 40px rgba(126,34,206,0.18); }
+.noticia-card[data-etiqueta="Bienestar"]:hover     { box-shadow: 0 18px 40px rgba(4,120,87,0.16); }
+.noticia-card[data-etiqueta="Logros"]:hover        { box-shadow: 0 18px 40px rgba(180,83,9,0.18); }

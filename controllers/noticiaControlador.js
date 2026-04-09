@@ -79,7 +79,7 @@ const obtenerNoticia = async (req, res) => {
 // ─── CREAR  POST /noticias ────────────────────────────────────────────────────
 const crearNoticia = async (req, res) => {
   try {
-    const { titulo, contenido, fechaPublicacion, activo } = req.body;
+    const { titulo, contenido, fechaPublicacion, activo, etiqueta } = req.body;
     const autorId = req.session.usuario._id;
 
     await Noticia.create({
@@ -89,6 +89,7 @@ const crearNoticia = async (req, res) => {
       fechaPublicacion: fechaPublicacion ? new Date(fechaPublicacion) : new Date(),
       activo:           activo !== 'false',
       imagen:           req.file ? `/uploads/noticias/${req.file.filename}` : null,
+      etiqueta:         etiqueta || 'Anuncios',
     });
 
     req.flash('exito', `Noticia "${titulo.trim()}" creada correctamente.`);
@@ -103,7 +104,7 @@ const crearNoticia = async (req, res) => {
 // ─── EDITAR  PUT /noticias/:id ────────────────────────────────────────────────
 const editarNoticia = async (req, res) => {
   try {
-    const { titulo, contenido, fechaPublicacion, activo } = req.body;
+    const { titulo, contenido, fechaPublicacion, activo, etiqueta } = req.body;
     const noticia = await Noticia.findById(req.params.id);
     if (!noticia) {
       req.flash('error', 'Noticia no encontrada.');
@@ -114,6 +115,7 @@ const editarNoticia = async (req, res) => {
     noticia.contenido        = contenido.trim();
     noticia.fechaPublicacion = fechaPublicacion ? new Date(fechaPublicacion) : noticia.fechaPublicacion;
     noticia.activo           = activo !== 'false';
+    noticia.etiqueta         = etiqueta || noticia.etiqueta;
 
     if (req.file) {
       // Borrar imagen anterior

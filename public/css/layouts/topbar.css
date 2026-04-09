@@ -1,0 +1,81 @@
+
+/* ─── Topbar ─────────────────────────────────────────────────────────────────── */
+.topbar {
+  height: var(--topbar-alto);
+  background-color: #fff;
+  border-bottom: 1px solid var(--gris-200);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.topbar__menu-btn {
+  display: none;
+  padding: 6px;
+  border-radius: var(--radio);
+  color: var(--gris-500);
+  transition: background-color var(--trans-rapida);
+}
+
+.topbar__menu-btn:hover {
+  background-color: var(--gris-100);
+}
+
+.topbar__breadcrumb {
+  flex: 1;
+}
+
+.topbar__pagina {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--gris-700);
+}
+
+.topbar__acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar__usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar__avatar {
+  width: 34px;
+  height: 34px;
+  background-color: var(--azul-600);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.topbar__info-usuario {
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar__nombre {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--gris-900);
+  line-height: 1.2;
+}
+
+.topbar__rol {
+  font-size: 0.7rem;
+  color: var(--gris-500);
+  text-transform: capitalize;
+  line-height: 1.2;
+}
