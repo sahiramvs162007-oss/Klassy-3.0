@@ -374,37 +374,5 @@
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
   <script src="/js/actividades-docente.js"></script>
-  <script>
-  // ── Picker de grado multinivel ────────────────────────────────────────────
-  function mostrarSalones(mId, nivel) {
-    // Ocultar paso 1
-    const paso1 = document.getElementById('paso1-' + mId);
-    if (paso1) paso1.style.display = 'none';
-    // Mostrar el paso 2 del nivel correcto
-    const salones = document.getElementById('salones-' + mId + '-' + nivel);
-    if (salones) {
-      salones.style.display = 'block';
-      // Animación entrada
-      salones.style.animation = 'none';
-      salones.offsetHeight; // reflow
-      salones.style.animation = 'pickerSlideIn 0.2s ease';
-    }
-  }
-
-  function volverNiveles(mId, nivel) {
-    // Ocultar paso 2
-    const salones = document.getElementById('salones-' + mId + '-' + nivel);
-    if (salones) salones.style.display = 'none';
-    // Mostrar paso 1
-    const paso1 = document.getElementById('paso1-' + mId);
-    if (paso1) {
-      paso1.style.display = '';
-      paso1.style.animation = 'none';
-      paso1.offsetHeight;
-      paso1.style.animation = 'pickerSlideIn 0.18s ease';
-    }
-  }
-  lucide.createIcons();
-  </script>
 </body>
 </html>
