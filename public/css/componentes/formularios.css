@@ -297,3 +297,418 @@ input, select, textarea {
     width: 100%;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   KLASSY — Filtro de grado en dos pasos (Matrículas)
+   ═══════════════════════════════════════════════════════ */
+
+/* Sub-panel de salones (1°A, 1°B, etc.) */
+.filtro-salon__panel {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  animation: slideInLeft 0.18s ease;
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.filtro-salon__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filtro-salon__volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(209, 213, 219, 0.7);
+  background: rgba(255,255,255,0.6);
+  color: var(--gris-500);
+  font-size: 0.78rem;
+  font-family: var(--fuente-ui);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filtro-salon__volver:hover {
+  background: rgba(239,246,255,0.8);
+  border-color: var(--azul-300);
+  color: var(--azul-700);
+}
+
+.filtro-salon__volver svg {
+  width: 12px;
+  height: 12px;
+}
+
+.filtro-salon__titulo {
+  font-size: 0.82rem;
+  font-family: var(--fuente-ui);
+  font-weight: 600;
+  color: var(--gris-600);
+}
+
+/* Chip deshabilitado (nivel sin grados) */
+.nivel-chip--disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   KLASSY — Picker de grado en drawer (Crear matrícula / asignación)
+   ═══════════════════════════════════════════════════════ */
+
+/* Contenedor del picker embebido dentro del formulario */
+.grado-picker {
+  border: 1px solid rgba(209,213,219,0.7);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.5);
+}
+
+/* Cabecera: muestra el grado seleccionado o placeholder */
+.grado-picker__display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-family: var(--fuente-ui);
+  font-size: 0.855rem;
+  color: var(--gris-500);
+  transition: background 0.15s;
+  user-select: none;
+}
+.grado-picker__display:hover { background: rgba(239,246,255,0.6); }
+.grado-picker__display svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--azul-500); }
+.grado-picker__display span { flex: 1; }
+.grado-picker__display--seleccionado { color: var(--gris-800); font-weight: 500; }
+
+.grado-picker__chevron { transition: transform 0.18s; color: var(--gris-400); }
+.grado-picker__chevron--abierto { transform: rotate(180deg); }
+
+/* Panel desplegable dentro del picker */
+.grado-picker__panel {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 14px 14px;
+  border-top: 1px solid rgba(209,213,219,0.5);
+  background: rgba(249,250,251,0.6);
+  animation: slideInLeft 0.16s ease;
+}
+.grado-picker__panel--abierto { display: flex; }
+
+/* Sub-panel de salones dentro del picker */
+.grado-picker__salon-panel {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  animation: slideInLeft 0.16s ease;
+}
+.grado-picker__salon-panel--visible { display: flex; }
+
+.grado-picker__salon-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.grado-picker__volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 7px;
+  border: 1px solid rgba(209,213,219,0.7);
+  background: rgba(255,255,255,0.7);
+  color: var(--gris-500);
+  font-size: 0.76rem;
+  font-family: var(--fuente-ui);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.grado-picker__volver:hover { background: rgba(239,246,255,0.9); border-color: var(--azul-300); color: var(--azul-700); }
+.grado-picker__volver svg { width: 11px; height: 11px; }
+
+.grado-picker__salon-titulo {
+  font-size: 0.8rem;
+  font-family: var(--fuente-ui);
+  font-weight: 600;
+  color: var(--gris-600);
+}
+
+/* Chip seleccionado en picker */
+.nivel-chip--picker-activo-primaria {
+  background: var(--verde-600) !important;
+  border-color: var(--verde-600) !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+.nivel-chip--picker-activo-secundaria {
+  background: var(--azul-600) !important;
+  border-color: var(--azul-600) !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+.nivel-chip--picker-activo-media {
+  background: var(--morado-600) !important;
+  border-color: var(--morado-600) !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+
+/* Mensaje de sin salones */
+.grado-picker__vacio {
+  font-size: 0.8rem;
+  color: var(--gris-400);
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════
+   KLASSY — Filtro de docente con búsqueda (Asignaciones)
+   ═══════════════════════════════════════════════════════ */
+
+/* Buscador interno */
+.filtro-docente__buscar {
+  position: relative;
+  width: 100%;
+}
+
+.filtro-docente__icono {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--azul-400);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.filtro-docente__entrada {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  border: 1px solid rgba(209,213,219,0.8);
+  border-radius: 10px;
+  font-size: 0.845rem;
+  font-family: var(--fuente-ui);
+  color: var(--gris-800);
+  background: rgba(255,255,255,0.7);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.filtro-docente__entrada:focus {
+  outline: none;
+  border-color: var(--azul-400);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  background: rgba(255,255,255,0.95);
+}
+
+.filtro-docente__entrada::placeholder {
+  color: var(--gris-400);
+}
+
+/* Lista de chips */
+.filtro-docente__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.filtro-docente__lista::-webkit-scrollbar {
+  width: 4px;
+}
+.filtro-docente__lista::-webkit-scrollbar-track {
+  background: transparent;
+}
+.filtro-docente__lista::-webkit-scrollbar-thumb {
+  background: rgba(209,213,219,0.8);
+  border-radius: 4px;
+}
+
+/* Chip de cada docente */
+.filtro-docente__chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-family: var(--fuente-ui);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.13s, border-color 0.13s;
+}
+
+.filtro-docente__chip:hover {
+  background: rgba(239,246,255,0.7);
+  border-color: rgba(191,219,254,0.6);
+}
+
+.filtro-docente__chip--activo {
+  background: rgba(219,234,254,0.5);
+  border-color: rgba(147,197,253,0.7);
+}
+
+/* Avatar del docente */
+.filtro-docente__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--azul-500), var(--azul-700));
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--fuente-ui);
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+
+/* Info del docente */
+.filtro-docente__info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.filtro-docente__nombre {
+  font-size: 0.845rem;
+  font-weight: 500;
+  color: var(--gris-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filtro-docente__profesion {
+  font-size: 0.75rem;
+  color: var(--gris-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Check de seleccionado */
+.filtro-docente__check {
+  width: 14px;
+  height: 14px;
+  color: var(--azul-600);
+  flex-shrink: 0;
+}
+
+/* Mensaje vacío */
+.filtro-docente__vacio {
+  font-size: 0.82rem;
+  color: var(--gris-400);
+  text-align: center;
+  padding: 10px 0;
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════
+   KLASSY — Picker docente en drawer (Nueva asignación)
+   + Fix color avatar → verde (coherente con tabla)
+   ═══════════════════════════════════════════════════════ */
+
+/* Contenedor del picker embebido */
+.campo-docente-picker {
+  border: 1px solid rgba(209,213,219,0.7);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.5);
+}
+
+.picker-docente {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Buscador dentro del drawer */
+.picker-docente__buscar {
+  position: relative;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(209,213,219,0.4);
+}
+
+.picker-docente__icono {
+  position: absolute;
+  left: 23px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--azul-400);
+  pointer-events: none;
+}
+
+/* Lista scrollable en drawer */
+.picker-docente__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.picker-docente__lista::-webkit-scrollbar { width: 4px; }
+.picker-docente__lista::-webkit-scrollbar-track { background: transparent; }
+.picker-docente__lista::-webkit-scrollbar-thumb {
+  background: rgba(209,213,219,0.8);
+  border-radius: 4px;
+}
+
+/* Chip dentro del drawer — sin borde, separado por hover */
+.filtro-docente__chip--drawer {
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid rgba(209,213,219,0.25);
+  padding: 9px 12px;
+}
+.filtro-docente__chip--drawer:last-child { border-bottom: none; }
+.filtro-docente__chip--drawer:hover { background: rgba(240,253,244,0.7); border-color: transparent; }
+.filtro-docente__chip--drawer.filtro-docente__chip--activo { background: rgba(220,252,231,0.6); }
+
+/* ── Avatar VERDE (coherente con la tabla) ─── */
+.filtro-docente__avatar {
+  background: linear-gradient(135deg, var(--verde-500, #22c55e), var(--verde-700, #15803d)) !important;
+}
+
+/* Variante explícita verde para el picker del drawer */
+.filtro-docente__avatar--verde {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e, #15803d);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--fuente-ui);
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
