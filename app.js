@@ -24,6 +24,7 @@ const rutasNotas          = require('./routes/notas');
 const rutasBoletines      = require('./routes/boletines');
 const rutasNoticias       = require('./routes/noticias');
 const rutasRetiros        = require('./routes/retiros');
+const rutasHistorial      = require('./routes/historial');
 
 
 conectarDB();
@@ -82,6 +83,7 @@ app.use('/notas',         rutasNotas);
 app.use('/boletines',     rutasBoletines);
 app.use('/noticias',      rutasNoticias);
 app.use('/retiros',       rutasRetiros);
+app.use('/historial',     rutasHistorial);
 
 // ─── 404 ───────────────────────────────────────────────────────────────────────
 app.use((req, res) => {

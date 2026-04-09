@@ -7,6 +7,7 @@ const { Noticia } = require('../models');
 const multer = require('multer');
 const path   = require('path');
 const fs     = require('fs');
+const { registrarCambio } = require('../middlewares/registrarHistorial');
 
 // ─── Storage multer ───────────────────────────────────────────────────────────
 const storage = multer.diskStorage({
@@ -79,7 +80,7 @@ const obtenerNoticia = async (req, res) => {
 // ─── CREAR  POST /noticias ────────────────────────────────────────────────────
 const crearNoticia = async (req, res) => {
   try {
-    const { titulo, contenido, fechaPublicacion, activo, etiqueta } = req.body;
+    const { titulo, contenido, fechaPublicacion, activo } = req.body;
     const autorId = req.session.usuario._id;
 
     await Noticia.create({
@@ -89,7 +90,6 @@ const crearNoticia = async (req, res) => {
       fechaPublicacion: fechaPublicacion ? new Date(fechaPublicacion) : new Date(),
       activo:           activo !== 'false',
       imagen:           req.file ? `/uploads/noticias/${req.file.filename}` : null,
-      etiqueta:         etiqueta || 'Anuncios',
     });
 
     req.flash('exito', `Noticia "${titulo.trim()}" creada correctamente.`);
@@ -104,21 +104,25 @@ const crearNoticia = async (req, res) => {
 // ─── EDITAR  PUT /noticias/:id ────────────────────────────────────────────────
 const editarNoticia = async (req, res) => {
   try {
-    const { titulo, contenido, fechaPublicacion, activo, etiqueta } = req.body;
+    const { titulo, contenido, fechaPublicacion, activo } = req.body;
     const noticia = await Noticia.findById(req.params.id);
     if (!noticia) {
       req.flash('error', 'Noticia no encontrada.');
       return res.redirect('/noticias');
     }
 
+    const snapAntes = {
+      titulo: noticia.titulo,
+      activo: noticia.activo,
+      imagen: noticia.imagen || null,
+    };
+
     noticia.titulo           = titulo.trim();
     noticia.contenido        = contenido.trim();
     noticia.fechaPublicacion = fechaPublicacion ? new Date(fechaPublicacion) : noticia.fechaPublicacion;
     noticia.activo           = activo !== 'false';
-    noticia.etiqueta         = etiqueta || noticia.etiqueta;
 
     if (req.file) {
-      // Borrar imagen anterior
       if (noticia.imagen) {
         const ruta = path.join(__dirname, '../public', noticia.imagen);
         if (fs.existsSync(ruta)) fs.unlinkSync(ruta);
@@ -127,6 +131,19 @@ const editarNoticia = async (req, res) => {
     }
 
     await noticia.save();
+
+    const cambios = {};
+    if (snapAntes.titulo !== noticia.titulo) cambios.titulo = { antes: snapAntes.titulo, despues: noticia.titulo };
+    if (snapAntes.activo !== noticia.activo) cambios.activo = { antes: snapAntes.activo, despues: noticia.activo };
+    if (req.file) cambios.imagen = { antes: snapAntes.imagen, despues: noticia.imagen };
+
+    await registrarCambio(req, {
+      accion:    'EDITAR_NOTICIA',
+      entidad:   'Noticia',
+      entidadId: noticia._id,
+      cambios,
+    });
+
     req.flash('exito', `Noticia "${noticia.titulo}" actualizada.`);
     res.redirect('/noticias');
   } catch (error) {

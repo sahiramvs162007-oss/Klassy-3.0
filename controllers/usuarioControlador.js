@@ -6,6 +6,7 @@
 
 const { Usuario } = require('../models');
 const XLSX = require('xlsx');
+const { registrarCambio } = require('../middlewares/registrarHistorial');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LISTAR  GET /usuarios
@@ -208,7 +209,41 @@ const editarUsuario = async (req, res) => {
       // El pre-save hook de bcrypt re-hashea automáticamente
     }
 
+    // Capturar valores anteriores antes de guardar
+    const snap = {
+      nombre:            `${nombre.trim()} ${apellido.trim()}`,
+      correo:            correo.toLowerCase().trim(),
+      rol:               rolNuevo,
+      activo:            activo === 'true' || activo === true,
+      documentoIdentidad: documentoIdentidad ? documentoIdentidad.trim() : null,
+    };
+    const snapAntes = {
+      nombre:            `${usuario.nombre} ${usuario.apellido}`,
+      correo:            usuario.correo,
+      rol:               usuario.rol,
+      activo:            usuario.activo,
+      documentoIdentidad: usuario.documentoIdentidad || null,
+    };
+
     await usuario.save();
+
+    // Construir objeto cambios { campo: { antes, despues } } solo con los que cambiaron
+    const cambios = {};
+    for (const campo of ['nombre', 'correo', 'rol', 'activo', 'documentoIdentidad']) {
+      const a = String(snapAntes[campo] ?? '');
+      const d = String(snap[campo] ?? '');
+      if (a !== d) cambios[campo] = { antes: snapAntes[campo], despues: snap[campo] };
+    }
+    if (contrasena && contrasena.trim() !== '') {
+      cambios['contrasena'] = { antes: '***', despues: '*** (actualizada)' };
+    }
+
+    await registrarCambio(req, {
+      accion:    'EDITAR_USUARIO',
+      entidad:   'Usuario',
+      entidadId: usuario._id,
+      cambios,
+    });
 
     req.flash('exito', `Usuario ${usuario.nombreCompleto} actualizado correctamente.`);
     res.redirect('/usuarios');

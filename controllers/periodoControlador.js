@@ -6,6 +6,7 @@
  */
 
 const { Periodo } = require('../models');
+const { registrarCambio } = require('../middlewares/registrarHistorial');
 
 // ─── LISTAR  GET /periodos ────────────────────────────────────────────────────
 const listarPeriodos = async (req, res) => {
@@ -129,6 +130,14 @@ const editarPeriodo = async (req, res) => {
       return res.redirect('/periodos');
     }
 
+    const snapAntes = {
+      nombre:      periodo.nombre,
+      numero:      periodo.numero,
+      año:         periodo.año,
+      fechaInicio: periodo.fechaInicio?.toISOString(),
+      fechaFin:    periodo.fechaFin?.toISOString(),
+    };
+
     periodo.nombre      = nombre.trim();
     periodo.numero      = parseInt(numero, 10);
     periodo.año         = parseInt(año, 10);
@@ -136,6 +145,20 @@ const editarPeriodo = async (req, res) => {
     periodo.fechaFin    = new Date(fechaFin);
 
     await periodo.save();
+
+    const cambios = {};
+    if (snapAntes.nombre !== periodo.nombre)   cambios.nombre      = { antes: snapAntes.nombre,  despues: periodo.nombre };
+    if (snapAntes.numero !== periodo.numero)   cambios.numero      = { antes: snapAntes.numero,  despues: periodo.numero };
+    if (snapAntes.año    !== periodo.año)      cambios.año         = { antes: snapAntes.año,     despues: periodo.año };
+    if (snapAntes.fechaInicio !== periodo.fechaInicio.toISOString()) cambios.fechaInicio = { antes: snapAntes.fechaInicio, despues: periodo.fechaInicio.toISOString() };
+    if (snapAntes.fechaFin    !== periodo.fechaFin.toISOString())    cambios.fechaFin    = { antes: snapAntes.fechaFin,    despues: periodo.fechaFin.toISOString() };
+
+    await registrarCambio(req, {
+      accion:    'EDITAR_PERIODO',
+      entidad:   'Periodo',
+      entidadId: periodo._id,
+      cambios,
+    });
 
     req.flash('exito', `Periodo "${periodo.nombre}" actualizado correctamente.`);
     res.redirect('/periodos');
@@ -166,6 +189,15 @@ const cerrarPeriodo = async (req, res) => {
 
     periodo.activo = false;
     await periodo.save();
+
+    await registrarCambio(req, {
+      accion:    'CERRAR_PERIODO',
+      entidad:   'Periodo',
+      entidadId: periodo._id,
+      cambios: {
+        activo: { antes: true, despues: false },
+      },
+    });
 
     // Sprint 11: Generar boletines automáticamente
     const { cerrarPeriodo: generarBoletines } = require('../services/boletinServicio');

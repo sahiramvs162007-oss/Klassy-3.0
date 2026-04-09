@@ -10,6 +10,7 @@
  */
 
 const { AsignacionDocente, Usuario, Grado, Materia } = require('../models');
+const { registrarCambio } = require('../middlewares/registrarHistorial');
 
 // ─── LISTAR  GET /asignaciones ────────────────────────────────────────────────
 const listarAsignaciones = async (req, res) => {
@@ -174,11 +175,24 @@ const editarAsignacion = async (req, res) => {
       return res.redirect('/asignaciones');
     }
 
+    const estadoAnterior = asignacion.estado;
+
     asignacion.estado = estado;
     await asignacion.save();
 
+    const docenteNombre = `${asignacion.docenteId.nombre} ${asignacion.docenteId.apellido}`;
+
+    await registrarCambio(req, {
+      accion:    'EDITAR_ASIGNACION',
+      entidad:   'AsignacionDocente',
+      entidadId: asignacion._id,
+      cambios: {
+        estado: { antes: estadoAnterior, despues: estado },
+      },
+    });
+
     req.flash('exito',
-      `Asignación de ${asignacion.docenteId.nombre} ${asignacion.docenteId.apellido} ` +
+      `Asignación de ${docenteNombre} ` +
       `actualizada a estado: ${estado}.`
     );
     res.redirect('/asignaciones');

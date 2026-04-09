@@ -23,6 +23,9 @@ const {
   AsignacionDocente, Matricula, Grado, Materia, Periodo, Usuario,
 } = require('../models');
 
+// ─── Historial ────────────────────────────────────────────────────────────────
+const { registrarCambio } = require('../middlewares/registrarHistorial');
+
 const AÑO_ACTUAL = new Date().getFullYear();
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -180,11 +183,38 @@ const editarNotaDocente = async (req, res) => {
       return res.status(400).json({ ok: false, error: 'La nota debe estar entre 1.0 y 5.0' });
     }
 
+    // Guardar valor anterior para el historial
+    const valorAnterior = nota.valor;
+
     nota.valor = valorNum;
     await nota.save();
 
     // Actualizar también la EntregaActividad
     await EntregaActividad.findByIdAndUpdate(nota.entregaActividadId, { nota: valorNum });
+
+    // ── Registrar en el historial ─────────────────────────────────────────
+    // Enriquecer con nombres legibles para la descripción
+    const [actividad, materia, estudiante] = await Promise.all([
+      Actividad.findById(nota.actividadId).select('titulo'),
+      Materia.findById(nota.materiaId).select('nombre'),
+      Usuario.findById(nota.estudianteId).select('nombre apellido'),
+    ]);
+
+    const nombreUsuario    = `${req.session.usuario.nombre} ${req.session.usuario.apellido}`.trim();
+    const correoUsuario    = req.session.usuario.correo;
+    const rolUsuario       = req.session.usuario.rol;
+    const nombreEstudiante = estudiante ? `${estudiante.nombre} ${estudiante.apellido}` : 'Estudiante desconocido';
+    const nombreMateria    = materia?.nombre    || 'Materia desconocida';
+    const nombreActividad  = actividad?.titulo  || 'Actividad desconocida';
+
+    await registrarCambio(req, {
+      accion:    'EDITAR_NOTA',
+      entidad:   'Nota',
+      entidadId: nota._id,
+      cambios: {
+        valor: { antes: valorAnterior, despues: valorNum },
+      },
+    });
 
     res.json({ ok: true, valor: valorNum });
   } catch (error) {
@@ -347,10 +377,36 @@ const editarNotaAdmin = async (req, res) => {
       return res.status(400).json({ ok: false, error: 'La nota debe estar entre 1.0 y 5.0' });
     }
 
+    // Guardar valor anterior para el historial
+    const valorAnterior = nota.valor;
+
     nota.valor = valorNum;
     await nota.save();
 
     await EntregaActividad.findByIdAndUpdate(nota.entregaActividadId, { nota: valorNum });
+
+    // ── Registrar en el historial ─────────────────────────────────────────
+    const [actividad, materia, estudiante] = await Promise.all([
+      Actividad.findById(nota.actividadId).select('titulo'),
+      Materia.findById(nota.materiaId).select('nombre'),
+      Usuario.findById(nota.estudianteId).select('nombre apellido'),
+    ]);
+
+    const nombreUsuario    = `${req.session.usuario.nombre} ${req.session.usuario.apellido}`.trim();
+    const correoUsuario    = req.session.usuario.correo;
+    const rolUsuario       = req.session.usuario.rol;
+    const nombreEstudiante = estudiante ? `${estudiante.nombre} ${estudiante.apellido}` : 'Estudiante desconocido';
+    const nombreMateria    = materia?.nombre   || 'Materia desconocida';
+    const nombreActividad  = actividad?.titulo || 'Actividad desconocida';
+
+    await registrarCambio(req, {
+      accion:    'EDITAR_NOTA',
+      entidad:   'Nota',
+      entidadId: nota._id,
+      cambios: {
+        valor: { antes: valorAnterior, despues: valorNum },
+      },
+    });
 
     res.json({ ok: true, valor: valorNum });
   } catch (error) {

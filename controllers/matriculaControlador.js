@@ -16,6 +16,7 @@
  */
 
 const { Matricula, Usuario, Grado, ResultadoAnual, Periodo } = require('../models');
+const { registrarCambio } = require('../middlewares/registrarHistorial');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -233,7 +234,12 @@ const editarMatricula = async (req, res) => {
       return res.redirect('/matriculas');
     }
 
-    // Si se cambia el grado, validar cupo
+    const snapAntes = {
+      estado:    matricula.estado,
+      gradoId:   matricula.gradoId?.toString(),
+    };
+    let nuevoGradoNombre = null;
+
     if (gradoId && gradoId !== matricula.gradoId.toString()) {
       const nuevoGrado = await Grado.findById(gradoId);
       if (!nuevoGrado) {
@@ -247,8 +253,9 @@ const editarMatricula = async (req, res) => {
           return res.redirect('/matriculas');
         }
       }
-      matricula.gradoId       = gradoId;
+      matricula.gradoId        = gradoId;
       matricula.nivelAcademico = nuevoGrado.nivel;
+      nuevoGradoNombre = nuevoGrado.nombre;
     }
 
     if (estado) matricula.estado = estado;
@@ -256,7 +263,19 @@ const editarMatricula = async (req, res) => {
 
     await matricula.save();
 
-    req.flash('exito', `Matrícula de ${matricula.estudianteId.nombre} ${matricula.estudianteId.apellido} actualizada.`);
+    const estudianteNombre = `${matricula.estudianteId.nombre} ${matricula.estudianteId.apellido}`;
+    const cambios = {};
+    if (snapAntes.estado !== matricula.estado) cambios.estado = { antes: snapAntes.estado, despues: matricula.estado };
+    if (nuevoGradoNombre) cambios.gradoId = { antes: snapAntes.gradoId, despues: matricula.gradoId.toString() };
+
+    await registrarCambio(req, {
+      accion:    'EDITAR_MATRICULA',
+      entidad:   'Matricula',
+      entidadId: matricula._id,
+      cambios,
+    });
+
+    req.flash('exito', `Matrícula de ${estudianteNombre} actualizada.`);
     res.redirect('/matriculas');
   } catch (error) {
     console.error('Error al editar matrícula:', error);

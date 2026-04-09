@@ -4,6 +4,7 @@
  */
 
 const { Materia, Grado } = require('../models');
+const { registrarCambio } = require('../middlewares/registrarHistorial');
 
 // ─── LISTAR  GET /materias ────────────────────────────────────────────────────
 const listarMaterias = async (req, res) => {
@@ -90,11 +91,27 @@ const editarMateria = async (req, res) => {
       return res.redirect('/materias');
     }
 
+    const snapAntes = {
+      nombre: materia.nombre,
+      activo: materia.activo,
+    };
+
     materia.nombre      = nombre.trim();
     materia.descripcion = descripcion ? descripcion.trim() : '';
     materia.activo      = activo === 'true';
 
     await materia.save();
+
+    const cambios = {};
+    if (snapAntes.nombre !== materia.nombre) cambios.nombre = { antes: snapAntes.nombre, despues: materia.nombre };
+    if (snapAntes.activo !== materia.activo) cambios.activo = { antes: snapAntes.activo, despues: materia.activo };
+
+    await registrarCambio(req, {
+      accion:    'EDITAR_MATERIA',
+      entidad:   'Materia',
+      entidadId: materia._id,
+      cambios,
+    });
 
     req.flash('exito', `Materia "${materia.nombre}" actualizada correctamente.`);
     res.redirect('/materias');

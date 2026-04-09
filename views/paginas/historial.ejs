@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Historial de Cambios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Fraunces:wght@700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <style>
+    .historial-cabecera {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .historial-filtros {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      align-items: flex-end;
+    }
+    .historial-filtros input {
+      padding: 8px 12px;
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      background: var(--fondo-tarjeta);
+      color: var(--texto);
+      min-width: 160px;
+    }
+    .historial-filtros input:focus {
+      outline: none;
+      border-color: var(--primario);
+    }
+    .historial-tabla-wrap {
+      overflow-x: auto;
+      background: var(--fondo-tarjeta);
+      border-radius: 12px;
+      border: 1px solid var(--borde);
+    }
+    .historial-tabla {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+    }
+    .historial-tabla thead tr {
+      background: var(--fondo);
+      border-bottom: 2px solid var(--borde);
+    }
+    .historial-tabla th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--texto-secundario);
+      white-space: nowrap;
+    }
+    .historial-tabla td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--borde);
+      vertical-align: middle;
+    }
+    .historial-tabla tr:last-child td { border-bottom: none; }
+    .historial-tabla tr:hover td { background: var(--fondo); }
+
+    .badge-accion {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-accion--usuario    { background: #dbeafe; color: #1d4ed8; }
+    .badge-accion--nota       { background: #dcfce7; color: #15803d; }
+    .badge-accion--grado      { background: #fef9c3; color: #a16207; }
+    .badge-accion--materia    { background: #ffedd5; color: #c2410c; }
+    .badge-accion--periodo    { background: #f3e8ff; color: #7e22ce; }
+    .badge-accion--actividad  { background: #cffafe; color: #0e7490; }
+    .badge-accion--matricula  { background: #fce7f3; color: #be185d; }
+    .badge-accion--asignacion { background: #e0e7ff; color: #4338ca; }
+    .badge-accion--otro       { background: #f1f5f9; color: #475569; }
+
+    .campo-valor {
+      font-family: monospace;
+      font-size: 0.8rem;
+    }
+    .campo-antes { color: #ef4444; }
+    .campo-despues { color: #16a34a; }
+    .flecha { color: var(--texto-secundario); margin: 0 4px; }
+
+    .paginacion {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .paginacion__info { font-size: 0.85rem; color: var(--texto-secundario); }
+    .paginacion__botones { display: flex; gap: 6px; }
+    .paginacion__botones a {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--borde);
+      font-size: 0.83rem;
+      text-decoration: none;
+      color: var(--texto);
+      background: var(--fondo-tarjeta);
+    }
+    .paginacion__botones a:hover { background: var(--fondo); }
+    .paginacion__botones a.activo {
+      background: var(--primario);
+      color: #fff;
+      border-color: var(--primario);
+    }
+
+    .vacio {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--texto-secundario);
+    }
+    .vacio i { width: 48px; height: 48px; margin-bottom: 12px; opacity: .4; }
+  </style>
+</head>
+<body>
+  <%- include('../partials/sidebar') %>
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+    <main class="contenido">
+
+      <% if (mensajeExito && mensajeExito.length > 0) { %>
+        <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
+      <% } %>
+      <% if (mensajeError && mensajeError.length > 0) { %>
+        <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
+      <% } %>
+
+      <!-- Cabecera -->
+      <div class="historial-cabecera">
+        <div>
+          <h1 class="cabecera-pagina__titulo">Historial de Cambios</h1>
+          <p class="cabecera-pagina__subtitulo">Total de registros: <strong><%= total %></strong></p>
+        </div>
+        <a href="/historial/descargar" class="btn btn--secundario">
+          <i data-lucide="download"></i> Descargar .log
+        </a>
+      </div>
+
+      <!-- Filtros -->
+      <form method="GET" action="/historial" class="historial-filtros">
+        <input
+          type="text"
+          name="accion"
+          placeholder="Acción (ej: EDITAR_USUARIO)"
+          value="<%= filtros.accion || '' %>"
+        />
+        <input
+          type="text"
+          name="usuario"
+          placeholder="Nombre o correo del usuario"
+          value="<%= filtros.usuario || '' %>"
+        />
+        <input
+          type="text"
+          name="campo"
+          placeholder="Campo (ej: correo, rol)"
+          value="<%= filtros.campo || '' %>"
+        />
+        <button type="submit" class="btn btn--primario">
+          <i data-lucide="search"></i> Filtrar
+        </button>
+        <a href="/historial" class="btn btn--secundario">
+          <i data-lucide="x"></i> Limpiar
+        </a>
+      </form>
+
+      <!-- Tabla -->
+      <% if (lineas.length === 0) { %>
+        <div class="vacio">
+          <i data-lucide="clock"></i>
+          <p>No hay registros en el historial todavía.</p>
+        </div>
+      <% } else { %>
+        <div class="historial-tabla-wrap">
+          <table class="historial-tabla">
+            <thead>
+              <tr>
+                <th>Fecha y hora</th>
+                <th>Acción</th>
+                <th>Usuario</th>
+                <th>Campo</th>
+                <th>Antes → Después</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% lineas.forEach(linea => { %>
+                <%
+                  // Parsear: [2026-04-08 6:00pm] ACCION | usuario: X | campo: Y | antes: A | despues: B
+                  const matchFecha   = linea.match(/^\[([^\]]+)\]/);
+                  const matchAccion  = linea.match(/\]\s+([A-Z_]+)\s+\|/);
+                  const matchUsuario = linea.match(/usuario:\s*([^|]+)/);
+                  const matchCampo   = linea.match(/campo:\s*([^|]+)/);
+                  const matchAntes   = linea.match(/antes:\s*([^|]+)/);
+                  const matchDespues = linea.match(/despues:\s*(.+)$/);
+
+                  const fecha   = matchFecha   ? matchFecha[1].trim()   : '—';
+                  const accion  = matchAccion  ? matchAccion[1].trim()  : '—';
+                  const usuario = matchUsuario ? matchUsuario[1].trim() : '—';
+                  const campo   = matchCampo   ? matchCampo[1].trim()   : '—';
+                  const antes   = matchAntes   ? matchAntes[1].trim()   : '—';
+                  const despues = matchDespues ? matchDespues[1].trim() : '—';
+
+                  // Color del badge según acción
+                  let badgeClase = 'badge-accion--otro';
+                  if (accion.includes('USUARIO'))    badgeClase = 'badge-accion--usuario';
+                  else if (accion.includes('NOTA'))  badgeClase = 'badge-accion--nota';
+                  else if (accion.includes('GRADO')) badgeClase = 'badge-accion--grado';
+                  else if (accion.includes('MATERIA'))   badgeClase = 'badge-accion--materia';
+                  else if (accion.includes('PERIODO'))   badgeClase = 'badge-accion--periodo';
+                  else if (accion.includes('ACTIVIDAD')) badgeClase = 'badge-accion--actividad';
+                  else if (accion.includes('MATRICULA')) badgeClase = 'badge-accion--matricula';
+                  else if (accion.includes('ASIGNACION'))badgeClase = 'badge-accion--asignacion';
+                %>
+                <tr>
+                  <td style="white-space:nowrap;color:var(--texto-secundario)"><%= fecha %></td>
+                  <td><span class="badge-accion <%= badgeClase %>"><%= accion %></span></td>
+                  <td><%= usuario %></td>
+                  <td><code style="font-size:0.8rem"><%= campo %></code></td>
+                  <td class="campo-valor">
+                    <span class="campo-antes"><%= antes %></span>
+                    <span class="flecha">→</span>
+                    <span class="campo-despues"><%= despues %></span>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginación -->
+        <% if (totalPaginas > 1) { %>
+          <div class="paginacion">
+            <span class="paginacion__info">
+              Página <%= pagina %> de <%= totalPaginas %> &nbsp;·&nbsp; <%= total %> registros
+            </span>
+            <div class="paginacion__botones">
+              <% if (pagina > 1) { %>
+                <a href="/historial?pagina=<%= pagina - 1 %>&accion=<%= filtros.accion||'' %>&usuario=<%= filtros.usuario||'' %>&campo=<%= filtros.campo||'' %>">
+                  <i data-lucide="chevron-left"></i> Anterior
+                </a>
+              <% } %>
+              <% if (pagina < totalPaginas) { %>
+                <a href="/historial?pagina=<%= pagina + 1 %>&accion=<%= filtros.accion||'' %>&usuario=<%= filtros.usuario||'' %>&campo=<%= filtros.campo||'' %>">
+                  Siguiente <i data-lucide="chevron-right"></i>
+                </a>
+              <% } %>
+            </div>
+          </div>
+        <% } %>
+      <% } %>
+
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/notificaciones.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -4,6 +4,7 @@
  */
 
 const { Grado, Materia, Matricula } = require('../models');
+const { registrarCambio } = require('../middlewares/registrarHistorial');
 
 // ─── LISTAR  GET /grados ──────────────────────────────────────────────────────
 const listarGrados = async (req, res) => {
@@ -136,6 +137,14 @@ const editarGrado = async (req, res) => {
       ? Array.isArray(materias) ? materias : [materias]
       : [];
 
+    const snapAntes = {
+      nombre: grado.nombre,
+      nivel:  grado.nivel,
+      año:    grado.año,
+      activo: grado.activo,
+      cupo:   grado.cupo,
+    };
+
     grado.nombre   = nombre.trim();
     grado.nivel    = parseInt(nivel, 10);
     grado.año      = parseInt(año, 10);
@@ -144,6 +153,20 @@ const editarGrado = async (req, res) => {
     grado.activo   = activo === 'true';
 
     await grado.save();
+
+    const cambios = {};
+    if (snapAntes.nombre !== grado.nombre) cambios.nombre = { antes: snapAntes.nombre, despues: grado.nombre };
+    if (snapAntes.nivel  !== grado.nivel)  cambios.nivel  = { antes: snapAntes.nivel,  despues: grado.nivel };
+    if (snapAntes.año    !== grado.año)    cambios.año    = { antes: snapAntes.año,    despues: grado.año };
+    if (snapAntes.activo !== grado.activo) cambios.activo = { antes: snapAntes.activo, despues: grado.activo };
+    if (snapAntes.cupo   !== grado.cupo)   cambios.cupo   = { antes: snapAntes.cupo,   despues: grado.cupo };
+
+    await registrarCambio(req, {
+      accion:    'EDITAR_GRADO',
+      entidad:   'Grado',
+      entidadId: grado._id,
+      cambios,
+    });
 
     req.flash('exito', `Grado "${grado.nombre}" actualizado correctamente.`);
     res.redirect('/grados');

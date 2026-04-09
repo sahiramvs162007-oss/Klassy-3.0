@@ -26,6 +26,7 @@ const {
 
 const { crearNotificacion, crearNotificacionMasiva } = require('../services/notificacionServicio');
 const { mapearArchivo } = require('../config/multer');
+const { registrarCambio } = require('../middlewares/registrarHistorial');
 
 const AÑO_ACTUAL = new Date().getFullYear();
 
@@ -308,6 +309,11 @@ const editarActividad = async (req, res) => {
       return res.redirect(`/actividades/docente/${id}`);
     }
 
+    const snapAntes = {
+      titulo:      actividad.titulo,
+      fechaLimite: actividad.fechaLimite?.toISOString(),
+    };
+
     actividad.titulo      = titulo.trim();
     actividad.descripcion = descripcion ? descripcion.trim() : '';
     actividad.fechaLimite = new Date(fechaLimite);
@@ -318,6 +324,18 @@ const editarActividad = async (req, res) => {
     }
 
     await actividad.save();
+
+    const cambios = {};
+    if (snapAntes.titulo !== actividad.titulo) cambios.titulo = { antes: snapAntes.titulo, despues: actividad.titulo };
+    if (snapAntes.fechaLimite !== actividad.fechaLimite.toISOString()) cambios.fechaLimite = { antes: snapAntes.fechaLimite, despues: actividad.fechaLimite.toISOString() };
+    if (req.files?.length > 0) cambios.archivos = { antes: null, despues: `${req.files.length} archivo(s) agregado(s)` };
+
+    await registrarCambio(req, {
+      accion:    'EDITAR_ACTIVIDAD',
+      entidad:   'Actividad',
+      entidadId: actividad._id,
+      cambios,
+    });
 
     req.flash('exito', 'Actividad actualizada correctamente.');
     res.redirect(`/actividades/docente/${id}`);
