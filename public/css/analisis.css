@@ -1,0 +1,684 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   KLASSY — Módulo de Inteligencia Académica (Sprint 13)
+   analisis.css
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Variables de color por materia (rota cada 11) ────────────────────── */
+:root {
+  --ia-grad-0: linear-gradient(135deg, #1a4aad 0%, #2563eb 100%);   /* Matemáticas */
+  --ia-grad-1: linear-gradient(135deg, #15803d 0%, #16a34a 100%);   /* Español */
+  --ia-grad-2: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%);   /* Naturales */
+  --ia-grad-3: linear-gradient(135deg, #b45309 0%, #d97706 100%);   /* Sociales */
+  --ia-grad-4: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);   /* Inglés */
+  --ia-grad-5: linear-gradient(135deg, #be185d 0%, #db2777 100%);   /* Ed. Física */
+  --ia-grad-6: linear-gradient(135deg, #7e22ce 0%, #9333ea 100%);   /* Artes */
+  --ia-grad-7: linear-gradient(135deg, #065f46 0%, #059669 100%);   /* Ética */
+  --ia-grad-8: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);   /* Tecnología */
+  --ia-grad-9: linear-gradient(135deg, #92400e 0%, #b45309 100%);   /* Biología */
+  --ia-grad-10:linear-gradient(135deg, #831843 0%, #9f1239 100%);   /* Química */
+}
+
+/* ─── Estado de carga y error ───────────────────────────────────────── */
+.ia-cargando,
+.ia-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--gris-500);
+}
+
+.ia-cargando svg,
+.ia-error svg {
+  width: 48px;
+  height: 48px;
+  stroke-width: 1.25;
+  color: var(--gris-300);
+}
+
+.ia-error h3 { font-size: 1.05rem; font-weight: 600; color: var(--gris-700); }
+.ia-error p  { font-size: 0.875rem; max-width: 420px; line-height: 1.6; }
+
+/* Spinner */
+.ia-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--gris-200);
+  border-top-color: var(--azul-600);
+  border-radius: 50%;
+  animation: ia-girar 0.7s linear infinite;
+}
+@keyframes ia-girar { to { transform: rotate(360deg); } }
+
+/* ─── Banner de sin entrenar ────────────────────────────────────────── */
+.ia-banner-sin-modelo {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 20px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: var(--radio-lg);
+}
+.ia-banner-sin-modelo svg { width: 20px; height: 20px; color: #d97706; flex-shrink: 0; margin-top: 2px; }
+.ia-banner-sin-modelo h4 { font-size: 0.875rem; font-weight: 600; color: #92400e; margin-bottom: 3px; }
+.ia-banner-sin-modelo p  { font-size: 0.8rem; color: #78350f; line-height: 1.5; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RESUMEN GLOBAL
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.ia-resumen-global {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.ia-stat-card {
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  padding: 18px 20px;
+  box-shadow: var(--sombra-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ia-stat-card__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gris-400);
+}
+
+.ia-stat-card__valor {
+  font-family: var(--fuente-marca);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gris-900);
+  line-height: 1;
+}
+
+.ia-stat-card__sub {
+  font-size: 0.78rem;
+  color: var(--gris-500);
+  line-height: 1.4;
+}
+
+/* Variantes de color por nivel global */
+.ia-stat-card--ok    { border-top: 3px solid var(--verde-600); }
+.ia-stat-card--warn  { border-top: 3px solid #d97706; }
+.ia-stat-card--risk  { border-top: 3px solid var(--rojo-600); }
+.ia-stat-card--azul  { border-top: 3px solid var(--azul-600); }
+
+.ia-stat-card--ok   .ia-stat-card__valor { color: var(--verde-600); }
+.ia-stat-card--warn .ia-stat-card__valor { color: #d97706; }
+.ia-stat-card--risk .ia-stat-card__valor { color: var(--rojo-600); }
+
+/* Barra de nivel global */
+.ia-nivel-global {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  padding: 14px 20px;
+  box-shadow: var(--sombra-xs);
+}
+
+.ia-nivel-global__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gris-500);
+  flex-shrink: 0;
+}
+
+.ia-nivel-global__texto {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gris-900);
+  flex: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   GRID DE MATERIAS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.ia-grid-materias {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+/* ─── Tarjeta de materia ────────────────────────────────────────────── */
+.ia-materia-card {
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  overflow: hidden;
+  box-shadow: var(--sombra-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header de color gradiente */
+.ia-materia-header {
+  padding: 16px 20px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Asignar gradiente por índice */
+.ia-materia-card:nth-child(11n+1)  .ia-materia-header { background: var(--ia-grad-0); }
+.ia-materia-card:nth-child(11n+2)  .ia-materia-header { background: var(--ia-grad-1); }
+.ia-materia-card:nth-child(11n+3)  .ia-materia-header { background: var(--ia-grad-2); }
+.ia-materia-card:nth-child(11n+4)  .ia-materia-header { background: var(--ia-grad-3); }
+.ia-materia-card:nth-child(11n+5)  .ia-materia-header { background: var(--ia-grad-4); }
+.ia-materia-card:nth-child(11n+6)  .ia-materia-header { background: var(--ia-grad-5); }
+.ia-materia-card:nth-child(11n+7)  .ia-materia-header { background: var(--ia-grad-6); }
+.ia-materia-card:nth-child(11n+8)  .ia-materia-header { background: var(--ia-grad-7); }
+.ia-materia-card:nth-child(11n+9)  .ia-materia-header { background: var(--ia-grad-8); }
+.ia-materia-card:nth-child(11n+10) .ia-materia-header { background: var(--ia-grad-9); }
+.ia-materia-card:nth-child(11n+11) .ia-materia-header { background: var(--ia-grad-10); }
+
+.ia-materia-header__nombre {
+  font-size: 0.95rem;
+  font-weight: 700;
+  flex: 1;
+}
+
+.ia-materia-header__prediccion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.ia-materia-header__pct {
+  font-family: var(--fuente-marca);
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ia-materia-header__label {
+  font-size: 0.62rem;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Badge de nivel */
+.ia-nivel-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ─── Cuerpo de la tarjeta ──────────────────────────────────────────── */
+.ia-materia-cuerpo {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+/* ─── Barras de métricas ────────────────────────────────────────────── */
+.ia-metricas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ia-metricas__titulo {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--gris-400);
+  margin-bottom: 2px;
+}
+
+.ia-metrica-fila {
+  display: grid;
+  grid-template-columns: 90px 1fr 36px;
+  align-items: center;
+  gap: 8px;
+}
+
+.ia-metrica-fila__label {
+  font-size: 0.73rem;
+  color: var(--gris-600);
+  white-space: nowrap;
+}
+
+.ia-barra {
+  height: 7px;
+  background: var(--gris-100);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.ia-barra__relleno {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.6s ease;
+}
+
+/* Colores de las barras por métrica */
+.ia-barra--nota       .ia-barra__relleno { background: var(--azul-500); }
+.ia-barra--tendencia  .ia-barra__relleno { background: #8b5cf6; }
+.ia-barra--compromiso .ia-barra__relleno { background: var(--verde-600); }
+.ia-barra--estabilidad .ia-barra__relleno { background: #f59e0b; }
+
+/* Colores adaptativos: rojo si < 40% */
+.ia-barra__relleno--bajo { background: var(--rojo-500) !important; }
+
+.ia-metrica-fila__pct {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--gris-700);
+  text-align: right;
+}
+
+/* ─── Nota proyectada ───────────────────────────────────────────────── */
+.ia-nota-proyectada {
+  border-radius: var(--radio);
+  padding: 10px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.ia-nota-proyectada--ya_aprobado   { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.ia-nota-proyectada--alcanzable    { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+.ia-nota-proyectada--exigente      { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.ia-nota-proyectada--fuera_de_alcance { background: #fff1f2; color: #881337; border: 1px solid #fecdd3; }
+.ia-nota-proyectada--sin_datos     { background: var(--gris-50); color: var(--gris-600); border: 1px solid var(--gris-200); }
+
+.ia-nota-proyectada svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  stroke-width: 2;
+}
+
+.ia-nota-proyectada__num {
+  font-family: var(--fuente-marca);
+  font-size: 1.1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ─── Acordeón FODA ─────────────────────────────────────────────────── */
+.ia-foda {
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  overflow: hidden;
+}
+
+.ia-foda__seccion {
+  border-bottom: 1px solid var(--gris-100);
+}
+.ia-foda__seccion:last-child { border-bottom: none; }
+
+.ia-foda__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--fuente-ui);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: left;
+  transition: background var(--trans-rapida);
+}
+
+.ia-foda__trigger:hover { background: var(--gris-50); }
+
+.ia-foda__trigger-izq {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ia-foda__letra {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.ia-foda__letra--F { background: var(--verde-600); }
+.ia-foda__letra--O { background: var(--azul-600); }
+.ia-foda__letra--D { background: #d97706; }
+.ia-foda__letra--A { background: var(--rojo-600); }
+
+.ia-foda__chevron {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2;
+  color: var(--gris-400);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.ia-foda__trigger[aria-expanded="true"] .ia-foda__chevron {
+  transform: rotate(180deg);
+}
+
+.ia-foda__contenido {
+  padding: 0 14px 10px 44px;
+  overflow: hidden;
+}
+
+.ia-foda__contenido[hidden] { display: none; }
+
+.ia-foda__item {
+  font-size: 0.8rem;
+  color: var(--gris-700);
+  line-height: 1.65;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--gris-100);
+}
+.ia-foda__item:last-child { border-bottom: none; }
+
+.ia-foda__vacia {
+  font-size: 0.78rem;
+  color: var(--gris-400);
+  font-style: italic;
+  padding: 4px 0;
+}
+
+/* Conteo de items en el trigger */
+.ia-foda__count {
+  font-size: 0.68rem;
+  background: var(--gris-100);
+  color: var(--gris-500);
+  border-radius: 99px;
+  padding: 1px 7px;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PANEL ADMIN — IA
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Cards de estado del modelo ────────────────────────────────────── */
+.ia-estado-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.ia-estado-card {
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--sombra-xs);
+}
+
+.ia-estado-card__label {
+  font-size: 0.67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gris-400);
+}
+
+.ia-estado-card__valor {
+  font-family: var(--fuente-marca);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--gris-900);
+  line-height: 1.1;
+  word-break: break-all;
+}
+
+.ia-estado-card__valor--sm {
+  font-size: 0.85rem;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.ia-estado-card--ok .ia-estado-card__valor   { color: var(--verde-600); }
+.ia-estado-card--warn .ia-estado-card__valor { color: #d97706; }
+
+/* ─── Bloque de entrenamiento ───────────────────────────────────────── */
+.ia-entrenar-bloque {
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  padding: 20px 24px;
+  box-shadow: var(--sombra-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ia-entrenar-bloque__titulo {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gris-900);
+}
+
+.ia-entrenar-bloque__desc {
+  font-size: 0.82rem;
+  color: var(--gris-500);
+  line-height: 1.5;
+}
+
+.ia-progreso-wrap {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ia-progreso-wrap.visible { display: flex; }
+
+.ia-progreso-barra {
+  width: 100%;
+  height: 8px;
+  background: var(--gris-100);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.ia-progreso-relleno {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--azul-500) 0%, var(--azul-400) 100%);
+  width: 0%;
+  transition: width 0.4s ease;
+  /* Animación infinita para simular progreso mientras no hay respuesta */
+  animation: ia-pulso 1.4s ease-in-out infinite;
+}
+
+@keyframes ia-pulso {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+.ia-progreso-texto {
+  font-size: 0.75rem;
+  color: var(--gris-500);
+}
+
+.ia-resultado-entrenamiento {
+  display: none;
+  padding: 12px 14px;
+  border-radius: var(--radio);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.ia-resultado-entrenamiento.exito { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; display: block; }
+.ia-resultado-entrenamiento.error { background: #fff1f2; color: #881337; border: 1px solid #fecdd3; display: block; }
+
+/* ─── Buscador de estudiantes ───────────────────────────────────────── */
+.ia-buscador {
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  padding: 20px 24px;
+  box-shadow: var(--sombra-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ia-buscador__resultados {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.ia-buscador__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio);
+  cursor: pointer;
+  transition: background var(--trans-rapida), border-color var(--trans-rapida);
+  background: var(--gris-50);
+}
+
+.ia-buscador__item:hover {
+  background: var(--azul-50);
+  border-color: var(--azul-200);
+}
+
+.ia-buscador__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--azul-600);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ia-buscador__info { flex: 1; min-width: 0; }
+
+.ia-buscador__nombre {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gris-900);
+}
+
+.ia-buscador__grado {
+  font-size: 0.72rem;
+  color: var(--gris-400);
+}
+
+/* ─── Modal del reporte ─────────────────────────────────────────────── */
+.ia-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 300;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 24px 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.ia-modal-overlay.visible { opacity: 1; }
+
+.ia-modal {
+  background: #fff;
+  border-radius: var(--radio-lg);
+  width: 100%;
+  max-width: 900px;
+  padding: 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  position: relative;
+  transform: translateY(20px);
+  transition: transform 0.25s ease;
+}
+
+.ia-modal-overlay.visible .ia-modal { transform: translateY(0); }
+
+.ia-modal__cerrar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--gris-200);
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gris-500);
+  transition: background var(--trans-rapida);
+}
+.ia-modal__cerrar:hover { background: var(--gris-100); }
+.ia-modal__cerrar svg { width: 15px; height: 15px; stroke-width: 2; }
+
+/* ─── Timestamp ─────────────────────────────────────────────────────── */
+.ia-timestamp {
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--gris-300);
+  padding: 8px 0 4px;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .ia-grid-materias { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .ia-resumen-global { grid-template-columns: 1fr 1fr; }
+  .ia-estado-grid    { grid-template-columns: 1fr 1fr; }
+}
