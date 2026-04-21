@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Sin conexión</title>
+  <style>
+    :root {
+      --azul-900: #0f2a5e;
+      --azul-700: #1a4aad;
+      --azul-500: #3b82f6;
+      --azul-100: #dbeafe;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--azul-900);
+      color: white;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 32px;
+      color: white;
+    }
+
+    .logo span {
+      color: var(--azul-500);
+    }
+
+    .icono {
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 2.5rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    p {
+      color: var(--azul-100);
+      font-size: 1rem;
+      line-height: 1.6;
+      max-width: 320px;
+      margin-bottom: 32px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--azul-700);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .btn:hover { background: var(--azul-500); }
+
+    .estado {
+      margin-top: 40px;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.4);
+    }
+
+    #indicador {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    #indicador.online { background: #22c55e; }
+  </style>
+</head>
+<body>
+
+  <div class="logo">KLASSY<span>.</span></div>
+
+  <div class="icono">📡</div>
+
+  <h1>Sin conexión a internet</h1>
+  <p>
+    No podemos cargar esta página ahora mismo. 
+    Revisa tu conexión y vuelve a intentarlo.
+  </p>
+
+  <button class="btn" onclick="location.reload()">
+    🔄 Intentar de nuevo
+  </button>
+
+  <p class="estado">
+    <span id="indicador"></span>
+    <span id="textoEstado">Sin conexión</span>
+  </p>
+
+  <script>
+    const indicador = document.getElementById('indicador');
+    const textoEstado = document.getElementById('textoEstado');
+
+    function actualizarEstado() {
+      if (navigator.onLine) {
+        indicador.classList.add('online');
+        textoEstado.textContent = 'Conexión restaurada — recargando...';
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        indicador.classList.remove('online');
+        textoEstado.textContent = 'Sin conexión';
+      }
+    }
+
+    window.addEventListener('online', actualizarEstado);
+    window.addEventListener('offline', actualizarEstado);
+    actualizarEstado();
+  </script>
+
+</body>
+</html>

@@ -57,7 +57,7 @@
           <% bloques.forEach((bloque, bIdx) => { %>
             <%
               const colores = ['bloque--azul','bloque--verde','bloque--morado','bloque--naranja','bloque--rojo'];
-              const colorCls = 'bloque--' + (bloque.color || bloque.materia.color || colores[bIdx % colores.length].replace('bloque--',''));
+              const colorCls = colores[bIdx % colores.length];
               const soloUnGrado = bloque.grados.length === 1;
 
               // Agrupar grados por nivel para el picker multinivel
@@ -160,28 +160,99 @@
       <!-- ─── ESTADO: Lista de actividades para materia+grado ─────────────── -->
       <% } else { %>
 
-        <!-- Breadcrumb de regreso -->
-        <div class="actividades-header">
-          <a href="/actividades/docente" class="btn-back">
-            <i data-lucide="arrow-left"></i> Mis materias
-          </a>
-          <div class="actividades-header__info">
-            <div class="actividades-header__tags">
-              <span class="chip chip--materia"><i data-lucide="book-open"></i> <%= materiaSeleccionada?.nombre %></span>
-              <span class="chip chip--grado"><i data-lucide="graduation-cap"></i> <%= gradoSeleccionado?.nombre %></span>
+        <!-- ── Cabecera de actividades: 3 filas ── -->
+        <div class="act-doc-cabecera">
+
+          <!-- Fila 1: Título de sección + back -->
+          <div class="act-doc-cabecera__fila-titulo">
+            <a href="/actividades/docente" class="btn-back act-doc-btn-back">
+              <i data-lucide="arrow-left"></i> Mis materias
+            </a>
+            <h1 class="cabecera-pagina__titulo">Actividades</h1>
+          </div>
+
+          <!-- Fila 2: Nueva actividad -->
+          <div class="act-doc-cabecera__fila2">
+          <% if (periodoActivo) { %>
+              <button class="btn btn--primario" onclick="abrirDrawerCrear()">
+                <i data-lucide="plus"></i> Nueva actividad
+              </button>
+              <% } %>
+          </div>
+
+          <!-- Fila 3: acceso-cards (materia, grado, periodo) + toggle finalizadas -->
+          <div class="act-doc-cabecera__fila-info">
+            <div class="act-doc-accesos">
+              <!-- Card materia — clase acceso-card pura -->
+              <div class="acceso-card acceso-card--azul">
+                <div class="tarjeta-stat__icono tarjeta-stat__icono--azul">
+                  <i data-lucide="book-open"></i>
+                </div>
+                <div class="tarjeta-stat__datos">
+                  <span class="tarjeta-stat__valor"><%= materiaSeleccionada?.nombre %></span>
+                  <span class="tarjeta-stat__etiqueta">Materia</span>
+                </div>
+              </div>
+              <!-- Card grado -->
+              <div class="acceso-card acceso-card--verde">
+                <div class="tarjeta-stat__icono tarjeta-stat__icono--verde">
+                  <i data-lucide="graduation-cap"></i>
+                </div>
+                <div class="tarjeta-stat__datos">
+                  <span class="tarjeta-stat__valor"><%= gradoSeleccionado?.nombre %></span>
+                  <span class="tarjeta-stat__etiqueta">Grado</span>
+                </div>
+              </div>
+              <!-- Card periodo -->
               <% if (periodoActivo) { %>
-                <span class="chip chip--periodo"><i data-lucide="calendar"></i> Periodo <%= periodoActivo.numero %> activo</span>
+                <div class="acceso-card acceso-card--morado">
+                  <div class="tarjeta-stat__icono tarjeta-stat__icono--morado">
+                    <i data-lucide="calendar-check"></i>
+                  </div>
+                  <div class="tarjeta-stat__datos">
+                    <span class="tarjeta-stat__valor">Periodo <%= periodoActivo.numero %></span>
+                    <span class="tarjeta-stat__etiqueta">Activo</span>
+                  </div>
+                </div>
               <% } else { %>
-                <span class="chip chip--alerta"><i data-lucide="alert-triangle"></i> Sin periodo activo</span>
+                <div class="acceso-card acceso-card--naranja">
+                  <div class="tarjeta-stat__icono tarjeta-stat__icono--naranja">
+                    <i data-lucide="alert-triangle"></i>
+                  </div>
+                  <div class="tarjeta-stat__datos">
+                    <span class="tarjeta-stat__valor">Sin periodo</span>
+                    <span class="tarjeta-stat__etiqueta">Inactivo</span>
+                  </div>
+                </div>
               <% } %>
             </div>
+
+            <!-- Segmented control Vigentes / Finalizadas -->
+            <div class="act-seg" id="actSegControl" role="group" aria-label="Filtro de actividades">
+              <!-- Píldora deslizante (posicionada por JS) -->
+              <span class="act-seg__pill" id="actSegPill" aria-hidden="true"></span>
+              <button
+                class="act-seg__btn act-seg__btn--activo"
+                id="act-seg-vigentes"
+                onclick="activarSegDoc('vigentes')"
+                type="button"
+              >
+                <i data-lucide="clipboard-list"></i>
+                Vigentes
+              </button>
+              <button
+                class="act-seg__btn"
+                id="act-seg-finalizadas"
+                onclick="activarSegDoc('finalizadas')"
+                type="button"
+              >
+                <i data-lucide="clock-x"></i>
+                Finalizadas
+              </button>
+            </div>
           </div>
-          <% if (periodoActivo) { %>
-            <button class="btn btn--primario" onclick="abrirDrawerCrear()">
-              <i data-lucide="plus"></i> Nueva actividad
-            </button>
-          <% } %>
-        </div>
+
+        </div><!-- /act-doc-cabecera -->
 
         <!-- Lista de actividades -->
         <% if (actividades.length === 0) { %>
@@ -196,72 +267,219 @@
             <% } %>
           </div>
         <% } else { %>
-          <div class="lista-actividades-docente">
-            <% actividades.forEach(act => { %>
-              <%
-                const vencida   = new Date() > act.fechaLimite;
-                const estado    = vencida ? 'vencida' : 'activa';
-              %>
-              <div class="tarjeta-actividad-docente tarjeta-actividad-docente--<%= estado %>">
-                <div class="tarjeta-actividad-docente__left">
-                  <div class="tarjeta-actividad-docente__estado-dot"></div>
-                </div>
+          <%
+            const vigentes    = actividades.filter(a => new Date() <= a.fechaLimite);
+            const finalizadas = actividades.filter(a => new Date() >  a.fechaLimite);
+          %>
 
-                <div class="tarjeta-actividad-docente__body">
-                  <div class="tarjeta-actividad-docente__top">
-                    <h3 class="tarjeta-actividad-docente__titulo">
-                      <a href="/actividades/docente/<%= act._id %>"><%= act.titulo %></a>
-                    </h3>
-                    <% if (!vencida) { %>
-                      <span class="badge badge--activo">Abierta</span>
-                    <% } else { %>
-                      <span class="badge badge--inactivo">Cerrada</span>
-                    <% } %>
-                  </div>
-
-                  <p class="tarjeta-actividad-docente__desc">
-                    <%= act.descripcion ? act.descripcion.substring(0, 100) + (act.descripcion.length > 100 ? '...' : '') : 'Sin descripción' %>
-                  </p>
-
-                  <div class="tarjeta-actividad-docente__meta">
-                    <span><i data-lucide="calendar"></i> Límite: <%= new Date(act.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) %></span>
-                    <span><i data-lucide="paperclip"></i> <%= act.archivos?.length || 0 %> archivos</span>
-                    <span><i data-lucide="message-square"></i> <%= act.comentarios?.length || 0 %> comentarios</span>
-                  </div>
-
-                  <!-- Barra de progreso de entregas -->
-                  <div class="entrega-progreso">
-                    <div class="entrega-progreso__barra">
-                      <div class="entrega-progreso__relleno" style="width:<%= act._porcentaje %>%"></div>
-                    </div>
-                    <span class="entrega-progreso__texto">
-                      <%= act._totalEntregas %> / <%= act._totalEst %> entregaron (<%= act._porcentaje %>%)
-                    </span>
-                  </div>
-                </div>
-
-                <div class="tarjeta-actividad-docente__acciones">
-                  <a href="/actividades/docente/<%= act._id %>" class="btn btn--secundario btn--sm">
-                    <i data-lucide="eye"></i> Ver entregas
-                  </a>
-                  <% if (!vencida) { %>
-                    <button class="btn-icono btn-icono--editar"
-                      onclick="abrirDrawerEditar('<%= act._id %>', `<%= act.titulo.replace(/`/g,'\\`') %>`, `<%= (act.descripcion||'').replace(/`/g,'\\`') %>`, '<%= act.fechaLimite.toISOString().slice(0,16) %>')"
-                      title="Editar">
-                      <i data-lucide="pencil"></i>
-                    </button>
-                  <% } %>
-                  <form method="POST" action="/actividades/docente/<%= act._id %>?_method=DELETE&materiaId=<%= materiaIdActiva %>&gradoId=<%= gradoIdActivo %>"
-                    onsubmit="return confirm('¿Eliminar la actividad «<%= act.titulo %>»? Se eliminarán todas las entregas.')"
-                    style="display:inline">
-                    <button type="submit" class="btn-icono btn-icono--eliminar" title="Eliminar">
-                      <i data-lucide="trash-2"></i>
-                    </button>
-                  </form>
-                </div>
+          <!-- Panel VIGENTES -->
+          <div id="panel-doc-vigentes">
+            <% if (vigentes.length === 0) { %>
+              <div class="estado-vacio">
+                <i data-lucide="check-circle-2" style="color:#22c55e;"></i>
+                <h3>Todas finalizadas</h3>
+                <p>No hay actividades vigentes. Usa el botón para ver las finalizadas.</p>
               </div>
-            <% }) %>
+            <% } else { %>
+                <div class="act-cards-grid act-cards-grid--panel">
+                  <%
+                    const acolores = ['act-card--azul','act-card--verde','act-card--morado','act-card--naranja','act-card--rojo','act-card--cyan'];
+                  %>
+                  <% vigentes.forEach((act, aIdx) => { %>
+                    <%
+                      const vencida  = new Date() > act.fechaLimite;
+                      const colorCls = acolores[aIdx % acolores.length];
+                    %>
+                    <div class="act-card <%= colorCls %> act-card--<%= vencida ? 'vencida' : 'activa' %>">
+
+                      <div class="act-card__header">
+                        <div class="act-card__header-left">
+                          <div class="act-card__icono">
+                            <% if (vencida) { %>
+                              <i data-lucide="clock-x"></i>
+                            <% } else { %>
+                              <i data-lucide="clipboard-list"></i>
+                            <% } %>
+                          </div>
+                          <div>
+                            <h3 class="act-card__titulo">
+                              <a href="/actividades/docente/<%= act._id %>"><%= act.titulo %></a>
+                            </h3>
+                            <% if (act.periodoId) { %>
+                              <span class="act-card__periodo">Periodo <%= act.periodoId.numero %></span>
+                            <% } %>
+                          </div>
+                        </div>
+                        <% if (!vencida) { %>
+                          <span class="act-card__badge act-card__badge--abierta">Vigente</span>
+                        <% } else { %>
+                          <span class="act-card__badge act-card__badge--cerrada">Finalizada</span>
+                        <% } %>
+                      </div>
+
+                      <% if (act.descripcion) { %>
+                        <p class="act-card__desc">
+                          <%= act.descripcion.substring(0, 110) + (act.descripcion.length > 110 ? '…' : '') %>
+                        </p>
+                      <% } %>
+
+                      <div class="act-card__meta">
+                        <span class="act-card__meta-item">
+                          <i data-lucide="calendar-clock"></i>
+                          <%= new Date(act.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) %>
+                        </span>
+                        <span class="act-card__meta-item">
+                          <i data-lucide="paperclip"></i>
+                          <%= act.archivos?.length || 0 %> arch.
+                        </span>
+                        <span class="act-card__meta-item">
+                          <i data-lucide="message-square"></i>
+                          <%= act.comentarios?.length || 0 %> com.
+                        </span>
+                      </div>
+
+                      <div class="act-card__progreso">
+                        <div class="act-card__progreso-barra">
+                          <div class="act-card__progreso-relleno" style="width:<%= act._porcentaje %>%"></div>
+                        </div>
+                        <div class="act-card__progreso-info">
+                          <span class="act-card__progreso-nums"><%= act._totalEntregas %>/<%= act._totalEst %> entregaron</span>
+                          <span class="act-card__progreso-pct"><%= act._porcentaje %>%</span>
+                        </div>
+                      </div>
+
+                      <div class="act-card__acciones">
+                        <a href="/actividades/docente/<%= act._id %>" class="act-card__btn-ver">
+                          <i data-lucide="eye"></i> Ver entregas
+                        </a>
+                        <div class="act-card__acciones-sec">
+                          <% if (!vencida) { %>
+                            <button class="btn-icono btn-icono--editar"
+                              onclick="abrirDrawerEditar('<%= act._id %>', `<%= act.titulo.replace(/`/g,'\\`') %>`, `<%= (act.descripcion||'').replace(/`/g,'\\`') %>`, '<%= act.fechaLimite.toISOString().slice(0,16) %>')"
+                              title="Editar">
+                              <i data-lucide="pencil"></i>
+                            </button>
+                          <% } %>
+                          <form method="POST" action="/actividades/docente/<%= act._id %>?_method=DELETE&materiaId=<%= materiaIdActiva %>&gradoId=<%= gradoIdActivo %>"
+                            onsubmit="return confirm('¿Eliminar la actividad «<%= act.titulo %>»? Se eliminarán todas las entregas.')"
+                            style="display:inline">
+                            <button type="submit" class="btn-icono btn-icono--eliminar" title="Eliminar">
+                              <i data-lucide="trash-2"></i>
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+
+                    </div>
+                  <% }) %>
+                </div>
+            <% } %>
           </div>
+
+          <!-- Panel FINALIZADAS (oculto por defecto) -->
+          <div id="panel-doc-finalizadas" style="display:none;">
+            <% if (finalizadas.length === 0) { %>
+              <div class="estado-vacio">
+                <i data-lucide="inbox" style="color:#94a3b8;"></i>
+                <h3>Ninguna finalizada aún</h3>
+                <p>No hay actividades finalizadas todavía.</p>
+              </div>
+            <% } else { %>
+                <div class="act-cards-grid act-cards-grid--panel">
+                  <%
+                    const acolores = ['act-card--azul','act-card--verde','act-card--morado','act-card--naranja','act-card--rojo','act-card--cyan'];
+                  %>
+                  <% finalizadas.forEach((act, aIdx) => { %>
+                    <%
+                      const vencida  = new Date() > act.fechaLimite;
+                      const colorCls = acolores[aIdx % acolores.length];
+                    %>
+                    <div class="act-card <%= colorCls %> act-card--<%= vencida ? 'vencida' : 'activa' %>">
+
+                      <div class="act-card__header">
+                        <div class="act-card__header-left">
+                          <div class="act-card__icono">
+                            <% if (vencida) { %>
+                              <i data-lucide="clock-x"></i>
+                            <% } else { %>
+                              <i data-lucide="clipboard-list"></i>
+                            <% } %>
+                          </div>
+                          <div>
+                            <h3 class="act-card__titulo">
+                              <a href="/actividades/docente/<%= act._id %>"><%= act.titulo %></a>
+                            </h3>
+                            <% if (act.periodoId) { %>
+                              <span class="act-card__periodo">Periodo <%= act.periodoId.numero %></span>
+                            <% } %>
+                          </div>
+                        </div>
+                        <% if (!vencida) { %>
+                          <span class="act-card__badge act-card__badge--abierta">Vigente</span>
+                        <% } else { %>
+                          <span class="act-card__badge act-card__badge--cerrada">Finalizada</span>
+                        <% } %>
+                      </div>
+
+                      <% if (act.descripcion) { %>
+                        <p class="act-card__desc">
+                          <%= act.descripcion.substring(0, 110) + (act.descripcion.length > 110 ? '…' : '') %>
+                        </p>
+                      <% } %>
+
+                      <div class="act-card__meta">
+                        <span class="act-card__meta-item">
+                          <i data-lucide="calendar-clock"></i>
+                          <%= new Date(act.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) %>
+                        </span>
+                        <span class="act-card__meta-item">
+                          <i data-lucide="paperclip"></i>
+                          <%= act.archivos?.length || 0 %> arch.
+                        </span>
+                        <span class="act-card__meta-item">
+                          <i data-lucide="message-square"></i>
+                          <%= act.comentarios?.length || 0 %> com.
+                        </span>
+                      </div>
+
+                      <div class="act-card__progreso">
+                        <div class="act-card__progreso-barra ">
+                          <div class="act-card__progreso-relleno" style="width:<%= act._porcentaje %>%"></div>
+                        </div>
+                        <div class="act-card__progreso-info ">
+                          <span class="act-card__progreso-nums"><%= act._totalEntregas %>/<%= act._totalEst %> entregaron</span>
+                          <span class="act-card__progreso-pct"><%= act._porcentaje %>%</span>
+                        </div>
+                      </div>
+
+                      <div class="act-card__acciones">
+                        <a href="/actividades/docente/<%= act._id %>" class="act-card__btn-ver">
+                          <i data-lucide="eye"></i> Ver entregas
+                        </a>
+                        <div class="act-card__acciones-sec">
+                          <% if (!vencida) { %>
+                            <button class="btn-icono btn-icono--editar"
+                              onclick="abrirDrawerEditar('<%= act._id %>', `<%= act.titulo.replace(/`/g,'\\`') %>`, `<%= (act.descripcion||'').replace(/`/g,'\\`') %>`, '<%= act.fechaLimite.toISOString().slice(0,16) %>')"
+                              title="Editar">
+                              <i data-lucide="pencil"></i>
+                            </button>
+                          <% } %>
+                          <form method="POST" action="/actividades/docente/<%= act._id %>?_method=DELETE&materiaId=<%= materiaIdActiva %>&gradoId=<%= gradoIdActivo %>"
+                            onsubmit="return confirm('¿Eliminar la actividad «<%= act.titulo %>»? Se eliminarán todas las entregas.')"
+                            style="display:inline">
+                            <button type="submit" class="btn-icono btn-icono--eliminar" title="Eliminar">
+                              <i data-lucide="trash-2"></i>
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+
+                    </div>
+                  <% }) %>
+                </div>
+            <% } %>
+          </div>
+
         <% } %>
       <% } %>
 
@@ -329,7 +547,6 @@
   <!-- ─── Template: Editar actividad ─────────────────────────────────── -->
   <template id="templateEditarActividad">
     <form method="POST" action="" enctype="multipart/form-data" class="formulario-grupo" id="formEditarActividad">
-      <input type="hidden" name="_method" value="PUT"/>
 
       <div class="campo">
         <label class="campo__etiqueta">Título *</label>

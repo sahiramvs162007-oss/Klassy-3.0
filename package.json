@@ -20,6 +20,7 @@
     "nodemailer": "^6.9.13",
     "pdfkit": "^0.18.0",
     "upath": "^2.0.1",
+    "web-push": "^3.6.7",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

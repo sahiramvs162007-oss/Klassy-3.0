@@ -31,6 +31,13 @@ conectarDB();
 
 const app = express();
 
+// ─── Service Worker (sin middleware de sesión, acceso público) ────────────────
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Service-Worker-Allowed', '/');
+  res.sendFile(path.join(__dirname, 'public', 'sw.js'));
+});
+
 // ─── Motor de plantillas ───────────────────────────────────────────────────────
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));

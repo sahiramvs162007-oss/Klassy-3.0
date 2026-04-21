@@ -520,3 +520,117 @@
 .materia-picker__opcion { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; font-size: 0.84rem; color: var(--gris-700); cursor: pointer; transition: background var(--trans-rapida), color var(--trans-rapida); }
 .materia-picker__opcion:hover { background: var(--azul-50); color: var(--azul-700); }
 .materia-picker__opcion--activa { background: var(--azul-600) !important; color: #fff !important; font-weight: 600; }
+/* ═══════════════════════════════════════════════════════
+   Filtros de año/periodo en el sidebar del estudiante
+   ═══════════════════════════════════════════════════════ */
+
+.boletin-filtros {
+  padding: 14px 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-bottom: 1px solid var(--gris-100);
+  background: var(--gris-50);
+}
+
+.boletin-filtros__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.boletin-filtros__label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gris-500);
+  cursor: default;
+  user-select: none;
+}
+
+.boletin-filtros__icono {
+  width: 11px;
+  height: 11px;
+  stroke-width: 2.2;
+  color: var(--azul-500);
+}
+
+/* ── Wrapper del select con chevron custom ── */
+.boletin-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.boletin-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 8px 32px 8px 11px;
+  border: 1.5px solid var(--gris-200);
+  border-radius: var(--radio);
+  background: #fff;
+  font-family: var(--fuente-ui);
+  font-size: 0.855rem;
+  font-weight: 500;
+  color: var(--gris-900);
+  cursor: pointer;
+  transition:
+    border-color var(--trans-rapida),
+    box-shadow   var(--trans-rapida),
+    background   var(--trans-rapida);
+  outline: none;
+}
+
+.boletin-select:hover {
+  border-color: var(--azul-500);
+  background: #fff;
+}
+
+.boletin-select:focus {
+  border-color: var(--azul-600);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  background: #fff;
+}
+
+/* Highlight del select cuando tiene un valor "destacado" (año actual) */
+#selectAño:focus,
+#selectPeriodo:focus {
+  border-color: var(--azul-600);
+}
+
+.boletin-select-wrap__chevron {
+  position: absolute;
+  right: 9px;
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.2;
+  color: var(--gris-400);
+  pointer-events: none;
+  transition: color var(--trans-rapida), transform var(--trans-rapida);
+}
+
+.boletin-select:focus ~ .boletin-select-wrap__chevron {
+  color: var(--azul-500);
+  transform: rotate(180deg);
+}
+
+/* Etiqueta del año activo con acento visual */
+.boletin-filtros__año-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--azul-600);
+  background: var(--azul-50);
+  border: 1px solid var(--azul-100);
+  border-radius: 20px;
+  padding: 2px 8px;
+  margin-top: 2px;
+  align-self: flex-start;
+}

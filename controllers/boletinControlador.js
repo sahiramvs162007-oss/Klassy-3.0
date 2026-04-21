@@ -46,13 +46,28 @@ const panelEstudiante = async (req, res) => {
       boletinActual = boletines[0];
     }
 
+    // Año y periodo del boletín activo (para preseleccionar los selects)
+    const añoDefault     = boletinActual ? boletinActual.año           : (boletines[0]?.año           ?? null);
+    const periodoDefault = boletinActual ? boletinActual.numeroPeriodo : (boletines[0]?.numeroPeriodo ?? null);
+
+    // Datos planos para el JS del cliente (evita lógica en el EJS)
+    const boletinesJSON = boletines.map(b => ({
+      id:            b._id,
+      año:           b.año,
+      numeroPeriodo: b.numeroPeriodo,
+      nombrePeriodo: b.nombrePeriodo,
+    }));
+
     res.render('paginas/boletines-estudiante', {
-      titulo:       'Mis Boletines',
-      paginaActual: 'boletines',
+      titulo:        'Mis Boletines',
+      paginaActual:  'boletines',
       boletines,
       boletinActual,
-      mensajeExito: req.flash('exito'),
-      mensajeError: req.flash('error'),
+      añoDefault,
+      periodoDefault,
+      boletinesJSON: JSON.stringify(boletinesJSON),
+      mensajeExito:  req.flash('exito'),
+      mensajeError:  req.flash('error'),
     });
   } catch (error) {
     console.error('Error en panelEstudiante boletines:', error);

@@ -286,32 +286,60 @@
   text-transform: capitalize;
 }
 
-/* ─── Contenedor principal ─────────────────────────────────────── */
-/* Se desplaza al expandir el sidebar con hover */
-.contenedor-principal {
-  margin-left: 72px;                    /* igual que el ancho colapsado */
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  min-width: 0;
-  transition: margin-left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+
+/* ─── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: var(--sidebar-ancho);
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar--abierto {
+    transform: translateX(0);
+  }
+
+  /* En móvil el texto siempre visible cuando está abierto */
+  .sidebar--abierto .sidebar__texto,
+  .sidebar--abierto .sidebar__logo-texto,
+  .sidebar--abierto .sidebar__usuario-info,
+  .sidebar--abierto .sidebar__grupo-etiqueta {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .contenedor-principal {
+    margin-left: 0;
+    transition: none;
+  }
+
+  .topbar__menu-btn {
+    display: flex;
+  }
 }
 
-.contenido {
-  margin: 2% 3% !important;
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  border-radius: var(--radio-lg);
-  box-shadow: 0 4px 24px rgba(59, 130, 246, 0.08), 0 1px 4px rgba(0,0,0,0.04);
+
+/* ─── Botón X para cerrar sidebar en móvil ──────────────────── */
+.sidebar__cerrar {
+  display: none;
+  margin-left: auto;
+  padding: 4px;
+  border-radius: 6px;
+  color: #64748b;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
 }
 
+.sidebar__cerrar:hover {
+  background-color: rgba(244, 63, 94, 0.10);
+  color: #f43f5e;
+}
 
-/* Cuando el sidebar hace hover, el contenido se corre */
-.sidebar:hover ~ .contenedor-principal {
-  margin-left: var(--sidebar-ancho);   /* 240px */
+.sidebar__cerrar svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2;
 }
 
 /* ─── Responsive ───────────────────────────────────────────────── */
@@ -333,6 +361,12 @@
   .sidebar--abierto .sidebar__grupo-etiqueta {
     opacity: 1;
     transform: translateX(0);
+  }
+
+  .sidebar--abierto .sidebar__cerrar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .contenedor-principal {

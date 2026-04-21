@@ -107,20 +107,21 @@
 
           <!-- Estadísticas de entregas -->
           <div class="tarjeta tarjeta-stats-entregas">
+            <h3>Análisis Estadístico</h3>
             <div class="stats-entregas-grid">
-              <div class="stat-entrega stat-entrega--total">
+              <div class="stat-entrega acceso-card--azul">
                 <span class="stat-entrega__num"><%= totalEstudiantes %></span>
                 <span class="stat-entrega__label">Total estudiantes</span>
               </div>
-              <div class="stat-entrega stat-entrega--ok">
+              <div class="stat-entrega acceso-card--verde">
                 <span class="stat-entrega__num"><%= entregaron %></span>
                 <span class="stat-entrega__label">Entregaron</span>
               </div>
-              <div class="stat-entrega stat-entrega--falta">
+              <div class="stat-entrega acceso-card--naranja">
                 <span class="stat-entrega__num"><%= totalEstudiantes - entregaron %></span>
                 <span class="stat-entrega__label">Sin entregar</span>
               </div>
-              <div class="stat-entrega stat-entrega--pct">
+              <div class="stat-entrega acceso-card--morado">
                 <span class="stat-entrega__num"><%= porcentaje %>%</span>
                 <span class="stat-entrega__label">Completado</span>
               </div>

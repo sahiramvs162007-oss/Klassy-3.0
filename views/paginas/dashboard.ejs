@@ -10,9 +10,13 @@
   <link rel="stylesheet" href="/css/estilos.css" />
   <link rel="stylesheet" href="/css/paginas/dashboard.css" />
   <link rel="stylesheet" href="/css/main.css">
+
+  
 </head>
 <body>
   <%- include('../partials/sidebar') %>
+  <!-- ─── Overlay para cerrar sidebar en móvil ────────────────────────────── -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
   <div class="contenedor-principal">
     <%- include('../partials/topbar') %>
     <main class="contenido">
@@ -288,5 +292,6 @@
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
   <script src="/js/dashboard.js"></script>
+  <script>lucide.createIcons();</script>
 </body>
 </html>

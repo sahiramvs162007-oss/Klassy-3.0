@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="/css/estilos.css" />
   <link rel="stylesheet" href="/css/paginas/notas.css" />
   <link rel="stylesheet" href="/css/main.css">
-  <link rel="stylesheet" href="/css/actividades.css" /> 
+  <link rel="stylesheet" href="/css/paginas/actividades.css" /> 
 </head>
 <body>
 
@@ -48,23 +48,93 @@
         </div>
 
         <div class="bloques-materias">
-          <% bloques.forEach((bloque, i) => { %>
-            <% const colores = ['bloque--azul','bloque--verde','bloque--morado','bloque--naranja','bloque--rojo']; %>
-            <div class="bloque-materia <%= colores[i % colores.length] %>">
+          <% bloques.forEach((bloque, bIdx) => { %>
+            <%
+              const colores = ['bloque--azul','bloque--verde','bloque--morado','bloque--naranja','bloque--rojo'];
+              const colorCls = colores[bIdx % colores.length];
+              const soloUnGrado = bloque.grados.length === 1;
+
+              const gradosPorNivel = {};
+              bloque.grados.forEach(g => {
+                const n = g.grado.nivel;
+                if (!gradosPorNivel[n]) gradosPorNivel[n] = [];
+                gradosPorNivel[n].push(g);
+              });
+              const nivelesOrdenados = Object.keys(gradosPorNivel).map(Number).sort((a,b) => a-b);
+              const mId = bloque.materia._id.toString().replace(/[^a-z0-9]/gi,'');
+            %>
+            <div class="bloque-materia <%= colorCls %>">
               <div class="bloque-materia__cabecera">
-                <div class="bloque-materia__icono"><i data-lucide="bar-chart-2"></i></div>
+                <div class="bloque-materia__icono">
+                  <i data-lucide="bar-chart-2"></i>
+                </div>
                 <h3 class="bloque-materia__nombre"><%= bloque.materia.nombre %></h3>
               </div>
+
               <div class="bloque-materia__grados">
-                <span class="bloque-materia__grados-label">Elige el grado:</span>
-                <% bloque.grados.forEach(g => { %>
-                  <a href="#" class="bloque-grado"
-                    onclick="abrirSelectorPeriodo('<%= bloque.materia._id %>','<%= g.grado._id %>','<%= bloque.materia.nombre %>','<%= g.grado.nombre %>'); return false;">
-                    <i data-lucide="graduation-cap"></i>
-                    <span><%= g.grado.nombre %></span>
-                    <span class="bloque-grado__nivel">Nivel <%= g.grado.nivel %></span>
+                <% if (soloUnGrado) { %>
+                  <a
+                    href="#"
+                    class="grado-picker-barra grado-picker-barra--unico"
+                    onclick="abrirSelectorPeriodo('<%= bloque.materia._id %>','<%= bloque.grados[0].grado._id %>','<%= bloque.materia.nombre %>','<%= bloque.grados[0].grado.nombre %>'); return false;"
+                  >
+                    <span class="grado-picker-barra__icono"><i data-lucide="graduation-cap"></i></span>
+                    <span class="grado-picker-barra__nombre"><%= bloque.grados[0].grado.nombre %></span>
+                    <span class="grado-picker-barra__nivel">Nivel <%= bloque.grados[0].grado.nivel %></span>
+                    <span class="grado-picker-barra__arrow"><i data-lucide="arrow-right"></i></span>
                   </a>
-                <% }) %>
+                <% } else { %>
+                  <div class="grado-picker-multi" id="picker-<%= mId %>">
+                    <div class="grado-picker-multi__paso1" id="paso1-<%= mId %>">
+                      <span class="grado-picker-multi__label">
+                        <i data-lucide="map-pin"></i> Selecciona el nivel
+                      </span>
+                      <div class="grado-picker-multi__niveles">
+                        <% nivelesOrdenados.forEach(nivel => { %>
+                          <button
+                            type="button"
+                            class="grado-nivel-chip"
+                            onclick="mostrarSalones('<%= mId %>', <%= nivel %>)"
+                          >
+                            <%= nivel %>°
+                            <% if (gradosPorNivel[nivel].length > 1) { %>
+                              <span class="grado-nivel-chip__count"><%= gradosPorNivel[nivel].length %></span>
+                            <% } %>
+                          </button>
+                        <% }) %>
+                      </div>
+                    </div>
+
+                    <% nivelesOrdenados.forEach(nivel => { %>
+                      <div
+                        class="grado-picker-multi__paso2"
+                        id="salones-<%= mId %>-<%= nivel %>"
+                        style="display:none"
+                      >
+                        <button
+                          type="button"
+                          class="grado-picker-multi__volver"
+                          onclick="volverNiveles('<%= mId %>', <%= nivel %>)"
+                        >
+                          <i data-lucide="arrow-left"></i>
+                          <span><%= nivel %>° grado</span>
+                        </button>
+                        <div class="grado-picker-multi__salones">
+                          <% gradosPorNivel[nivel].forEach(g => { %>
+                            <a
+                              href="#"
+                              class="grado-salon-chip"
+                              onclick="abrirSelectorPeriodo('<%= bloque.materia._id %>','<%= g.grado._id %>','<%= bloque.materia.nombre %>','<%= g.grado.nombre %>'); return false;"
+                            >
+                              <i data-lucide="graduation-cap"></i>
+                              <%= g.grado.nombre %>
+                            </a>
+                          <% }) %>
+                        </div>
+                      </div>
+                    <% }) %>
+                  </div>
+                <% } %>
               </div>
             </div>
           <% }) %>
@@ -112,15 +182,15 @@
 
           <!-- Resumen rápido -->
           <div class="notas-resumen">
-            <div class="resumen-stat">
+            <div class="resumen-stat acceso-card--azul">
               <span class="resumen-stat__num"><%= tabla.filas.length %></span>
               <span class="resumen-stat__label">Estudiantes</span>
             </div>
-            <div class="resumen-stat">
+            <div class="resumen-stat acceso-card--verde">
               <span class="resumen-stat__num"><%= tabla.actividades.length %></span>
               <span class="resumen-stat__label">Actividades</span>
             </div>
-            <div class="resumen-stat">
+            <div class="resumen-stat acceso-card--morado">
               <span class="resumen-stat__num">
                 <%
                   const promsValidos = tabla.filas.filter(f => f.promedio !== null).map(f => f.promedio);
@@ -132,15 +202,10 @@
               </span>
               <span class="resumen-stat__label">Promedio grupo</span>
             </div>
-            <% if (periodoSeleccionado) { %>
-              <span class="badge <%= periodoSeleccionado.activo ? 'badge--activo' : 'badge--inactivo' %>">
-                Periodo <%= periodoSeleccionado.nombre %> <%= !periodoSeleccionado.activo ? '— Cerrado' : '' %>
-              </span>
-            <% } %>
           </div>
 
           <!-- Tabla de notas (scrollable horizontalmente) -->
-          <div class="tabla-notas-contenedor">
+          <div class="tabla-notas-contenedor tabla-container"> ">
             <table class="tabla-notas" id="tablaNotas">
               <thead>
                 <tr>

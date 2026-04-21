@@ -6,9 +6,10 @@
   <title>KLASSY — Mis Notas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/paginas/actividades.css" />
   <link rel="stylesheet" href="/css/paginas/notas.css" />
   <link rel="stylesheet" href="/css/main.css">
 </head>
@@ -29,39 +30,164 @@
         <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
       <% } %>
 
-      <!-- Cabecera -->
-      <div class="cabecera-pagina">
-        <div>
-          <h1 class="cabecera-pagina__titulo">Mis Notas</h1>
-          <% if (matricula) { %>
-            <p class="cabecera-pagina__subtitulo">
-              <%= matricula.gradoId?.nombre %> — <%= new Date().getFullYear() %>
-            </p>
-          <% } %>
-        </div>
-      </div>
-
       <% if (!matricula) { %>
         <div class="estado-vacio">
           <i data-lucide="file-x"></i>
           <h3>Sin matrícula activa</h3>
           <p>No tienes matrícula activa para este año. Contacta al director.</p>
         </div>
+
+      <!-- ─── Selección de materia ──────────────────────────────────────────── -->
+      <% } else if (!materiaIdActiva) { %>
+
+        <!-- Cabecera -->
+        <div class="cabecera-pagina">
+          <div>
+            <h1 class="cabecera-pagina__titulo">Mis Notas</h1>
+            <p class="cabecera-pagina__subtitulo">
+              <i data-lucide="graduation-cap" style="width:14px;height:14px;vertical-align:middle;"></i>
+              <%= matricula.gradoId?.nombre %> — <%= new Date().getFullYear() %>
+            </p>
+          </div>
+        </div>
+
+        <% if (bloquesMateria.length === 0) { %>
+          <div class="estado-vacio">
+            <i data-lucide="bar-chart-2"></i>
+            <h3>Sin materias</h3>
+            <p>Tu grado no tiene materias registradas aún.</p>
+          </div>
+        <% } else { %>
+          <p class="texto-secundario texto-sm" style="margin-bottom:18px;">Selecciona una materia para ver tus notas.</p>
+          <div class="bloques-materias">
+            <% const colores = ['materia-card--azul','materia-card--verde','materia-card--morado','materia-card--naranja','materia-card--rojo']; %>
+            <% bloquesMateria.forEach(function(bloque, i) { %>
+              <%
+                var colorCls = colores[i % colores.length];
+                var estiloFondo = '';
+                if (bloque.fondoTipo === 'color' && bloque.fondoValor) {
+                  estiloFondo = bloque.fondoValor;
+                }
+              %>
+              <a
+                href="/notas/estudiante?materiaId=<%= bloque.materia._id %>"
+                class="materia-card <%= estiloFondo ? '' : colorCls %>"
+                <% if (estiloFondo) { %>style="background:<%= estiloFondo %>;"<% } %>
+              >
+                <div class="materia-card__body">
+                  <div class="materia-card__icono-wrap">
+                    <i data-lucide="bar-chart-2"></i>
+                  </div>
+                  <h3 class="materia-card__nombre"<% if (bloque.colorTitulo) { %> style="color:<%= bloque.colorTitulo %>;"<% } %>>
+                    <%= bloque.materia.nombre %>
+                  </h3>
+                  <% if (bloque.materia.descripcion) { %>
+                    <p class="materia-card__desc"><%= bloque.materia.descripcion %></p>
+                  <% } %>
+                  <% if (bloque.docente) { %>
+                    <span class="materia-card__docente">
+                      <i data-lucide="user"></i>
+                      <%= bloque.docente.nombre %> <%= bloque.docente.apellido %>
+                    </span>
+                  <% } %>
+                </div>
+                <div class="materia-card__footer">
+                  <span>Ver mis notas</span>
+                  <span class="materia-card__footer-cta">
+                    <i data-lucide="arrow-right"></i>
+                  </span>
+                </div>
+              </a>
+            <% }); %>
+          </div>
+        <% } %>
+
+      <!-- ─── Notas de la materia seleccionada ────────────────────────────── -->
       <% } else { %>
 
-        <!-- Selector de periodo -->
-        <form method="GET" action="/notas/estudiante" class="barra-filtros">
-          <div class="barra-filtros__grupo">
-            <select name="periodoId" class="campo__select barra-filtros__select" onchange="this.form.submit()">
-              <option value="">Seleccionar periodo</option>
-              <% periodos.forEach(p => { %>
-                <option value="<%= p._id %>" <%= periodoIdActivo === p._id?.toString() ? 'selected' : '' %>>
-                  <%= p.nombre %> <%= !p.activo ? '(Cerrado)' : '(Activo)' %>
-                </option>
-              <% }) %>
-            </select>
+        <%
+          const materiaActual = bloquesMateria.find(b => b.materia._id.toString() === materiaIdActiva);
+          const nombreMateria = materiaActual ? materiaActual.materia.nombre : 'Materia';
+        %>
+
+        <!-- ═══ CABECERA: fila superior título+badge, fila inferior cards+selector ═══ -->
+        <div class="mn-cabecera">
+
+          <!-- Fila superior: back+título (izq) | badge estado + docente (der) -->
+          <div class="mn-cabecera__top">
+            <div class="mn-fila1__titulo">
+              <a href="/notas/estudiante" class="btn-back mn-back">
+                <i data-lucide="arrow-left"></i> Mis materias
+              </a>
+              <h1 class="mn-titulo">Mis notas</h1>
+            </div>
+
+            <!-- Badge + docente a la derecha arriba -->
+            <% if (periodoIdActivo) { %>
+              <%
+                const _secTemp   = seccionesMaterias.find(s => s.materia._id.toString() === materiaIdActiva);
+                const _promTemp  = _secTemp?.promedio !== null && _secTemp?.promedio !== undefined ? _secTemp.promedio.toFixed(2) : null;
+                const _aprobTemp = _secTemp?.aprobada;
+              %>
+              <div class="mn-fila1__derecha">
+                <% if (_promTemp) { %>
+                  <span class="mn-estado-badge <%= _aprobTemp ? 'mn-estado-badge--aprobado' : 'mn-estado-badge--riesgo' %>">
+                    <i data-lucide="<%= _aprobTemp ? 'check-circle-2' : 'alert-triangle' %>"></i>
+                    <%= _aprobTemp ? 'Aprobada' : 'En riesgo' %>
+                  </span>
+                <% } %>
+                <% if (_secTemp?.docente) { %>
+                  <div class="mn-docente">
+                    <div class="mn-docente__avatar">
+                      <%= (_secTemp.docente.nombre.charAt(0) + _secTemp.docente.apellido.charAt(0)).toUpperCase() %>
+                    </div>
+                    <div class="mn-docente__info">
+                      <span class="mn-docente__nombre"><%= _secTemp.docente.nombre %> <%= _secTemp.docente.apellido %></span>
+                      <span class="mn-docente__rol">Docente</span>
+                    </div>
+                  </div>
+                <% } %>
+              </div>
+            <% } %>
           </div>
-        </form>
+
+          <!-- Fila inferior: card materia + card grado + selector de periodo -->
+          <div class="mn-fila1__centro">
+            <div class="acceso-card acceso-card--morado mn-info-card">
+              <div class="tarjeta-stat__icono tarjeta-stat__icono--morado">
+                <i data-lucide="book-open"></i>
+              </div>
+              <div class="tarjeta-stat__datos">
+                <span class="tarjeta-stat__valor mn-info-card__valor"><%= nombreMateria %></span>
+                <span class="tarjeta-stat__etiqueta">Materia</span>
+              </div>
+            </div>
+            <div class="acceso-card acceso-card--azul mn-info-card">
+              <div class="tarjeta-stat__icono tarjeta-stat__icono--azul">
+                <i data-lucide="graduation-cap"></i>
+              </div>
+              <div class="tarjeta-stat__datos">
+                <span class="tarjeta-stat__valor mn-info-card__valor"><%= matricula.gradoId?.nombre %></span>
+                <span class="tarjeta-stat__etiqueta">Grado</span>
+              </div>
+            </div>
+            <form method="GET" action="/notas/estudiante" class="mn-periodo-form">
+              <input type="hidden" name="materiaId" value="<%= materiaIdActiva %>" />
+              <div class="mn-periodo-select-wrap">
+                <i data-lucide="calendar" class="mn-periodo-icono"></i>
+                <select name="periodoId" class="mn-periodo-select" onchange="this.form.submit()">
+                  <option value="">Periodo...</option>
+                  <% periodos.forEach(p => { %>
+                    <option value="<%= p._id %>" <%= periodoIdActivo === p._id?.toString() ? 'selected' : '' %>>
+                      <%= p.nombre %> <%= !p.activo ? '' : '(Activo)' %>
+                    </option>
+                  <% }) %>
+                </select>
+              </div>
+            </form>
+          </div>
+
+        </div><!-- /mn-cabecera -->
 
         <% if (!periodoIdActivo) { %>
           <div class="estado-vacio">
@@ -70,135 +196,127 @@
             <p>Elige el periodo académico para ver tus notas.</p>
           </div>
 
-        <% } else if (seccionesMaterias.length === 0) { %>
-          <div class="estado-vacio">
-            <i data-lucide="bar-chart-2"></i>
-            <h3>Sin notas registradas</h3>
-            <p>Aún no tienes calificaciones en este periodo.</p>
-          </div>
-
         <% } else { %>
-
           <%
-            // Promedio general del periodo
-            const promsConValor = seccionesMaterias.filter(s => s.promedio !== null);
-            const promGeneral = promsConValor.length
-              ? (promsConValor.reduce((acc, s) => acc + s.promedio, 0) / promsConValor.length).toFixed(2)
-              : null;
-            const aprobadoGeneral = promGeneral !== null && parseFloat(promGeneral) >= 3.0;
+            const seccionActual = seccionesMaterias.find(s => s.materia._id.toString() === materiaIdActiva);
           %>
 
-          <!-- Tarjeta de resumen general -->
-          <div class="tarjeta notas-resumen-est">
-            <div class="notas-resumen-est__prom">
-              <span class="notas-resumen-est__num <%= aprobadoGeneral ? 'notas-resumen-est__num--ok' : 'notas-resumen-est__num--mal' %>">
-                <%= promGeneral || '—' %>
-              </span>
-              <span class="notas-resumen-est__label">Promedio general</span>
+          <% if (!seccionActual) { %>
+            <div class="estado-vacio">
+              <i data-lucide="bar-chart-2"></i>
+              <h3>Sin notas registradas</h3>
+              <p>Aún no tienes calificaciones en esta materia para el periodo seleccionado.</p>
             </div>
-            <div class="notas-resumen-est__stats">
-              <div class="notas-resumen-est__stat">
-                <span class="notas-resumen-est__stat-num"><%= seccionesMaterias.length %></span>
-                <span class="notas-resumen-est__stat-label">Materias</span>
-              </div>
-              <div class="notas-resumen-est__stat">
-                <span class="notas-resumen-est__stat-num">
-                  <%= seccionesMaterias.filter(s => s.aprobada).length %>
-                </span>
-                <span class="notas-resumen-est__stat-label">Aprobadas</span>
-              </div>
-              <div class="notas-resumen-est__stat">
-                <span class="notas-resumen-est__stat-num">
-                  <%= seccionesMaterias.filter(s => !s.aprobada && s.promedio !== null).length %>
-                </span>
-                <span class="notas-resumen-est__stat-label">En riesgo</span>
-              </div>
-            </div>
-          </div>
 
-          <!-- Secciones por materia -->
-          <div class="notas-materias-lista">
-            <% seccionesMaterias.forEach(sec => { %>
-              <div class="tarjeta notas-materia-seccion">
-                <!-- Cabecera de la materia -->
-                <div class="notas-materia-cabecera">
-                  <div class="notas-materia-cabecera__info">
-                    <div class="item-icono__circulo item-icono__circulo--azul">
-                      <i data-lucide="book-open"></i>
-                    </div>
-                    <div>
-                      <h3 class="notas-materia-cabecera__nombre"><%= sec.materia.nombre %></h3>
-                      <% if (sec.docente) { %>
-                        <span class="notas-materia-cabecera__docente">
-                          <i data-lucide="user" style="width:12px;height:12px;"></i>
-                          <%= sec.docente.nombre %> <%= sec.docente.apellido %>
-                        </span>
-                      <% } %>
-                    </div>
-                  </div>
-                  <div class="notas-materia-cabecera__prom">
-                    <span class="nota-promedio nota-promedio--<%= sec.aprobada ? 'ok' : (sec.promedio !== null ? 'mal' : 'neutro') %> nota-promedio--grande">
-                      <%= sec.promedio !== null ? sec.promedio.toFixed(2) : '—' %>
-                    </span>
-                    <% if (sec.promedio !== null) { %>
-                      <span class="badge <%= sec.aprobada ? 'badge--activo' : 'badge--error' %>">
-                        <%= sec.aprobada ? 'Aprobada' : 'En riesgo' %>
-                      </span>
-                    <% } %>
-                  </div>
+          <% } else { %>
+            <%
+              const promGeneral = seccionActual.promedio !== null ? seccionActual.promedio.toFixed(2) : null;
+              const aprobado    = seccionActual.aprobada;
+              const reprobadas  = seccionActual.notas.filter(n => n.valor < 3).length;
+            %>
+
+            <!-- ═══ TÍTULO ANÁLISIS ═══ -->
+            <div class="mn-analisis-titulo">
+              <i data-lucide="bar-chart-2"></i>
+              Análisis de notas
+            </div>
+
+            <!-- ═══ FILA 2: Cards de stats ═══ -->
+            <div class="mn-stats-fila">
+
+              <div class="mn-stat-card acceso-card--verde">
+                <div class="mn-stat-card__icono">
+                  <i data-lucide="trending-up"></i>
                 </div>
-
-                <!-- Tabla de notas de la materia -->
-                <% if (sec.notas.length > 0) { %>
-                  <div class="notas-tabla-est">
-                    <table class="tabla">
-                      <thead>
-                        <tr>
-                          <th>Actividad</th>
-                          <th>Nota</th>
-                          <th>Estado</th>
-                          <th>Comentario docente</th>
-                          <th>Fecha</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <% sec.notas.forEach(nota => { %>
-                          <tr>
-                            <td>
-                              <a href="/actividades/estudiante/<%= nota.actividadId?._id %>" class="enlace-actividad">
-                                <%= nota.actividadId?.titulo || '—' %>
-                              </a>
-                            </td>
-                            <td>
-                              <span class="nota-valor nota-valor--<%= nota.valor >= 3 ? 'ok' : 'mal' %>">
-                                <%= nota.valor.toFixed(1) %>
-                              </span>
-                            </td>
-                            <td>
-                              <span class="badge <%= nota.valor >= 3 ? 'badge--activo' : 'badge--error' %>">
-                                <%= nota.valor >= 3 ? 'Aprobada' : 'Reprobada' %>
-                              </span>
-                            </td>
-                            <td class="texto-secundario texto-sm">
-                              <%= nota.comentarioDocente || '—' %>
-                            </td>
-                            <td class="texto-secundario texto-sm">
-                              <%= new Date(nota.createdAt).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %>
-                            </td>
-                          </tr>
-                        <% }) %>
-                      </tbody>
-                    </table>
-                  </div>
-                <% } else { %>
-                  <p class="texto-vacio" style="padding:12px 0;">Sin notas registradas en esta materia.</p>
-                <% } %>
-
+                <span class="mn-stat-card__num mn-stat-card__num--<%= aprobado ? 'ok' : (promGeneral ? 'mal' : 'neutral') %>">
+                  <%= promGeneral || '—' %>
+                </span>
+                <span class="mn-stat-card__label">Promedio</span>
               </div>
-            <% }) %>
-          </div>
 
+              <div class="mn-stat-card acceso-card--morado">
+                <div class="mn-stat-card__icono">
+                  <i data-lucide="clipboard-list"></i>
+                </div>
+                <span class="mn-stat-card__num mn-stat-card__num--neutral">
+                  <%= seccionActual.notas.length %>
+                </span>
+                <span class="mn-stat-card__label">Actividades</span>
+              </div>
+
+              <div class="mn-stat-card acceso-card--verde">
+                <div class="mn-stat-card__icono">
+                  <i data-lucide="check-circle-2"></i>
+                </div>
+                <span class="mn-stat-card__num mn-stat-card__num--ok">
+                  <%= seccionActual.notas.filter(n => n.valor >= 3).length %>
+                </span>
+                <span class="mn-stat-card__label">Aprobadas</span>
+              </div>
+
+              <div class="mn-stat-card mn-stat-card--rojo">
+                <div class="mn-stat-card__icono">
+                  <i data-lucide="x-circle"></i>
+                </div>
+                <span class="mn-stat-card__num mn-stat-card__num--<%= reprobadas > 0 ? 'mal' : 'neutral' %>">
+                  <%= reprobadas %>
+                </span>
+                <span class="mn-stat-card__label">Reprobadas</span>
+              </div>
+
+            </div><!-- /mn-stats-fila -->
+
+            <!-- ═══ TABLA DE NOTAS ═══ -->
+            <% if (seccionActual.notas.length > 0) { %>
+              <div class="tabla-contenedor tabla-contenedor--scroll tabla-container">
+                <table class="tabla">
+                  <thead>
+                    <tr>
+                      <th>Actividad</th>
+                      <th>Nota</th>
+                      <th>Estado</th>
+                      <th>Comentario docente</th>
+                      <th>Fecha</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% seccionActual.notas.forEach(nota => { %>
+                      <tr>
+                        <td style="text-align:left;">
+                          <a href="/actividades/estudiante/<%= nota.actividadId?._id %>" class="enlace-actividad">
+                            <%= nota.actividadId?.titulo || '—' %>
+                          </a>
+                        </td>
+                        <td>
+                          <span class="nota-valor nota-valor--<%= nota.valor >= 3 ? 'ok' : 'mal' %>">
+                            <%= nota.valor.toFixed(1) %>
+                          </span>
+                        </td>
+                        <td>
+                          <span class="badge <%= nota.valor >= 3 ? 'badge--activo' : 'badge--error' %>">
+                            <%= nota.valor >= 3 ? 'Aprobada' : 'Reprobada' %>
+                          </span>
+                        </td>
+                        <td class="texto-secundario texto-sm"><%= nota.comentarioDocente || '—' %></td>
+                        <td class="texto-secundario texto-sm">
+                          <%= new Date(nota.createdAt).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            <% } else { %>
+              <div class="estado-vacio">
+                <i data-lucide="bar-chart-2"></i>
+                <h3>Sin notas</h3>
+                <p>No hay calificaciones registradas en esta materia para el periodo seleccionado.</p>
+              </div>
+            <% } %>
+
+          <% } %>
         <% } %>
+
       <% } %>
 
     </main>
@@ -206,6 +324,8 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
-  <script>lucide.createIcons();</script>
+  <script>
+    lucide.createIcons();
+  </script>
 </body>
 </html>

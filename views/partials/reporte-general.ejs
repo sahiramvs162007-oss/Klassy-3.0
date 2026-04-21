@@ -53,11 +53,11 @@
   </div>
 
   <!-- Tabla por grado -->
-  <div class="tabla-contenedor tabla-contenedor--scroll">
+  <div class="tabla-contenedor tabla-contenedor--scroll tabla-contenedor--sticky-col">
     <table class="tabla">
       <thead>
         <tr>
-          <th>Grado</th>
+          <th class="th--sticky">Grado</th>
           <th>Nivel</th>
           <th>Total</th>
           <th>Aprobados</th>
@@ -69,7 +69,7 @@
       <tbody id="tbodyReporteGeneral">
         <% reporte.grados.forEach(g => { %>
           <tr>
-            <td><strong><%= g.nombre %></strong></td>
+            <td class="td--sticky"><strong><%= g.nombre %></strong></td>
             <td style="text-align:center;"><span class="badge badge--azul">Nivel <%= g.nivel %></span></td>
             <td style="text-align:center;"><%= g.total %></td>
             <td style="text-align:center;color:var(--verde-600);font-weight:600;"><%= g.aprobados %></td>

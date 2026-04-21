@@ -562,3 +562,91 @@ body {
   filter: drop-shadow(0 1px 5px rgba(74, 239, 248, 0.5));
   mix-blend-mode: normal;
 }
+
+/* ══════════════════════════════════════
+   📱 MOBILE PERSONALIZADO (TU DISEÑO)
+   ══════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Layout general */
+  .login-container {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  /* ❌ Eliminamos slider */
+  .right {
+    display: none;
+  }
+
+  /* ✅ Ajustamos fondo */
+  .left {
+    padding: 80px 20px 40px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ✅ TÍTULO ARRIBA CENTRADO */
+  .titulo-central {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 40px;
+    letter-spacing: 4px;
+    text-align: center;
+  }
+
+  /* ✅ FORM CENTRADO Y NO FULL WIDTH */
+  .card-wrapper {
+    max-width: 360px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .card {
+    padding: 30px 24px;
+    border-radius: 18px;
+  }
+
+  /* Inputs cómodos */
+  .input-group input {
+    font-size: 16px;
+  }
+
+  /* Botón más usable */
+  .btn {
+    padding: 15px;
+    font-size: 16px;
+  }
+
+  /* ✅ MANTENER TAGS (pero ordenados) */
+  .subject-tag {
+    font-size: 0.65rem;
+    padding: 4px 10px;
+    opacity: 0.85;
+  }
+
+  /* Reubicar para que no estorben */
+  .tag-math { top: 10%; left: 5%; }
+  .tag-sci  { top: 12%; right: 5%; }
+  .tag-lit  { bottom: 12%; left: 5%; }
+  .tag-hist { bottom: 10%; right: 5%; }
+
+  .tag-comp { top: 25%; left: 8%; }
+  .tag-eng  { top: 30%; right: 8%; }
+  .tag-art  { bottom: 25%; left: 10%; }
+  .tag-music{ bottom: 28%; right: 10%; }
+
+  .tag-phys { top: 45%; left: 6%; }
+  .tag-bio  { top: 50%; right: 6%; }
+
+  /* Opcional: suavizar manchas */
+  .mancha {
+    width: 150px;
+    height: 150px;
+    filter: blur(60px);
+    opacity: 0.25;
+  }
+}

@@ -45,20 +45,64 @@
 
           <!-- Sidebar de boletines disponibles -->
           <div class="boletin-sidebar">
-            <h3 class="boletin-sidebar__titulo">Periodos disponibles</h3>
-            <% boletines.forEach(b => { %>
-              <a href="/boletines/estudiante?boletinId=<%= b._id %>"
-                class="boletin-item-lista <%= boletinActual && boletinActual._id.toString() === b._id.toString() ? 'boletin-item-lista--activo' : '' %>">
-                <div class="boletin-item-lista__num"><%= b.numeroPeriodo %></div>
-                <div class="boletin-item-lista__info">
-                  <span class="boletin-item-lista__periodo"><%= b.nombrePeriodo %></span>
-                  <span class="boletin-item-lista__año"><%= b.año %> — <%= b.nombreGrado %></span>
+
+            <!-- Selectores de año y periodo -->
+            <div class="boletin-filtros">
+              <div class="boletin-filtros__campo">
+                <label class="boletin-filtros__label" for="selectAño">
+                  <i data-lucide="calendar" class="boletin-filtros__icono"></i>
+                  Año escolar
+                </label>
+                <div class="boletin-select-wrap">
+                  <select id="selectAño" class="boletin-select"
+                    data-año-default="<%= añoDefault %>">
+                    <%
+                      const añosUnicos = [...new Set(boletines.map(b => b.año))].sort((a, b) => b - a);
+                    %>
+                    <% añosUnicos.forEach(año => { %>
+                      <option value="<%= año %>" <%= año === añoDefault ? 'selected' : '' %>>
+                        <%= año %>
+                      </option>
+                    <% }) %>
+                  </select>
+                  <i data-lucide="chevron-down" class="boletin-select-wrap__chevron"></i>
                 </div>
-                <span class="badge <%= b.aprobadoGeneral ? 'badge--activo' : 'badge--error' %> boletin-item-lista__badge">
-                  <%= b.promedioGeneral.toFixed(1) %>
-                </span>
-              </a>
-            <% }) %>
+              </div>
+
+              <div class="boletin-filtros__campo">
+                <label class="boletin-filtros__label" for="selectPeriodo">
+                  <i data-lucide="bookmark" class="boletin-filtros__icono"></i>
+                  Periodo
+                </label>
+                <div class="boletin-select-wrap">
+                  <select id="selectPeriodo" class="boletin-select"
+                    data-periodo-default="<%= periodoDefault %>">
+                    <!-- Poblado dinámicamente por boletines.js -->
+                  </select>
+                  <i data-lucide="chevron-down" class="boletin-select-wrap__chevron"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lista de boletines (filtrada por JS) -->
+            <div id="listaBoletines">
+              <% boletines.forEach(b => { %>
+                <a href="/boletines/estudiante?boletinId=<%= b._id %>"
+                  class="boletin-item-lista <%= boletinActual && boletinActual._id.toString() === b._id.toString() ? 'boletin-item-lista--activo' : '' %>"
+                  data-año="<%= b.año %>"
+                  data-periodo="<%= b.numeroPeriodo %>">
+                  <div class="boletin-item-lista__num"><%= b.numeroPeriodo %></div>
+                  <div class="boletin-item-lista__info">
+                    <span class="boletin-item-lista__periodo"><%= b.nombrePeriodo %></span>
+                    <span class="boletin-item-lista__año"><%= b.año %> — <%= b.nombreGrado %></span>
+                  </div>
+                  <span class="badge <%= b.aprobadoGeneral ? 'badge--activo' : 'badge--error' %> boletin-item-lista__badge">
+                    <%= b.promedioGeneral.toFixed(1) %>
+                  </span>
+                </a>
+              <% }) %>
+            </div>
+
           </div>
 
           <!-- Contenido del boletín seleccionado -->
@@ -70,12 +114,16 @@
 
         </div>
 
+        <!-- Datos para el JS (oculto, sin lógica en EJS) -->
+        <script id="boletines-data" type="application/json"><%- boletinesJSON %></script>
+
       <% } %>
 
     </main>
   </div>
 
   <script src="/js/main.js"></script>
+  <script src="/js/boletines.js"></script>
   <script src="/js/notificaciones.js"></script>
   <script>lucide.createIcons();</script>
 </body>

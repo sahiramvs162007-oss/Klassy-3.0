@@ -50,3 +50,20 @@
   flex-direction: column;
   gap: 22px;
 }
+/* ─── MÓVIL: sin margen lateral del sidebar ─────────────────────── */
+@media (max-width: 768px) {
+  .contenedor-principal {
+    margin-left: 0 !important;
+  }
+
+  /* El hover del sidebar tampoco debe empujar el contenido en móvil */
+  .sidebar:hover ~ .contenedor-principal {
+    margin-left: 0 !important;
+  }
+
+  /* El contenido ocupa casi todo el ancho */
+  .contenido {
+    margin: 1.5% 2% !important;
+    border-radius: 16px;
+  }
+}

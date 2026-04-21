@@ -5,135 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KLASSY — Historial de Cambios</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Fraunces:wght@700&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,wght@0,700;1,400&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
-  <link rel="stylesheet" href="/css/dashboard.css" />
-  <style>
-    .historial-cabecera {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-    .historial-filtros {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-      align-items: flex-end;
-    }
-    .historial-filtros input {
-      padding: 8px 12px;
-      border: 1px solid var(--borde);
-      border-radius: 8px;
-      font-size: 0.85rem;
-      background: var(--fondo-tarjeta);
-      color: var(--texto);
-      min-width: 160px;
-    }
-    .historial-filtros input:focus {
-      outline: none;
-      border-color: var(--primario);
-    }
-    .historial-tabla-wrap {
-      overflow-x: auto;
-      background: var(--fondo-tarjeta);
-      border-radius: 12px;
-      border: 1px solid var(--borde);
-    }
-    .historial-tabla {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.83rem;
-    }
-    .historial-tabla thead tr {
-      background: var(--fondo);
-      border-bottom: 2px solid var(--borde);
-    }
-    .historial-tabla th {
-      padding: 12px 16px;
-      text-align: left;
-      font-weight: 600;
-      color: var(--texto-secundario);
-      white-space: nowrap;
-    }
-    .historial-tabla td {
-      padding: 11px 16px;
-      border-bottom: 1px solid var(--borde);
-      vertical-align: middle;
-    }
-    .historial-tabla tr:last-child td { border-bottom: none; }
-    .historial-tabla tr:hover td { background: var(--fondo); }
-
-    .badge-accion {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    .badge-accion--usuario    { background: #dbeafe; color: #1d4ed8; }
-    .badge-accion--nota       { background: #dcfce7; color: #15803d; }
-    .badge-accion--grado      { background: #fef9c3; color: #a16207; }
-    .badge-accion--materia    { background: #ffedd5; color: #c2410c; }
-    .badge-accion--periodo    { background: #f3e8ff; color: #7e22ce; }
-    .badge-accion--actividad  { background: #cffafe; color: #0e7490; }
-    .badge-accion--matricula  { background: #fce7f3; color: #be185d; }
-    .badge-accion--asignacion { background: #e0e7ff; color: #4338ca; }
-    .badge-accion--otro       { background: #f1f5f9; color: #475569; }
-
-    .campo-valor {
-      font-family: monospace;
-      font-size: 0.8rem;
-    }
-    .campo-antes { color: #ef4444; }
-    .campo-despues { color: #16a34a; }
-    .flecha { color: var(--texto-secundario); margin: 0 4px; }
-
-    .paginacion {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .paginacion__info { font-size: 0.85rem; color: var(--texto-secundario); }
-    .paginacion__botones { display: flex; gap: 6px; }
-    .paginacion__botones a {
-      padding: 6px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--borde);
-      font-size: 0.83rem;
-      text-decoration: none;
-      color: var(--texto);
-      background: var(--fondo-tarjeta);
-    }
-    .paginacion__botones a:hover { background: var(--fondo); }
-    .paginacion__botones a.activo {
-      background: var(--primario);
-      color: #fff;
-      border-color: var(--primario);
-    }
-
-    .vacio {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--texto-secundario);
-    }
-    .vacio i { width: 48px; height: 48px; margin-bottom: 12px; opacity: .4; }
-  </style>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/paginas/historial.css">
 </head>
 <body>
+
   <%- include('../partials/sidebar') %>
+
   <div class="contenedor-principal">
     <%- include('../partials/topbar') %>
+
     <main class="contenido">
 
+      <!-- Flash -->
       <% if (mensajeExito && mensajeExito.length > 0) { %>
         <div class="alerta alerta--exito"><i data-lucide="check-circle"></i><span><%= mensajeExito %></span></div>
       <% } %>
@@ -141,67 +29,162 @@
         <div class="alerta alerta--error"><i data-lucide="alert-circle"></i><span><%= mensajeError %></span></div>
       <% } %>
 
-      <!-- Cabecera -->
-      <div class="historial-cabecera">
+      <!-- ── Cabecera ─────────────────────────────────────────────────────── -->
+      <div class="cabecera-pagina">
         <div>
           <h1 class="cabecera-pagina__titulo">Historial de Cambios</h1>
-          <p class="cabecera-pagina__subtitulo">Total de registros: <strong><%= total %></strong></p>
+          <p class="cabecera-pagina__subtitulo">
+            <i data-lucide="database" style="width:13px;height:13px;vertical-align:middle;margin-right:4px;"></i>
+            <%= total %> registro<%= total !== 1 ? 's' : '' %> en el sistema
+          </p>
         </div>
         <a href="/historial/descargar" class="btn btn--secundario">
           <i data-lucide="download"></i> Descargar .log
         </a>
       </div>
 
-      <!-- Filtros -->
-      <form method="GET" action="/historial" class="historial-filtros">
-        <input
-          type="text"
-          name="accion"
-          placeholder="Acción (ej: EDITAR_USUARIO)"
-          value="<%= filtros.accion || '' %>"
-        />
-        <input
-          type="text"
-          name="usuario"
-          placeholder="Nombre o correo del usuario"
-          value="<%= filtros.usuario || '' %>"
-        />
-        <input
-          type="text"
-          name="campo"
-          placeholder="Campo (ej: correo, rol)"
-          value="<%= filtros.campo || '' %>"
-        />
-        <button type="submit" class="btn btn--primario">
-          <i data-lucide="search"></i> Filtrar
-        </button>
-        <a href="/historial" class="btn btn--secundario">
-          <i data-lucide="x"></i> Limpiar
-        </a>
-      </form>
+      <!-- ── Panel de filtros ─────────────────────────────────────────────── -->
+      <div class="busqueda-panel" style="width:100%;margin-bottom:20px;">
 
-      <!-- Tabla -->
-      <% if (lineas.length === 0) { %>
-        <div class="vacio">
-          <i data-lucide="clock"></i>
-          <p>No hay registros en el historial todavía.</p>
+        <!-- Stat card lateral -->
+        <div class="acceso-card acceso-card--morado" style="min-height:110px;min-width:120px;">
+          <div class="tarjeta-stat__icono tarjeta-stat__icono--morado">
+            <i data-lucide="history"></i>
+          </div>
+          <div class="tarjeta-stat__datos" style="text-align:center;">
+            <span class="tarjeta-stat__valor" style="font-size:1.4rem;"><%= total %></span>
+            <span class="tarjeta-stat__etiqueta">Registros</span>
+          </div>
         </div>
+
+        <!-- Formulario de filtros -->
+        <form method="GET" action="/historial" class="busqueda-panel__barra busqueda-panel__barra--morado" id="formFiltrosHistorial">
+
+          <!-- Fila superior: inputs de búsqueda -->
+          <div class="barra-filtros__fila-superior" style="padding:0;gap:10px;flex-wrap:wrap;">
+
+            <!-- Acción -->
+            <div class="busqueda-panel__campo">
+              <i data-lucide="zap" class="busqueda-panel__icono-buscar"></i>
+              <input
+                type="text"
+                name="accion"
+                value="<%= filtros.accion || '' %>"
+                placeholder="Acción (ej: EDITAR_USUARIO)"
+                class="busqueda-panel__entrada"
+              />
+            </div>
+
+            <!-- Usuario -->
+            <div class="busqueda-panel__campo">
+              <i data-lucide="user" class="busqueda-panel__icono-buscar"></i>
+              <input
+                type="text"
+                name="usuario"
+                value="<%= filtros.usuario || '' %>"
+                placeholder="Nombre o correo del usuario"
+                class="busqueda-panel__entrada"
+              />
+            </div>
+
+            <!-- Campo -->
+            <div class="busqueda-panel__campo">
+              <i data-lucide="tag" class="busqueda-panel__icono-buscar"></i>
+              <input
+                type="text"
+                name="campo"
+                value="<%= filtros.campo || '' %>"
+                placeholder="Campo (ej: correo, rol)"
+                class="busqueda-panel__entrada"
+              />
+            </div>
+
+            <!-- Acciones -->
+            <div class="busqueda-panel__acciones">
+              <button type="submit" class="btn btn--primario btn--sm">
+                <i data-lucide="search"></i> Filtrar
+              </button>
+              <% if (filtros.accion || filtros.usuario || filtros.campo) { %>
+                <a href="/historial" class="btn btn--secundario btn--sm">
+                  <i data-lucide="x"></i> Limpiar
+                </a>
+              <% } %>
+            </div>
+
+          </div>
+
+          <!-- Chips de filtros activos -->
+          <% if (filtros.accion || filtros.usuario || filtros.campo) { %>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+              <% if (filtros.accion) { %>
+                <span class="badge badge--azul">
+                  <i data-lucide="zap"></i> <%= filtros.accion %>
+                </span>
+              <% } %>
+              <% if (filtros.usuario) { %>
+                <span class="badge badge--morado">
+                  <i data-lucide="user"></i> <%= filtros.usuario %>
+                </span>
+              <% } %>
+              <% if (filtros.campo) { %>
+                <span class="badge badge--naranja">
+                  <i data-lucide="tag"></i> campo: <%= filtros.campo %>
+                </span>
+              <% } %>
+            </div>
+          <% } %>
+
+        </form>
+      </div>
+
+      <!-- ── Contenido ────────────────────────────────────────────────────── -->
+      <% if (lineas.length === 0) { %>
+
+        <div class="estado-vacio">
+          <i data-lucide="clock"></i>
+          <h3>Sin registros</h3>
+          <p>No hay entradas en el historial
+            <%= (filtros.accion || filtros.usuario || filtros.campo) ? 'para los filtros aplicados.' : 'todavía.' %>
+          </p>
+          <% if (filtros.accion || filtros.usuario || filtros.campo) { %>
+            <a href="/historial" class="btn btn--secundario btn--sm" style="margin-top:8px;">
+              <i data-lucide="x"></i> Limpiar filtros
+            </a>
+          <% } %>
+        </div>
+
       <% } else { %>
-        <div class="historial-tabla-wrap">
-          <table class="historial-tabla">
+
+        <!-- Tabla -->
+        <div class="tabla-contenedor tabla-contenedor--scroll">
+          <table class="tabla hst-tabla">
             <thead>
               <tr>
-                <th>Fecha y hora</th>
-                <th>Acción</th>
-                <th>Usuario</th>
-                <th>Campo</th>
-                <th>Antes → Después</th>
+                <th class="hst-th hst-th--fecha">
+                  <i data-lucide="clock" style="width:12px;height:12px;vertical-align:middle;margin-right:4px;"></i>
+                  Fecha y hora
+                </th>
+                <th class="hst-th">
+                  <i data-lucide="zap" style="width:12px;height:12px;vertical-align:middle;margin-right:4px;"></i>
+                  Acción
+                </th>
+                <th class="hst-th">
+                  <i data-lucide="user" style="width:12px;height:12px;vertical-align:middle;margin-right:4px;"></i>
+                  Usuario
+                </th>
+                <th class="hst-th">
+                  <i data-lucide="tag" style="width:12px;height:12px;vertical-align:middle;margin-right:4px;"></i>
+                  Campo
+                </th>
+                <th class="hst-th hst-th--cambio">
+                  <i data-lucide="arrow-right-left" style="width:12px;height:12px;vertical-align:middle;margin-right:4px;"></i>
+                  Antes → Después
+                </th>
               </tr>
             </thead>
             <tbody>
               <% lineas.forEach(linea => { %>
                 <%
-                  // Parsear: [2026-04-08 6:00pm] ACCION | usuario: X | campo: Y | antes: A | despues: B
                   const matchFecha   = linea.match(/^\[([^\]]+)\]/);
                   const matchAccion  = linea.match(/\]\s+([A-Z_]+)\s+\|/);
                   const matchUsuario = linea.match(/usuario:\s*([^|]+)/);
@@ -216,26 +199,58 @@
                   const antes   = matchAntes   ? matchAntes[1].trim()   : '—';
                   const despues = matchDespues ? matchDespues[1].trim() : '—';
 
-                  // Color del badge según acción
-                  let badgeClase = 'badge-accion--otro';
-                  if (accion.includes('USUARIO'))    badgeClase = 'badge-accion--usuario';
-                  else if (accion.includes('NOTA'))  badgeClase = 'badge-accion--nota';
-                  else if (accion.includes('GRADO')) badgeClase = 'badge-accion--grado';
-                  else if (accion.includes('MATERIA'))   badgeClase = 'badge-accion--materia';
-                  else if (accion.includes('PERIODO'))   badgeClase = 'badge-accion--periodo';
-                  else if (accion.includes('ACTIVIDAD')) badgeClase = 'badge-accion--actividad';
-                  else if (accion.includes('MATRICULA')) badgeClase = 'badge-accion--matricula';
-                  else if (accion.includes('ASIGNACION'))badgeClase = 'badge-accion--asignacion';
+                  let badgeCls = 'hst-badge--otro';
+                  if      (accion.includes('USUARIO'))    badgeCls = 'hst-badge--usuario';
+                  else if (accion.includes('NOTA'))       badgeCls = 'hst-badge--nota';
+                  else if (accion.includes('GRADO'))      badgeCls = 'hst-badge--grado';
+                  else if (accion.includes('MATERIA'))    badgeCls = 'hst-badge--materia';
+                  else if (accion.includes('PERIODO'))    badgeCls = 'hst-badge--periodo';
+                  else if (accion.includes('ACTIVIDAD'))  badgeCls = 'hst-badge--actividad';
+                  else if (accion.includes('MATRICULA'))  badgeCls = 'hst-badge--matricula';
+                  else if (accion.includes('ASIGNACION')) badgeCls = 'hst-badge--asignacion';
+                  else if (accion.includes('BOLETIN'))    badgeCls = 'hst-badge--boletin';
+                  else if (accion.includes('RETIRO'))     badgeCls = 'hst-badge--retiro';
+
+                  // Icono de acción
+                  let icono = 'circle-dot';
+                  if      (accion.startsWith('CREAR'))   icono = 'plus-circle';
+                  else if (accion.startsWith('EDITAR'))  icono = 'pencil';
+                  else if (accion.startsWith('ELIMINAR'))icono = 'trash-2';
+                  else if (accion.startsWith('CERRAR'))  icono = 'lock';
+                  else if (accion.startsWith('ACTIVAR')) icono = 'check-circle';
                 %>
-                <tr>
-                  <td style="white-space:nowrap;color:var(--texto-secundario)"><%= fecha %></td>
-                  <td><span class="badge-accion <%= badgeClase %>"><%= accion %></span></td>
-                  <td><%= usuario %></td>
-                  <td><code style="font-size:0.8rem"><%= campo %></code></td>
-                  <td class="campo-valor">
-                    <span class="campo-antes"><%= antes %></span>
-                    <span class="flecha">→</span>
-                    <span class="campo-despues"><%= despues %></span>
+                <tr class="hst-fila">
+                  <td class="hst-td hst-td--fecha">
+                    <div class="hst-fecha">
+                      <i data-lucide="clock" class="hst-fecha__icono"></i>
+                      <%= fecha %>
+                    </div>
+                  </td>
+                  <td class="hst-td">
+                    <span class="hst-badge <%= badgeCls %>">
+                      <i data-lucide="<%= icono %>"></i>
+                      <%= accion %>
+                    </span>
+                  </td>
+                  <td class="hst-td hst-td--usuario">
+                    <div class="hst-usuario">
+                      <div class="hst-usuario__avatar">
+                        <%= usuario !== '—' ? usuario.trim().charAt(0).toUpperCase() : '?' %>
+                      </div>
+                      <span class="hst-usuario__nombre"><%= usuario %></span>
+                    </div>
+                  </td>
+                  <td class="hst-td">
+                    <code class="hst-campo"><%= campo %></code>
+                  </td>
+                  <td class="hst-td hst-td--cambio">
+                    <div class="hst-cambio">
+                      <span class="hst-cambio__antes" title="Valor anterior"><%= antes %></span>
+                      <span class="hst-cambio__flecha">
+                        <i data-lucide="arrow-right"></i>
+                      </span>
+                      <span class="hst-cambio__despues" title="Nuevo valor"><%= despues %></span>
+                    </div>
                   </td>
                 </tr>
               <% }) %>
@@ -243,26 +258,63 @@
           </table>
         </div>
 
-        <!-- Paginación -->
+        <!-- ── Paginación ──────────────────────────────────────────────────── -->
         <% if (totalPaginas > 1) { %>
           <div class="paginacion">
             <span class="paginacion__info">
-              Página <%= pagina %> de <%= totalPaginas %> &nbsp;·&nbsp; <%= total %> registros
+              Página <strong><%= pagina %></strong> de <strong><%= totalPaginas %></strong>
+              &nbsp;·&nbsp; <%= total %> registros
             </span>
-            <div class="paginacion__botones">
+            <div class="paginacion__controles">
+              <!-- Primera página -->
               <% if (pagina > 1) { %>
-                <a href="/historial?pagina=<%= pagina - 1 %>&accion=<%= filtros.accion||'' %>&usuario=<%= filtros.usuario||'' %>&campo=<%= filtros.campo||'' %>">
-                  <i data-lucide="chevron-left"></i> Anterior
+                <a href="/historial?pagina=1&accion=<%= filtros.accion||'' %>&usuario=<%= filtros.usuario||'' %>&campo=<%= filtros.campo||'' %>"
+                   class="paginacion__btn" title="Primera página">
+                  <i data-lucide="chevrons-left" style="width:14px;height:14px;"></i>
+                </a>
+                <a href="/historial?pagina=<%= pagina-1 %>&accion=<%= filtros.accion||'' %>&usuario=<%= filtros.usuario||'' %>&campo=<%= filtros.campo||'' %>"
+                   class="paginacion__btn">
+                  <i data-lucide="chevron-left" style="width:14px;height:14px;"></i> Anterior
+                </a>
+              <% } else { %>
+                <span class="paginacion__btn paginacion__btn--deshabilitado">
+                  <i data-lucide="chevrons-left" style="width:14px;height:14px;"></i>
+                </span>
+              <% } %>
+
+              <!-- Páginas numeradas (máx 5 visibles) -->
+              <%
+                const rangoIni = Math.max(1, pagina - 2);
+                const rangoFin = Math.min(totalPaginas, pagina + 2);
+              %>
+              <% if (rangoIni > 1) { %><span class="paginacion__elipsis">…</span><% } %>
+              <% for (let p = rangoIni; p <= rangoFin; p++) { %>
+                <a href="/historial?pagina=<%= p %>&accion=<%= filtros.accion||'' %>&usuario=<%= filtros.usuario||'' %>&campo=<%= filtros.campo||'' %>"
+                   class="paginacion__btn <%= p === pagina ? 'paginacion__btn--activo' : '' %>">
+                  <%= p %>
                 </a>
               <% } %>
+              <% if (rangoFin < totalPaginas) { %><span class="paginacion__elipsis">…</span><% } %>
+
+              <!-- Siguiente / Última -->
               <% if (pagina < totalPaginas) { %>
-                <a href="/historial?pagina=<%= pagina + 1 %>&accion=<%= filtros.accion||'' %>&usuario=<%= filtros.usuario||'' %>&campo=<%= filtros.campo||'' %>">
-                  Siguiente <i data-lucide="chevron-right"></i>
+                <a href="/historial?pagina=<%= pagina+1 %>&accion=<%= filtros.accion||'' %>&usuario=<%= filtros.usuario||'' %>&campo=<%= filtros.campo||'' %>"
+                   class="paginacion__btn">
+                  Siguiente <i data-lucide="chevron-right" style="width:14px;height:14px;"></i>
                 </a>
+                <a href="/historial?pagina=<%= totalPaginas %>&accion=<%= filtros.accion||'' %>&usuario=<%= filtros.usuario||'' %>&campo=<%= filtros.campo||'' %>"
+                   class="paginacion__btn" title="Última página">
+                  <i data-lucide="chevrons-right" style="width:14px;height:14px;"></i>
+                </a>
+              <% } else { %>
+                <span class="paginacion__btn paginacion__btn--deshabilitado">
+                  <i data-lucide="chevrons-right" style="width:14px;height:14px;"></i>
+                </span>
               <% } %>
             </div>
           </div>
         <% } %>
+
       <% } %>
 
     </main>

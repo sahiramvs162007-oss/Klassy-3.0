@@ -1,8 +1,20 @@
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════════════
    KLASSY — Botones
-   ══════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════════════ */
 
-/* ─── Botón base ────────────────────── */
+/* ─── Variables locales ───────────────────────────────────────────── */
+:root {
+  --btn-primario-bg-inicio: var(--azul-500);
+  --btn-primario-bg-fin:    var(--azul-600);
+  --btn-primario-sombra:    rgba(37, 99, 235, 0.25);
+  --btn-primario-sombra-hover: rgba(37, 99, 235, 0.38);
+
+  --btn-hero-bg-inicio: var(--azul-500);
+  --btn-hero-bg-fin:    #1d4ed8;
+  --btn-hero-sombra:    rgba(37, 99, 235, 0.28);
+}
+
+/* ─── Botón base ──────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -15,25 +27,26 @@
   cursor: pointer;
   white-space: nowrap;
   border: none;
-  transition: background-color var(--trans-rapida),
-              color var(--trans-rapida),
-              border-color var(--trans-rapida),
-              transform 0.2s ease,
-              box-shadow 0.2s ease;
+  transition:
+    background-color var(--trans-rapida),
+    color            var(--trans-rapida),
+    border-color     var(--trans-rapida),
+    transform        0.2s ease,
+    box-shadow       0.2s ease;
 }
 
 .btn svg { width: 15px; height: 15px; stroke-width: 2; }
 
-/* Variantes de color */
+/* ─── Variantes de color ──────────────────────────────────────────── */
 .btn--primario {
-  padding: 10px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  padding: 10px 16px;
+  background: linear-gradient(135deg, var(--btn-primario-bg-inicio), var(--btn-primario-bg-fin));
   color: #fff;
-  box-shadow: 0 6px 14px rgba(37,99,235,0.25);
+  box-shadow: 0 6px 14px var(--btn-primario-sombra);
 }
 .btn--primario:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(37,99,235,0.35);
+  box-shadow: 0 10px 22px var(--btn-primario-sombra-hover);
 }
 
 .btn--secundario {
@@ -56,10 +69,10 @@
   border-color: var(--rojo-600);
 }
 
-/* Tamaño pequeño */
+/* ─── Tamaños ─────────────────────────────────────────────────────── */
 .btn--sm { padding: 5px 10px; font-size: 0.8rem; }
 
-/* ─── Botón hero (dashboard admin) ─── */
+/* ─── Botón hero (dashboard / landing) ───────────────────────────── */
 .btn-hero {
   display: inline-flex;
   align-items: center;
@@ -72,95 +85,156 @@
   cursor: pointer;
   border: none;
   text-decoration: none;
-  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1),
-              box-shadow 0.25s ease,
-              background 0.2s ease;
+  transition:
+    transform  0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease,
+    background 0.2s ease;
 }
 .btn-hero svg { width: 15px; height: 15px; stroke-width: 2; }
 
 .btn-hero--primario {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: linear-gradient(135deg, var(--btn-hero-bg-inicio), var(--btn-hero-bg-fin));
   color: #fff;
-  box-shadow: 0 6px 18px rgba(37,99,235,0.28);
+  box-shadow: 0 6px 18px var(--btn-hero-sombra);
 }
 .btn-hero--primario:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 12px 28px rgba(37,99,235,0.38);
+  box-shadow: 0 12px 28px var(--btn-primario-sombra-hover);
 }
 
 .btn-hero--secundario {
-  background: rgba(255,255,255,0.7);
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
-  color: #334155;
-  border: 1px solid rgba(255,255,255,0.9);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  color: var(--gris-700);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 .btn-hero--secundario:hover {
   transform: translateY(-2px) scale(1.02);
-  background: rgba(255,255,255,0.95);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.10);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.10);
 }
 
-/* ─── Botón de volver (back) ─────────── */
-.back-btn {
+/* ─── Botón volver / back ─────────────────────────────────────────── */
+/* Nota: se unificaron .back-btn y .btn-back en una sola clase */
+.btn-back {
   display: inline-flex;
   align-items: center;
-  background: none;
-  border: none;
-  padding: 6px 14px 6px 10px;
-  color: var(--gris-700);
-  font-size: 0.82rem;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radio);
+  border: 1px solid var(--gris-200);
+  background: var(--gris-50);
+  color: var(--gris-600);
+  font-size: 0.85rem;
   font-weight: 500;
   font-family: var(--fuente-ui);
   cursor: pointer;
-  margin-bottom: 20px;
+  text-decoration: none;
+  transition: background var(--trans-rapida), color var(--trans-rapida);
 }
-.back-btn:hover { color: var(--azul-600); }
-.back-btn svg {
-  width: 14px; height: 14px;
-  stroke: currentColor; fill: none;
-  stroke-width: 2.5;
-  stroke-linecap: round; stroke-linejoin: round;
-  flex-shrink: 0;
+.btn-back:hover {
+  background: var(--gris-100);
+  color: var(--gris-900);
 }
+.btn-back svg { width: 14px; height: 14px; flex-shrink: 0; }
 
-/* ─── Botones icono (tabla) ──────────── */
+/* ─── Botones de icono (acciones en tabla) ────────────────────────── */
 .btn-icono {
-  width: 30px; height: 30px;
-  display: flex; align-items: center; justify-content: center;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--radio);
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background-color var(--trans-rapida),
-              color var(--trans-rapida),
-              border-color var(--trans-rapida);
+  transition:
+    background-color var(--trans-rapida),
+    color            var(--trans-rapida),
+    border-color     var(--trans-rapida);
 }
 .btn-icono svg { width: 14px; height: 14px; stroke-width: 2; }
 
-.btn-icono--editar    { color: var(--azul-600);    background-color: var(--azul-50);    border-color: var(--azul-100); }
-.btn-icono--editar:hover    { background-color: var(--azul-100); }
+.btn-icono--editar     { color: var(--azul-600);    background-color: var(--azul-50);    border-color: var(--azul-100); }
+.btn-icono--editar:hover     { background-color: var(--azul-100); }
 
-.btn-icono--eliminar  { color: var(--rojo-600);    background-color: var(--rojo-100);   border-color: #fecaca; }
-.btn-icono--eliminar:hover  { background-color: #fca5a5; }
+.btn-icono--eliminar   { color: var(--rojo-600);    background-color: var(--rojo-100);   border-color: #fecaca; }
+.btn-icono--eliminar:hover   { background-color: #fca5a5; }
 
-.btn-icono--ver       { color: var(--gris-600);    background-color: var(--gris-100);   border-color: var(--gris-200); }
-.btn-icono--ver:hover       { background-color: var(--gris-200); }
+.btn-icono--ver        { color: var(--gris-600);    background-color: var(--gris-100);   border-color: var(--gris-200); }
+.btn-icono--ver:hover        { background-color: var(--gris-200); }
 
-.btn-icono--activar   { color: var(--verde-600);   background-color: var(--verde-100);  border-color: #bbf7d0; }
-.btn-icono--activar:hover   { background-color: #bbf7d0; }
+.btn-icono--activar    { color: var(--verde-600);   background-color: var(--verde-100);  border-color: #bbf7d0; }
+.btn-icono--activar:hover    { background-color: #bbf7d0; }
 
-.btn-icono--desactivar{ color: var(--naranja-600); background-color: var(--naranja-100); border-color: #fed7aa; }
-.btn-icono--desactivar:hover{ background-color: #fed7aa; }
+.btn-icono--desactivar { color: var(--naranja-600); background-color: var(--naranja-100); border-color: #fed7aa; }
+.btn-icono--desactivar:hover { background-color: #fed7aa; }
 
-/* Grupo de acciones en tabla */
-.acciones-tabla { display: flex; gap: 6px; align-items: center; }
+/* Grupo de acciones en celda de tabla */
+.acciones-tabla {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+/* ══════════════════════════════════════
+   🍔 BOTÓN MENÚ USUARIO
+   ══════════════════════════════════════ */
+.topbar__menu-user {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  margin-left: 10px;
+}
 
-.btn-back {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 0.85rem; font-weight: 600; color: var(--gris-600);
-      text-decoration: none; padding: 6px 12px; border-radius: var(--radio);
-      border: 1px solid var(--gris-200); background: var(--gris-50);
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-    .btn-back:hover { background: var(--gris-100); color: var(--gris-900); }
-    .btn-back svg { width: 14px; height: 14px; }
+/* ══════════════════════════════════════
+   📱 MENÚ LATERAL
+   ══════════════════════════════════════ */
+.menu-mobile {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 75%;
+  height: 100vh;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  padding: 80px 20px;
+  gap: 20px;
+  transition: right 0.3s ease;
+  z-index: 2000;
+  box-shadow: -10px 0 30px rgba(0,0,0,0.15);
+}
+
+.menu-mobile a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.menu-mobile a:hover {
+  color: #2563eb;
+}
+
+/* ACTIVO */
+.menu-mobile.active {
+  right: 0;
+}
+
+/* ══════════════════════════════════════
+   📱 SOLO MÓVIL
+   ══════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Mostrar botón */
+  .topbar__menu-user {
+    display: block;
+  }
+
+  /* Opcional: ocultar campana si quieres más limpio */
+  /* .notif-campana { display: none; } */
+}

@@ -10,6 +10,8 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
   <link rel="stylesheet" href="/css/main.css">
+
+  
 </head>
 <body>
   <%- include('../partials/sidebar') %>
@@ -144,14 +146,14 @@
       </div>
 
       <!-- Tabla -->
-      <div class="tabla-contenedor">
+      <div class="tabla-contenedor tabla-container">
         <% if (grados.length === 0) { %>
           <div class="tabla-vacia">
             <i data-lucide="graduation-cap"></i>
             <p>No hay grados registrados aún.</p>
           </div>
         <% } else { %>
-          <table class="tabla tabla--cards">
+          <table class="tabla tabla--cards ">
             <thead>
               <tr>
                 <th>Grado</th>
@@ -311,6 +313,7 @@
     </form>
   </template>
 
+  
   <script src="/js/notificaciones.js"></script>
   <script src="/js/drawer.js"></script>
   <script src="/js/paginacion.js"></script>

@@ -230,7 +230,7 @@ const editarNotaDocente = async (req, res) => {
 const panelEstudiante = async (req, res) => {
   try {
     const estudianteId = req.session.usuario._id;
-    const { periodoId } = req.query;
+    const { periodoId, materiaId: materiaIdActiva = '' } = req.query;
 
     // Matrícula activa
     const matricula = await Matricula.findOne({
@@ -244,15 +244,53 @@ const panelEstudiante = async (req, res) => {
     const periodoActivo = periodos.find(p => p.activo) || periodos[periodos.length - 1];
     const periodoFiltro = periodoId || periodoActivo?._id?.toString();
 
+    // Bloques de materias con personalización del docente (para la pantalla de selección)
+    let bloquesMateria = [];
+    if (matricula) {
+      const materiasGrado = await Materia.find({
+        _id: { $in: matricula.gradoId.materias },
+      }).select('nombre descripcion');
+
+      const asignaciones = await AsignacionDocente.find({
+        gradoId: matricula.gradoId._id,
+        año:     AÑO_ACTUAL,
+        estado:  'activo',
+      }).select('materiaId fondoTipo fondoValor colorTitulo');
+
+      const personalizMap = {};
+      for (const asig of asignaciones) {
+        const mId = asig.materiaId.toString();
+        if (!personalizMap[mId] && asig.fondoTipo) {
+          personalizMap[mId] = {
+            fondoTipo:   asig.fondoTipo,
+            fondoValor:  asig.fondoValor,
+            colorTitulo: asig.colorTitulo,
+          };
+        }
+      }
+
+      const colores = ['bloque--azul','bloque--verde','bloque--morado','bloque--naranja','bloque--rojo'];
+      bloquesMateria = materiasGrado.map((m, i) => ({
+        materia:     m,
+        colorClase:  colores[i % colores.length],
+        fondoTipo:   personalizMap[m._id.toString()]?.fondoTipo   || '',
+        fondoValor:  personalizMap[m._id.toString()]?.fondoValor  || '',
+        colorTitulo: personalizMap[m._id.toString()]?.colorTitulo || '',
+      }));
+    }
+
     let seccionesMaterias = [];
 
     if (matricula && periodoFiltro) {
-      // Todas las notas del estudiante en este periodo
-      const notas = await Nota.find({
+      // Todas las notas del estudiante en este periodo (filtradas por materia si está activa)
+      const filtroNotas = {
         estudianteId,
         periodoId: periodoFiltro,
         gradoId:   matricula.gradoId._id,
-      })
+      };
+      if (materiaIdActiva) filtroNotas.materiaId = materiaIdActiva;
+
+      const notas = await Nota.find(filtroNotas)
         .populate('materiaId',    'nombre')
         .populate('actividadId',  'titulo fechaLimite')
         .populate('docenteId',    'nombre apellido')
@@ -299,8 +337,10 @@ const panelEstudiante = async (req, res) => {
       titulo:            'Mis Notas',
       paginaActual:      'notas',
       seccionesMaterias,
+      bloquesMateria,
       periodos,
       periodoIdActivo:   periodoFiltro || null,
+      materiaIdActiva:   materiaIdActiva || null,
       matricula,
       mensajeExito:      req.flash('exito'),
       mensajeError:      req.flash('error'),

@@ -31,7 +31,10 @@
 
       <!-- Cabecera -->
       <div class="cabecera-pagina">
-        <div>
+        <div class="actividades-header">
+          <a href="/actividades/estudiante" class="btn-back">
+            <i data-lucide="arrow-left"></i> Mis materias
+          </a>
           <h1 class="cabecera-pagina__titulo">Mis Actividades</h1>
           <% if (matricula) { %>
             <p class="cabecera-pagina__subtitulo">
@@ -106,33 +109,28 @@
       <% } else { %>
 
         <!-- ── ACTIVIDADES DE LA MATERIA ── -->
-        <div class="actividades-header">
-          <a href="/actividades/estudiante" class="btn-back">
-            <i data-lucide="arrow-left"></i> Mis materias
-          </a>
-          <div class="actividades-header__info">
-            <div class="actividades-header__tags">
-              <span class="chip chip--materia"><i data-lucide="book-open"></i> <%= materiaSeleccionada?.nombre %></span>
-              <span class="chip chip--grado"><i data-lucide="graduation-cap"></i> <%= matricula.gradoId?.nombre %></span>
-            </div>
+        <div class="busqueda-panel">
+          <div class="actividades-header__tags">
+            <span class="acceso-card acceso-card--morado"><i data-lucide="book-open"></i> <%= materiaSeleccionada?.nombre %></span>
+            <span class="acceso-card acceso-card--azul"><i data-lucide="graduation-cap"></i> <%= matricula.gradoId?.nombre %></span>
           </div>
+          <form method="GET" action="/actividades/estudiante" class="busqueda-panel__barra busqueda-panel__barra--morado" style="max-width:400px; ">
+            <input type="hidden" name="materiaId" value="<%= materiaIdActiva %>" />
+            <select name="filtroPeriodo" class="barra-filtros-est__select" onchange="this.form.submit()" style="width: 100%;">
+              <option value="">Todos los periodos</option>
+              <% periodos.forEach(function(p) { %>
+                <option value="<%= p._id %>" <%= filtroPeriodo === p._id.toString() ? 'selected' : '' %>><%= p.nombre %></option>
+              <% }); %>
+            </select>
+            <% if (filtroPeriodo) { %>
+              <a href="/actividades/estudiante?materiaId=<%= materiaIdActiva %>" class="btn btn--secundario btn--sm">
+                <i data-lucide="x"></i> Limpiar
+              </a>
+            <% } %>
+          </form>
         </div>
 
         <!-- Filtro periodo -->
-        <form method="GET" action="/actividades/estudiante" class="barra-filtros-est">
-          <input type="hidden" name="materiaId" value="<%= materiaIdActiva %>" />
-          <select name="filtroPeriodo" class="barra-filtros-est__select" onchange="this.form.submit()">
-            <option value="">Todos los periodos</option>
-            <% periodos.forEach(function(p) { %>
-              <option value="<%= p._id %>" <%= filtroPeriodo === p._id.toString() ? 'selected' : '' %>><%= p.nombre %></option>
-            <% }); %>
-          </select>
-          <% if (filtroPeriodo) { %>
-            <a href="/actividades/estudiante?materiaId=<%= materiaIdActiva %>" class="btn btn--secundario btn--sm">
-              <i data-lucide="x"></i> Limpiar
-            </a>
-          <% } %>
-        </form>
 
         <% if (actividades.length === 0) { %>
           <div class="estado-vacio">
