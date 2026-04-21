@@ -52,18 +52,18 @@ klassy/
 | Sprint | Módulo                   | Estado     |
 |--------|--------------------------|------------|
 | 1      | Base del sistema         | ✅ Listo   |
-| 2      | Diseño de base de datos  | ⏳ Pendiente |
-| 3      | Gestión de usuarios      | ⏳ Pendiente |
-| 4      | Grados y materias        | ⏳ Pendiente |
-| 5      | Periodos académicos      | ⏳ Pendiente |
-| 6      | Matrículas               | ⏳ Pendiente |
-| 7      | Asignación de docentes   | ⏳ Pendiente |
-| 8      | Autenticación            | ⏳ Pendiente |
-| 9      | Actividades              | ⏳ Pendiente |
-| 10     | Notas                    | ⏳ Pendiente |
-| 11     | Boletines                | ⏳ Pendiente |
-| 12     | Dashboard y noticias     | ⏳ Pendiente |
-| 13     | Analítica académica      | ⏳ Pendiente |
+| 2      | Diseño de base de datos  | ✅ Listo |
+| 3      | Gestión de usuarios      | ✅ Listo |
+| 4      | Grados y materias        | ✅ Listo |
+| 5      | Periodos académicos      | ✅ Listo |
+| 6      | Matrículas               | ✅ Listo |
+| 7      | Asignación de docentes   | ✅ Listo |
+| 8      | Autenticación            | ✅ Listo |
+| 9      | Actividades              | ✅ Listo |
+| 10     | Notas                    | ✅ Listo |
+| 11     | Boletines                | ✅ Listo |
+| 12     | Dashboard y noticias     | ✅ Listo |
+| 13     | Analítica académica      | ⏳ en desarrollo |
 =======
 # Klassy-3.0
 desarrollo del proyecto alfa klassy v3.0
