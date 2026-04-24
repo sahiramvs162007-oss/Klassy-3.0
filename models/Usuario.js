@@ -23,45 +23,46 @@ const usuarioSchema = new mongoose.Schema(
     contrasena: {
       type:     String,
       required: [true, 'La contraseña es obligatoria'],
-      select:   false, // no se devuelve en consultas por defecto
+      select:   false,
     },
     rol: {
       type:     String,
       enum:     ['admin', 'director', 'docente', 'estudiante'],
       required: [true, 'El rol es obligatorio'],
     },
-
-    // ── Documento de identidad ────────────────────────────────────────────
     documentoIdentidad: {
       type:    String,
       trim:    true,
       default: null,
     },
-
-    // ── Solo para estudiantes ─────────────────────────────────────────────
     ultimoNivelCursado: {
       type:    Number,
-      min:     0,   // 0 = nunca ha cursado ningún grado
+      min:     0,
       max:     11,
       default: null,
     },
-
-    // ── Solo para docentes ────────────────────────────────────────────────
     profesion: {
       type:    String,
       trim:    true,
       default: null,
     },
-
     activo: {
       type:    Boolean,
       default: true,
     },
   },
   {
-    timestamps: true, // createdAt y updatedAt automáticos
+    timestamps: true,
   }
 );
+
+// FIX 2: Índices en rol y activo.
+// El dashboard del admin ejecuta countDocuments({ rol: 'X', activo: true })
+// en cada carga. Sin estos índices MongoDB hacía full collection scan sobre
+// todos los usuarios cada vez. Con los índices la consulta es O(log n).
+usuarioSchema.index({ rol: 1 });
+usuarioSchema.index({ activo: 1 });
+usuarioSchema.index({ rol: 1, activo: 1 }); // índice compuesto para la consulta exacta del dashboard
 
 // ─── Hash de contraseña antes de guardar ──────────────────────────────────────
 usuarioSchema.pre('save', async function (next) {

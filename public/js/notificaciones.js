@@ -3,7 +3,7 @@
  * Sistema de notificaciones en la topbar.
  *
  * - Consulta el conteo de no leídas al cargar la página.
- * - Polling cada 60 segundos para actualizar el badge.
+ * - Polling cada 5 minutos para actualizar el badge.
  * - Al abrir el panel carga la lista completa.
  * - Permite marcar individual o todas como leídas.
  * - Permite eliminar notificaciones.
@@ -29,8 +29,14 @@ let panelAbierto = false;
 // ─── Inicializar al cargar la página ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   actualizarConteo();
-  // Polling cada 60 segundos
-  setInterval(actualizarConteo, 60_000);
+
+  // FIX 4: Polling aumentado de 60 segundos a 5 minutos (300 000 ms).
+  // Con 60 s y 30 usuarios simultáneos el sistema recibía 30 consultas
+  // por minuto constantes solo para el badge de la campana.
+  // Las notificaciones de KLASSY no son urgentes (nueva actividad, cierre de año)
+  // por lo que 5 minutos de latencia es completamente aceptable y reduce
+  // la carga en MongoDB un 80 %.
+  setInterval(actualizarConteo, 300_000); // ← CAMBIADO de 60_000 a 300_000
 
   // Cerrar panel al hacer clic fuera
   document.addEventListener('click', (e) => {
@@ -78,6 +84,8 @@ async function abrirPanelNotif() {
   panel.style.display = 'flex';
   panelAbierto = true;
 
+  // Al abrir el panel actualizamos el conteo inmediatamente (refresco manual)
+  await actualizarConteo();
   await cargarNotificaciones();
 }
 
@@ -116,7 +124,6 @@ async function cargarNotificaciones() {
       return;
     }
 
-    // Contar no leídas para el footer
     const noLeidas = notifs.filter(n => n.estado === 'no_leida').length;
     const conteoEl = document.getElementById('notifConteoTexto');
     if (conteoEl) {
@@ -135,10 +142,10 @@ async function cargarNotificaciones() {
 
 // ─── Construir HTML de un item ────────────────────────────────────────────────
 function construirItemHTML(n) {
-  const icono  = ICONOS_TIPO[n.tipo] || 'bell';
-  const color  = COLORES_TIPO[n.tipo] || 'notif-item__icono--gris';
+  const icono   = ICONOS_TIPO[n.tipo]  || 'bell';
+  const color   = COLORES_TIPO[n.tipo] || 'notif-item__icono--gris';
   const esNueva = n.estado === 'no_leida';
-  const fecha  = formatearFechaRelativa(new Date(n.createdAt));
+  const fecha   = formatearFechaRelativa(new Date(n.createdAt));
 
   const enlaceAttr = n.enlace
     ? `href="${n.enlace}" onclick="marcarLeida('${n._id}')"`
@@ -197,10 +204,10 @@ function formatearFechaRelativa(fecha) {
   const ahora   = new Date();
   const diffSeg = Math.floor((ahora - fecha) / 1000);
 
-  if (diffSeg < 60)    return 'Hace un momento';
-  if (diffSeg < 3600)  return `Hace ${Math.floor(diffSeg / 60)} min`;
-  if (diffSeg < 86400) return `Hace ${Math.floor(diffSeg / 3600)} h`;
-  if (diffSeg < 604800)return `Hace ${Math.floor(diffSeg / 86400)} días`;
+  if (diffSeg < 60)     return 'Hace un momento';
+  if (diffSeg < 3600)   return `Hace ${Math.floor(diffSeg / 60)} min`;
+  if (diffSeg < 86400)  return `Hace ${Math.floor(diffSeg / 3600)} h`;
+  if (diffSeg < 604800) return `Hace ${Math.floor(diffSeg / 86400)} días`;
 
   return fecha.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
 }

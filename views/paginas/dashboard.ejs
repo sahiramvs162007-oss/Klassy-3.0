@@ -15,8 +15,6 @@
 </head>
 <body>
   <%- include('../partials/sidebar') %>
-  <!-- ─── Overlay para cerrar sidebar en móvil ────────────────────────────── -->
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
   <div class="contenedor-principal">
     <%- include('../partials/topbar') %>
     <main class="contenido">
@@ -47,7 +45,7 @@
             </div>
           </div>
 
-          <%# Imágenes de estudiantes %>
+          <%# Imágenes de estudiantes — siempre visibles %>
           <div class="hero-admin__ilustracion">
             <div class="est-1">
               <img src="imagenes/chico_secundaria.png" alt="Estudiante" class="est-hero" />
@@ -123,7 +121,7 @@
         <section class="content_do_est">
 
           <%# ── 1. HERO colegio ── %>
-          <div class="hero-colegio" style="background: url('/uploads/<%= config && config.fotoInstitucion ? config.fotoInstitucion : '' %>') center/cover no-repeat;">
+          <div class="hero-colegio" style="background-image: url('<% if(config && config.fotoInstitucion){ %>/uploads/<%= config.fotoInstitucion %><% } else { %>imagenes/fondo_colegio_default.png<% } %>'); background-size: cover; background-position: center;">
             <div class="hero-colegio__overlay">
               <div class="hero-colegio__info">
                 <h1 class="hero-colegio__nombre"><%= (config&&config.nombreColegio) ? config.nombreColegio : 'KLASSY' %></h1>
@@ -135,14 +133,14 @@
             </div>
           </div>
 
-          <%# ── 2. SECCIÓN MISIÓN/VISIÓN + ILUSTRACIÓN ── %>
-          <% if((config&&config.vision)||(config&&config.mision)){%>
+          <%# ── 2. SECCIÓN MISIÓN/VISIÓN + ILUSTRACIÓN (siempre visible) ── %>
           <div class="mv-seccion">
             
             <%# Tarjetas misión y visión (se expanden inline) %>
             <div class="mv-tarjetas">
               <h2 class="hero-admin__titulo titu2">Nuestra identidad</h2>
-              <% if(config&&config.mision){ %>
+
+              <%# Tarjeta MISIÓN %>
               <div class="mv-card mv-card--mision mv-expandible" data-tipo="mision">
                 <div class="brillo"></div>
                 <div class="mv-card__icono mv-card__icono--mision">
@@ -150,34 +148,47 @@
                 </div>
                 <div class="mv-card__datos">
                   <span class="mv-card__etiqueta">Misión</span>
-                  <span class="mv-card__valor">Ver misión</span>
+                  <% if(config&&config.mision){ %>
+                    <span class="mv-card__valor">Ver misión</span>
+                  <% } else { %>
+                    <span class="mv-card__valor mv-card__valor--vacio">Sin configurar</span>
+                  <% } %>
                 </div>
                 <i data-lucide="chevron-down" class="mv-card__flecha"></i>
-                <%# Panel inline que se despliega dentro de la tarjeta %>
                 <div class="mv-inline-panel" id="panelMision"><div>
-                  <p class="mv-inline-panel__texto"><%= config.mision %></p>
+                  <% if(config&&config.mision){ %>
+                    <p class="mv-inline-panel__texto"><%= config.mision %></p>
+                  <% } else { %>
+                    <p class="mv-inline-panel__texto mv-card__valor--vacio"><i data-lucide="info" style="width:14px;height:14px;vertical-align:middle;margin-right:5px;"></i>La misión institucional aún no ha sido configurada.</p>
+                  <% } %>
                 </div></div>
               </div>
-              <% } %>
 
-              <% if(config&&config.vision){ %>
+              <%# Tarjeta VISIÓN %>
               <div class="mv-card mv-card--vision mv-expandible" data-tipo="vision">
                 <div class="mv-card__icono mv-card__icono--vision">
                   <i data-lucide="eye"></i>
                 </div>
                 <div class="mv-card__datos">
                   <span class="mv-card__etiqueta">Visión</span>
-                  <span class="mv-card__valor">Ver visión</span>
+                  <% if(config&&config.vision){ %>
+                    <span class="mv-card__valor">Ver visión</span>
+                  <% } else { %>
+                    <span class="mv-card__valor mv-card__valor--vacio">Sin configurar</span>
+                  <% } %>
                 </div>
                 <i data-lucide="chevron-down" class="mv-card__flecha"></i>
                 <div class="mv-inline-panel" id="panelVision"><div>
-                  <p class="mv-inline-panel__texto"><%= config.vision %></p>
+                  <% if(config&&config.vision){ %>
+                    <p class="mv-inline-panel__texto"><%= config.vision %></p>
+                  <% } else { %>
+                    <p class="mv-inline-panel__texto mv-card__valor--vacio"><i data-lucide="info" style="width:14px;height:14px;vertical-align:middle;margin-right:5px;"></i>La visión institucional aún no ha sido configurada.</p>
+                  <% } %>
                 </div></div>
               </div>
-              <% } %>
             </div>
 
-            <%# Ilustración estudiantes %>
+            <%# Ilustración estudiantes — siempre visible %>
             <div class="mv-ilustracion">
               <div class="est-1">
                 <img src="imagenes/chico_secundaria.png" alt="Estudiante" class="est-hero" />
@@ -188,16 +199,19 @@
             </div>
 
           </div>
-          <% } %>
 
           <%# ── 3. NOTICIAS ── %>
           <div class="noticias-seccion">
-            <% if(noticias && noticias.length > 0) { %>
-              <div class="noticias-seccion__titulo">
-                <i data-lucide="newspaper"></i>
-                <span>Noticias del colegio</span>
+            <%# Título siempre visible %>
+            <div class="noticias-seccion__titulo">
+              <i data-lucide="newspaper"></i>
+              <span>Noticias del colegio</span>
+              <% if(noticias && noticias.length > 0) { %>
                 <span class="seccion-conteo"><%= noticias.length %> publicación<%= noticias.length!==1?'es':'' %></span>
-              </div>
+              <% } %>
+            </div>
+
+            <% if(noticias && noticias.length > 0) { %>
               <%# ── CAMBIO: el loop ya no calcula posiciones; el JS lo hace todo ── %>
               <div class="mosaico-noticias-3col <%= noticias.length >= 4 ? 'mosaico-activo-3col' : 'lista-simple-3col' %>">
                 <% noticias.forEach(function(n) { %>
@@ -232,6 +246,15 @@
                   <span class="noticia-contenido-oculto" style="display:none"><%= n.contenido %></span>
                 </article>
                 <% }); %>
+              </div>
+            <% } else { %>
+              <%# Estado vacío — igual al apartado de gestión de noticias %>
+              <div class="estado-vacio estado-vacio--noticias">
+                <div class="estado-vacio__icono">
+                  <i data-lucide="newspaper"></i>
+                </div>
+                <h3 class="estado-vacio__titulo">Sin noticias</h3>
+                <p class="estado-vacio__desc">Crea la primera noticia para que aparezca en el dashboard del colegio.</p>
               </div>
             <% } %>
           </div>
@@ -288,10 +311,10 @@
   </div>
   <%}%>
 
+  
   <script src="/js/drawer.js"></script>
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
   <script src="/js/dashboard.js"></script>
-  <script>lucide.createIcons();</script>
 </body>
 </html>

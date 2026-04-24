@@ -24,19 +24,10 @@ const rutasNotas          = require('./routes/notas');
 const rutasBoletines      = require('./routes/boletines');
 const rutasNoticias       = require('./routes/noticias');
 const rutasRetiros        = require('./routes/retiros');
-const rutasHistorial      = require('./routes/historial');
-
 
 conectarDB();
 
 const app = express();
-
-// ─── Service Worker (sin middleware de sesión, acceso público) ────────────────
-app.get('/sw.js', (req, res) => {
-  res.setHeader('Content-Type', 'application/javascript');
-  res.setHeader('Service-Worker-Allowed', '/');
-  res.sendFile(path.join(__dirname, 'public', 'sw.js'));
-});
 
 // ─── Motor de plantillas ───────────────────────────────────────────────────────
 app.set('view engine', 'ejs');
@@ -49,9 +40,13 @@ app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── Sesión ────────────────────────────────────────────────────────────────────
+// FIX 1: resave cambiado de true a false.
+// Con true, Express reescribía la sesión en cada request aunque no hubiera
+// ningún cambio, generando escrituras innecesarias en cada página cargada.
+// Con false solo se guarda cuando la sesión realmente fue modificada.
 app.use(session({
   secret:            process.env.SESION_SECRETO || 'klassy_secreto_2025',
-  resave:            true,
+  resave:            false,   // ← CAMBIADO de true a false
   saveUninitialized: false,
   cookie: {
     maxAge:   6 * 60 * 60 * 1000,
@@ -72,32 +67,31 @@ app.use((req, res, next) => {
   next();
 });
 
-// ─── Protección de rutas (DESPUÉS de flash y locals) ─────────────────────────
+// ─── Protección de rutas ──────────────────────────────────────────────────────
 app.use(verificarSesion);
 
 // ─── Rutas ─────────────────────────────────────────────────────────────────────
-app.use('/auth',          rutasAuth);
-app.use('/',              rutasIndex);
-app.use('/usuarios',      rutasUsuarios);
-app.use('/materias',      rutasMaterias);
-app.use('/grados',        rutasGrados);
-app.use('/periodos',      rutasPeriodos);
-app.use('/matriculas',    rutasMatriculas);
-app.use('/asignaciones',  rutasAsignaciones);
-app.use('/notificaciones',rutasNotificaciones);
-app.use('/actividades',   rutasActividades);
-app.use('/notas',         rutasNotas);
-app.use('/boletines',     rutasBoletines);
-app.use('/noticias',      rutasNoticias);
-app.use('/retiros',       rutasRetiros);
-app.use('/historial',     rutasHistorial);
+app.use('/auth',           rutasAuth);
+app.use('/',               rutasIndex);
+app.use('/usuarios',       rutasUsuarios);
+app.use('/materias',       rutasMaterias);
+app.use('/grados',         rutasGrados);
+app.use('/periodos',       rutasPeriodos);
+app.use('/matriculas',     rutasMatriculas);
+app.use('/asignaciones',   rutasAsignaciones);
+app.use('/notificaciones', rutasNotificaciones);
+app.use('/actividades',    rutasActividades);
+app.use('/notas',          rutasNotas);
+app.use('/boletines',      rutasBoletines);
+app.use('/noticias',       rutasNoticias);
+app.use('/retiros',        rutasRetiros);
 
-// ─── 404 ───────────────────────────────────────────────────────────────────────
+// ─── 404 ──────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).render('error', {
-    titulo: 'Página no encontrada',
+    titulo:  'Página no encontrada',
     mensaje: 'La ruta que buscas no existe.',
-    codigo: 404,
+    codigo:  404,
   });
 });
 
@@ -105,9 +99,9 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
   res.status(500).render('error', {
-    titulo: 'Error del servidor',
+    titulo:  'Error del servidor',
     mensaje: err.message || 'Error interno.',
-    codigo: 500,
+    codigo:  500,
   });
 });
 

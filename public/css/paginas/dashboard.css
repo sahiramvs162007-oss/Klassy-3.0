@@ -19,6 +19,58 @@
   flex-shrink: 0;
 }
 
+/* ─── Estado vacío de noticias ─────────────────────────── */
+.estado-vacio--noticias {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px 40px;
+  gap: 12px;
+  text-align: center;
+}
+.estado-vacio--noticias .estado-vacio__icono {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.estado-vacio--noticias .estado-vacio__icono svg {
+  width: 32px;
+  height: 32px;
+  stroke: #cbd5e1;
+}
+.estado-vacio--noticias .estado-vacio__titulo {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+.estado-vacio--noticias .estado-vacio__desc {
+  font-size: 0.88rem;
+  color: #64748b;
+  max-width: 320px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ─── mv-card valor vacío ──────────────────────────────── */
+.mv-card__valor--vacio {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 0.82rem;
+}
+.mv-inline-panel__texto--vacio {
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+
 /* ─── Chip de conteo ───────────────────────────────────── */
 .seccion-conteo {
   display: inline-flex;
@@ -70,7 +122,7 @@
   grid-template-columns: 55% 45%;
   align-items: flex-start;
   padding: 2% 4%;
-  /* isolation: isolate eliminado — creaba stacking context que atrapaba el sidebar */
+  isolation: isolate;
 }
 
 .hero-admin__bienvenida {
@@ -126,7 +178,7 @@
   position: relative;
   border-radius: 22px;
   overflow: hidden;
-  /* isolation: isolate eliminado */
+  isolation: isolate;
   background: linear-gradient(135deg, #e8f4ff 0%, #d6ecff 40%, #c5e3ff 70%, #d4eeff 100%);
   border: 1.5px solid rgba(147, 197, 253, 0.55);
   box-shadow:
@@ -547,16 +599,11 @@
 
 .mv-inline-panel > * {
   overflow: hidden;       /* el overflow está aquí, solo en el hijo */
-  min-height: 0;          /* necesario para que 0fr funcione correctamente */
 }
 
 .mv-card--abierta .mv-inline-panel {
   grid-template-rows: 1fr;
   opacity: 1;
-}
-
-.mv-card--abierta .mv-inline-panel > * {
-  overflow: visible;      /* cuando está abierto, el texto no queda cortado */
 }
 
 .mv-inline-panel__texto {
@@ -760,130 +807,4 @@
 @media (max-width: 480px) {
   .noticia-card__foto { height: 160px !important; }
   .accesos-grid { grid-template-columns: repeat(3, 1fr); }
-}
-/* ══════════════════════════════════════════════════════
-   DASHBOARD ADMIN — MOBILE ONLY
-   ══════════════════════════════════════════════════════ */
-
-@media (max-width: 768px) {
-
-  /* ── Hero: columna única ── */
-  .hero-admin {
-    display: flex;
-    flex-direction: column;
-    padding: 20px 16px 20px;
-    gap: 20px;
-    border-radius: 18px;
-    overflow: visible; /* evita que los hijos queden cortados */
-  }
-
-  .hero-admin__bienvenida {
-    gap: 8px;
-    padding-bottom: 0;
-  }
-
-  .titu1 { font-size: 1.7rem; }
-
-  /* Botones de acciones: columna en móvil */
-  .hero-admin__acciones {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .hero-admin__acciones .btn-hero {
-    width: 100%;
-    justify-content: center;
-  }
-
-  /* Ocultar imagen de estudiantes en móvil */
-  .hero-admin__ilustracion {
-    display: none;
-  }
-
-  /* ── Stats: 2 columnas en móvil, centradas ── */
-  .acceso-rapido-seccion {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    max-width: 360px;
-    margin: 0 auto;
-  }
-  /* el segundo div anidado también */
-  .acceso-rapido-seccion .acceso-rapido-seccion {
-    display: contents;
-  }
-
-  /* ── Info institucional: más separada del hero ── */
-  #infocolegio {
-    margin-top: 8px;
-    padding: 20px 16px;
-    gap: 16px;
-  }
-
-  .infocolegio__nombre-grande {
-    font-size: 1.25rem;
-  }
-
-  .infocolegio__titulo {
-    font-size: 1.1rem;
-  }
-
-  /* ── Cuadrícula visión/misión: columna única con visión ARRIBA ── */
-  .cuadricula-2col {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px;
-  }
-
-  /* Visión primero: usamos order */
-  .tarjeta--vision { order: 1; }
-  .tarjeta--mision { order: 2; }
-
-  /* ── Texto colapsable en tarjetas visión/misión ── */
-
-  /* El párrafo de texto se corta con clamp */
-  .tarjeta__texto {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    overflow: hidden;
-    transition: -webkit-line-clamp 0s; /* sin transición en el clamp */
-  }
-
-  /* Cuando está expandida, sin límite */
-  .tarjeta--expandida .tarjeta__texto {
-    display: block;
-    overflow: visible;
-    -webkit-line-clamp: unset;
-  }
-
-  /* Botón "Ver más / Ver menos" */
-  .tarjeta__btn-ver-mas {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 8px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #2563eb;
-    background: none;
-    border: none;
-    padding: 4px 0;
-    cursor: pointer;
-    font-family: inherit;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .tarjeta__btn-ver-mas svg {
-    width: 13px;
-    height: 13px;
-    transition: transform 0.25s ease;
-  }
-  .tarjeta--expandida .tarjeta__btn-ver-mas svg {
-    transform: rotate(180deg);
-  }
-
-  /* Noticias mini: 1 columna en móvil */
-  .mosaico-mini {
-    grid-template-columns: 1fr;
-  }
 }

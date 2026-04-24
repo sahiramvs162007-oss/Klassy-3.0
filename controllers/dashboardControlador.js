@@ -9,10 +9,22 @@ const { Noticia, Usuario, Grado, Materia, Configuracion } = require('../models')
 
 const AÑO_ACTUAL = new Date().getFullYear();
 
+// FIX 3: Caché en memoria para la configuración del colegio.
+// Antes, cada visita al dashboard hacía un Configuracion.findOne() a MongoDB
+// aunque los datos (nombre, visión, misión) casi nunca cambian.
+// Ahora se guarda en memoria y solo se refresca cuando el admin la edita.
+let _configCache = null;
+
 const obtenerConfig = async () => {
+  if (_configCache) return _configCache;                          // retorna desde memoria si ya existe
   let c = await Configuracion.findOne();
   if (!c) c = await Configuracion.create({ nombreColegio: 'Mi Colegio', vision: '', mision: '' });
-  return c;
+  _configCache = c;
+  return _configCache;
+};
+
+const invalidarConfigCache = () => {
+  _configCache = null;   // se llama después de guardar cambios en la configuración
 };
 
 // ─── GET /dashboard ───────────────────────────────────────────────────────────
@@ -67,20 +79,22 @@ const guardarConfiguracion = async (req, res) => {
     let config = await Configuracion.findOne();
     if (!config) config = new Configuracion();
     if (nombreColegio) config.nombreColegio  = nombreColegio.trim();
-    config.vision         = vision?.trim()         || '';
-    config.mision         = mision?.trim()         || '';
-    config.correoDirector = correoDirector?.trim()  || '';
-    
-   
+    config.vision         = vision?.trim()        || '';
+    config.mision         = mision?.trim()        || '';
+    config.correoDirector = correoDirector?.trim() || '';
+
     if (req.files && req.files.fotoInstitucion) {
       config.fotoInstitucion = req.files.fotoInstitucion[0].filename;
     }
 
     await config.save();
 
+    // Invalidar caché para que el próximo request cargue los datos nuevos
+    invalidarConfigCache();
+
     req.flash('exito', 'Configuración guardada correctamente.');
     res.redirect('/dashboard');
-    
+
   } catch (error) {
     console.error('Error al guardar configuración:', error);
     req.flash('error', 'Error al guardar la configuración.');
