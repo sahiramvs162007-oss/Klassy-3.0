@@ -22,10 +22,19 @@
 
 'use strict';
 
-// ✅ Versión CPU pura, sin gpu.js
-const brain = require('brain.js/dist/browser');
-const fs     = require('fs');
-const path   = require('path');
+// ✅ Versión CPU pura, sin gpu.js — extraer NeuralNetwork correctamente
+const brainModule   = require('brain.js/dist/browser');
+const NeuralNetwork = brainModule.NeuralNetwork
+                   || brainModule.default?.NeuralNetwork
+                   || brainModule.default;
+
+if (typeof NeuralNetwork !== 'function') {
+  console.error('[IA] ERROR CRÍTICO: NeuralNetwork no se pudo cargar desde brain.js/dist/browser');
+  console.error('[IA] Tipo recibido:', typeof NeuralNetwork, '| Keys:', Object.keys(brainModule).join(', '));
+}
+
+const fs   = require('fs');
+const path = require('path');
 
 const { preprocesar }         = require('./iaPreprocesador');
 const { obtenerConfigColegio }= require('./iaConfig');
@@ -59,7 +68,11 @@ function obtenerRedEnMemoria() {
 
   try {
     const json = JSON.parse(fs.readFileSync(MODELO_PATH, 'utf8'));
-    const red  = new brain.NeuralNetwork({ hiddenLayers: [6, 6] });
+    // Verificar que el modelo fue entrenado con la versión corregida
+    if (json._meta?.version === '1.0.0' && !json._meta?.balanceado) {
+      console.warn('[IA] Modelo antiguo detectado (sin balanceo). Se recomienda reentrenar.');
+    }
+    const red = new NeuralNetwork({ hiddenLayers: [6, 6] });
     red.fromJSON(json);
     _redEnMemoria = red;
     console.log('[IA] Modelo cargado desde modelo_ia.json en memoria.');
@@ -166,11 +179,10 @@ async function cargarDatosHistoricos() {
       );
 
       // ── Etiqueta de salida ─────────────────────────────────────────────────
-      // brain.js necesita valores entre 0 y 1 en la salida
-      // Usamos 0.05 y 0.95 en vez de 0 y 1 para evitar saturación de la red
+      // Valores 0.85/0.15 en vez de 0.95/0.05 para evitar saturación sigmoid
       dataset.push({
         input,
-        output: { exito: aprobado ? 0.95 : 0.05 },
+        output: { exito: aprobado ? 0.85 : 0.15 },
       });
 
     } catch (err) {
@@ -180,7 +192,39 @@ async function cargarDatosHistoricos() {
   }
 
   console.log(`[IA] Dataset construido: ${dataset.length} registros | Omitidos: ${omitidos}`);
-  return dataset;
+
+  // ── Balanceo de clases (oversampling de reprobados) ───────────────────────
+  // El dataset natural tiene ~92% aprobados → la red aprende a predecir
+  // siempre "aprobado" y obtiene bajo error sin aprender nada útil.
+  // Solución: duplicar reprobados hasta que representen ~35% del total.
+  const aprobados  = dataset.filter(d => d.output.exito > 0.5);
+  const reprobados = dataset.filter(d => d.output.exito < 0.5);
+
+  console.log(`[IA] Distribución original — Aprobados: ${aprobados.length} | Reprobados: ${reprobados.length}`);
+
+  const objetivo = Math.floor(aprobados.length * 0.35);
+  const rep      = [...reprobados];
+
+  if (rep.length > 0) {
+    while (rep.length < objetivo) {
+      // Clonar registro con pequeña variación de ruido para no duplicar exacto
+      const original = reprobados[Math.floor(Math.random() * reprobados.length)];
+      rep.push({
+        input: {
+          nota:        Math.max(0, Math.min(1, original.input.nota        + (Math.random() - 0.5) * 0.04)),
+          tendencia:   Math.max(0, Math.min(1, original.input.tendencia   + (Math.random() - 0.5) * 0.04)),
+          compromiso:  Math.max(0, Math.min(1, original.input.compromiso  + (Math.random() - 0.5) * 0.04)),
+          estabilidad: Math.max(0, Math.min(1, original.input.estabilidad + (Math.random() - 0.5) * 0.04)),
+        },
+        output: { exito: 0.15 },
+      });
+    }
+  }
+
+  const balanceado = [...aprobados, ...rep].sort(() => Math.random() - 0.5);
+  console.log(`[IA] Dataset balanceado: ${balanceado.length} registros (${rep.length} reprobados, ${aprobados.length} aprobados)`);
+
+  return balanceado;
 }
 
 // ── PASO 2: Entrenamiento ─────────────────────────────────────────────────────
@@ -199,19 +243,19 @@ async function ejecutarEntrenamiento(datosHistoricos) {
   console.log(`[IA] Iniciando entrenamiento con ${datosHistoricos.length} registros...`);
 
   // ── Configuración de la red ────────────────────────────────────────────────
-  const red = new brain.NeuralNetwork({
-    hiddenLayers:       [6, 6],
-    activation:         'sigmoid',
-    learningRate:       0.01,
-    momentum:           0.1,
+  const red = new NeuralNetwork({
+    hiddenLayers:  [8, 8, 4],  // más capacidad para distinguir casos límite
+    activation:    'sigmoid',
+    learningRate:  0.05,        // más alto → converge más rápido con datos balanceados
+    momentum:      0.2,
   });
 
   // ── Entrenamiento ──────────────────────────────────────────────────────────
   const inicio    = Date.now();
   const resultado = red.train(datosHistoricos, {
-    iterations:    20000,
-    errorThresh:   0.005,   // detiene antes si el error es suficientemente bajo
-    logPeriod:     2000,
+    iterations:  15000,
+    errorThresh: 0.02,   // más permisivo → evita el mínimo local del "siempre aprueba"
+    logPeriod:   1500,
     log: (stats) => {
       console.log(
         `[IA] iter=${stats.iterations} | error=${stats.error.toFixed(6)}`
@@ -235,7 +279,8 @@ async function ejecutarEntrenamiento(datosHistoricos) {
       iteraciones:  resultado.iterations,
       errorFinal:   resultado.error,
       registros:    datosHistoricos.length,
-      version:      '1.0.0',
+      version:      '2.0.0',
+      balanceado:   true,   // marca para detectar modelos viejos
     },
   };
 
@@ -243,7 +288,7 @@ async function ejecutarEntrenamiento(datosHistoricos) {
   console.log(`[IA] Modelo guardado en: ${MODELO_PATH}`);
 
   // ── Refrescar singleton en memoria SIN reiniciar Express ──────────────────
-  const redFresca = new brain.NeuralNetwork({ hiddenLayers: [6, 6] });
+  const redFresca = new NeuralNetwork({ hiddenLayers: [8, 8, 4] });
   redFresca.fromJSON(modeloJSON);
   _redEnMemoria = redFresca;
   console.log('[IA] Modelo refrescado en memoria.');

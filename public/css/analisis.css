@@ -673,6 +673,17 @@
   padding: 8px 0 4px;
 }
 
+/* ── Colores semánticos de barras ─────────────────────────────────── */
+.ia-barra__relleno--ok   { background: var(--verde-500, #22c55e); }
+.ia-barra__relleno--warn { background: var(--amarillo-500, #eab308); }
+.ia-barra__relleno--bajo { background: var(--rojo-500, #ef4444); }
+
+/* ── Detalle numérico dentro del label de porcentaje ─────────────── */
+.ia-metrica-fila__detalle {
+  font-size: 0.72rem;
+  color: var(--gris-400);
+  margin-left: 4px;
+}
 /* ─── Responsive ────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .ia-grid-materias { grid-template-columns: 1fr; }
