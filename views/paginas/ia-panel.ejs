@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Panel de IA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Fraunces:wght@700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido">
+
+      <div class="cabecera-pagina">
+        <div>
+          <h1 class="cabecera-pagina__titulo">Panel de Inteligencia Académica</h1>
+          <p class="cabecera-pagina__subtitulo">Gestión del modelo predictivo y análisis de estudiantes</p>
+        </div>
+      </div>
+
+      <!-- ═══════════════ SECCIÓN 1: ESTADO DEL MODELO ═══════════════════ -->
+      <div class="seccion-titulo">Estado del modelo</div>
+
+      <div id="estadoModeloWrap">
+        <!-- Se llena desde JS -->
+        <div class="ia-cargando" style="padding:24px;">
+          <div class="ia-spinner"></div>
+          <p>Consultando estado del modelo…</p>
+        </div>
+      </div>
+
+      <!-- ═══════════════ SECCIÓN 2: ENTRENAR ════════════════════════════ -->
+      <% if (typeof rolUsuario === 'undefined' || rolUsuario !== 'docente') { %>
+      <div class="seccion-titulo">Entrenamiento</div>
+
+      <div class="ia-entrenar-bloque">
+        <div>
+          <div class="ia-entrenar-bloque__titulo">
+            <i data-lucide="cpu" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
+            Entrenar modelo de IA
+          </div>
+          <p class="ia-entrenar-bloque__desc">
+            El entrenamiento procesa todos los resultados académicos históricos (años cerrados)
+            y ajusta la red neuronal. El proceso puede tardar varios minutos dependiendo del
+            volumen de datos. Una vez completado, los estudiantes verán su análisis actualizado
+            automáticamente, sin necesidad de reiniciar el servidor.
+          </p>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button id="btnEntrenar" class="btn btn--primario" onclick="iniciarEntrenamiento()">
+            <i data-lucide="play"></i> Entrenar modelo ahora
+          </button>
+          <span id="estadoEntrenarTexto" class="texto-secundario texto-sm"></span>
+        </div>
+
+        <!-- Barra de progreso -->
+        <div class="ia-progreso-wrap" id="progresoWrap">
+          <div class="ia-progreso-barra">
+            <div class="ia-progreso-relleno" id="progresoRelleno"></div>
+          </div>
+          <span class="ia-progreso-texto" id="progresoTexto">Cargando datos históricos y entrenando red neuronal…</span>
+        </div>
+
+        <!-- Resultado -->
+        <div class="ia-resultado-entrenamiento" id="resultadoEntrenamiento"></div>
+      </div>
+      <% } %>
+
+      <!-- ═══════════════ SECCIÓN 3: BUSCADOR DE ESTUDIANTES ══════════════ -->
+      <div class="seccion-titulo">Consultar análisis de un estudiante</div>
+
+      <div class="ia-buscador">
+        <div>
+          <p class="ia-entrenar-bloque__desc">
+            Busca un estudiante por nombre o apellido para consultar su análisis académico
+            generado por la IA.
+          </p>
+        </div>
+
+        <div class="barra-filtros" style="margin:0;">
+          <div class="barra-filtros__grupo" style="flex:1;">
+            <div style="position:relative;flex:1;">
+              <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--gris-400);pointer-events:none;"></i>
+              <input
+                type="text"
+                id="inputBusquedaEst"
+                class="campo__entrada"
+                style="padding-left:36px;"
+                placeholder="Nombre o apellido del estudiante (mín. 3 caracteres)…"
+                oninput="buscarEstudiante(this.value)"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div id="resultadosBusqueda" class="ia-buscador__resultados" style="display:none;"></div>
+        <p id="mensajeBusqueda" class="texto-secundario texto-sm" style="display:none;"></p>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ═══════════════ MODAL DEL REPORTE DE ESTUDIANTE ══════════════════ -->
+  <div id="modalReporte" class="ia-modal-overlay" onclick="cerrarModal(event)">
+    <div class="ia-modal" onclick="event.stopPropagation()">
+      <button class="ia-modal__cerrar" onclick="cerrarModal()">
+        <i data-lucide="x"></i>
+      </button>
+      <div id="contenidoModal">
+        <div class="ia-cargando">
+          <div class="ia-spinner"></div>
+          <p>Generando análisis…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ══════════════════════════════════════════════════════════════════
+       Helpers compartidos con analisis.ejs (inline para no duplicar)
+       ══════════════════════════════════════════════════════════════════ */
+    function pct(v) { return Math.round((v ?? 0) * 100); }
+
+    function colorBarra(v) { return v < 0.40 ? 'ia-barra__relleno--bajo' : ''; }
+
+    function iconoSituacion(s) {
+      return ({
+        ya_aprobado: 'check-circle', alcanzable: 'target',
+        exigente: 'alert-triangle', fuera_de_alcance: 'x-circle',
+      })[s] || 'minus-circle';
+    }
+
+    function colorStatCard(p) {
+      return p >= 70 ? 'ia-stat-card--ok' : p >= 45 ? 'ia-stat-card--warn' : 'ia-stat-card--risk';
+    }
+
+    function renderFodaSeccion(letra, items, abierto) {
+      const count   = items?.length ?? 0;
+      const hidden  = abierto ? '' : 'hidden';
+      const exp     = abierto ? 'true' : 'false';
+      const nombres = { F:'Fortalezas', O:'Oportunidades', D:'Debilidades', A:'Amenazas' };
+      const uid     = `foda-${letra}-${Math.random().toString(36).slice(2,7)}`;
+      const items_html = count > 0
+        ? items.map(t => `<div class="ia-foda__item">${t}</div>`).join('')
+        : `<div class="ia-foda__vacia">Ninguna identificada.</div>`;
+      return `
+        <div class="ia-foda__seccion">
+          <button class="ia-foda__trigger" aria-expanded="${exp}" aria-controls="${uid}"
+            onclick="toggleFoda(this)">
+            <span class="ia-foda__trigger-izq">
+              <span class="ia-foda__letra ia-foda__letra--${letra}">${letra}</span>
+              ${nombres[letra]}
+              <span class="ia-foda__count">${count}</span>
+            </span>
+            <i data-lucide="chevron-down" class="ia-foda__chevron"></i>
+          </button>
+          <div class="ia-foda__contenido" id="${uid}" ${hidden}>${items_html}</div>
+        </div>`;
+    }
+
+    function renderTarjetaMateria(m) {
+      const met  = m.metricas ?? {};
+      const pEx  = m.porcentajeExito ?? 0;
+      const np   = m.notaProyectada  ?? {};
+      const numN = np.notaNecesaria ? `<span class="ia-nota-proyectada__num">${np.notaNecesaria.toFixed(1)}</span>` : '';
+
+      return `
+        <div class="ia-materia-card">
+          <div class="ia-materia-header">
+            <div>
+              <div class="ia-materia-header__nombre">${m.materia}</div>
+              <span class="ia-nivel-badge">${m.nivel}</span>
+            </div>
+            <div class="ia-materia-header__prediccion">
+              <span class="ia-materia-header__pct">${pEx}%</span>
+              <span class="ia-materia-header__label">Prob. éxito</span>
+            </div>
+          </div>
+          <div class="ia-materia-cuerpo">
+            <div class="ia-metricas">
+              <div class="ia-metricas__titulo">Métricas</div>
+              ${['nota','tendencia','compromiso','estabilidad'].map(k => `
+                <div class="ia-metrica-fila">
+                  <span class="ia-metrica-fila__label">${{nota:'Promedio',tendencia:'Tendencia',compromiso:'Compromiso',estabilidad:'Estabilidad'}[k]}</span>
+                  <div class="ia-barra ia-barra--${k}">
+                    <div class="ia-barra__relleno ${k!=='tendencia'?colorBarra(met[k]):''}" style="width:${pct(met[k]??0.5)}%"></div>
+                  </div>
+                  <span class="ia-metrica-fila__pct">${k==='tendencia'?(met[k]>0.5?'↑':met[k]<0.5?'↓':'→'):pct(met[k]??0)+'%'}</span>
+                </div>`).join('')}
+            </div>
+            <div class="ia-nota-proyectada ia-nota-proyectada--${np.situacion||'sin_datos'}">
+              <i data-lucide="${iconoSituacion(np.situacion)}"></i>
+              ${numN}
+              <span>${np.mensaje||'Sin datos suficientes.'}</span>
+            </div>
+            <div class="ia-foda">
+              ${renderFodaSeccion('F',m.foda?.fortalezas,false)}
+              ${renderFodaSeccion('O',m.foda?.oportunidades,false)}
+              ${renderFodaSeccion('D',m.foda?.debilidades,true)}
+              ${renderFodaSeccion('A',m.foda?.amenazas,true)}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function toggleFoda(btn) {
+      const exp = btn.getAttribute('aria-expanded') === 'true';
+      const el  = document.getElementById(btn.getAttribute('aria-controls'));
+      btn.setAttribute('aria-expanded', !exp);
+      exp ? el.setAttribute('hidden','') : el.removeAttribute('hidden');
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       ESTADO DEL MODELO
+       ══════════════════════════════════════════════════════════════════ */
+    async function cargarEstadoModelo() {
+      const wrap = document.getElementById('estadoModeloWrap');
+      try {
+        const res  = await fetch('/api/ia/estado');
+        const data = await res.json();
+
+        if (!data.modeloExiste) {
+          wrap.innerHTML = `
+            <div class="ia-banner-sin-modelo">
+              <i data-lucide="alert-triangle"></i>
+              <div>
+                <h4>Modelo no entrenado</h4>
+                <p>${data.mensaje || 'Presiona el botón de entrenamiento para crear el modelo inicial.'}</p>
+              </div>
+            </div>`;
+        } else {
+          const m = data.meta;
+          const fechaFmt = m.entrenadoEn
+            ? new Date(m.entrenadoEn).toLocaleString('es-CO',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})
+            : '—';
+          wrap.innerHTML = `
+            <div class="ia-estado-grid">
+              <div class="ia-estado-card ia-estado-card--ok">
+                <span class="ia-estado-card__label">Estado</span>
+                <span class="ia-estado-card__valor" style="font-size:1rem;">✓ Modelo listo</span>
+              </div>
+              <div class="ia-estado-card">
+                <span class="ia-estado-card__label">Entrenado el</span>
+                <span class="ia-estado-card__valor--sm ia-estado-card__valor">${fechaFmt}</span>
+              </div>
+              <div class="ia-estado-card">
+                <span class="ia-estado-card__label">Registros</span>
+                <span class="ia-estado-card__valor">${m.registros?.toLocaleString() || '—'}</span>
+              </div>
+              <div class="ia-estado-card">
+                <span class="ia-estado-card__label">Iteraciones</span>
+                <span class="ia-estado-card__valor">${m.iteraciones?.toLocaleString() || '—'}</span>
+              </div>
+              <div class="ia-estado-card ${parseFloat(m.errorFinal) < 0.01 ? 'ia-estado-card--ok' : 'ia-estado-card--warn'}">
+                <span class="ia-estado-card__label">Error final</span>
+                <span class="ia-estado-card__valor">${parseFloat(m.errorFinal).toFixed(5) || '—'}</span>
+              </div>
+              <div class="ia-estado-card">
+                <span class="ia-estado-card__label">Versión</span>
+                <span class="ia-estado-card__valor" style="font-size:1rem;">${m.version || '1.0.0'}</span>
+              </div>
+            </div>`;
+        }
+      } catch {
+        wrap.innerHTML = `<p class="texto-error texto-sm">Error al consultar el estado del modelo.</p>`;
+      }
+      lucide.createIcons();
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       ENTRENAMIENTO
+       ══════════════════════════════════════════════════════════════════ */
+    async function iniciarEntrenamiento() {
+      const btn        = document.getElementById('btnEntrenar');
+      const progWrap   = document.getElementById('progresoWrap');
+      const progTxt    = document.getElementById('progresoTexto');
+      const resultado  = document.getElementById('resultadoEntrenamiento');
+      const estadoTxt  = document.getElementById('estadoEntrenarTexto');
+
+      btn.disabled   = true;
+      btn.innerHTML  = '<i data-lucide="loader-2" style="animation:ia-girar 0.7s linear infinite;"></i> Entrenando…';
+      resultado.className  = 'ia-resultado-entrenamiento';
+      resultado.textContent = '';
+      progWrap.classList.add('visible');
+      estadoTxt.textContent = 'Este proceso puede tardar varios minutos…';
+      lucide.createIcons();
+
+      try {
+        const res  = await fetch('/api/ia/entrenar', { method: 'POST' });
+        const data = await res.json();
+
+        progWrap.classList.remove('visible');
+
+        if (data.exito) {
+          resultado.className   = 'ia-resultado-entrenamiento exito';
+          resultado.innerHTML   = `
+            ✓ <strong>Entrenamiento completado.</strong><br/>
+            ${data.registros?.toLocaleString()} registros · ${data.iterations?.toLocaleString()} iteraciones · 
+            Error: ${parseFloat(data.error).toFixed(5)} · 
+            Duración: ${(data.duracionMs/1000).toFixed(1)}s`;
+          estadoTxt.textContent = '';
+          // Refrescar cards de estado
+          await cargarEstadoModelo();
+        } else {
+          resultado.className   = 'ia-resultado-entrenamiento error';
+          resultado.textContent = `✗ Error: ${data.mensaje}`;
+          estadoTxt.textContent = '';
+        }
+      } catch (err) {
+        progWrap.classList.remove('visible');
+        resultado.className   = 'ia-resultado-entrenamiento error';
+        resultado.textContent = `✗ Error de conexión: ${err.message}`;
+        estadoTxt.textContent = '';
+      }
+
+      btn.disabled  = false;
+      btn.innerHTML = '<i data-lucide="play"></i> Entrenar modelo ahora';
+      lucide.createIcons();
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       BUSCADOR DE ESTUDIANTES
+       ══════════════════════════════════════════════════════════════════ */
+    let _debounceTimer = null;
+
+    function buscarEstudiante(termino) {
+      clearTimeout(_debounceTimer);
+      const resultadosEl = document.getElementById('resultadosBusqueda');
+      const mensajeEl    = document.getElementById('mensajeBusqueda');
+
+      if (termino.length < 3) {
+        resultadosEl.style.display = 'none';
+        mensajeEl.style.display    = 'none';
+        return;
+      }
+
+      _debounceTimer = setTimeout(async () => {
+        resultadosEl.innerHTML   = '<p class="texto-secundario texto-sm" style="padding:4px;">Buscando…</p>';
+        resultadosEl.style.display = 'flex';
+        mensajeEl.style.display    = 'none';
+
+        try {
+          // Reutilizamos el API de usuarios (si existe) o hacemos la consulta directamente
+          const res  = await fetch(`/api/analisis/buscar-estudiantes?q=${encodeURIComponent(termino)}`);
+          const data = await res.json();
+          const lista = data.usuarios || data || [];
+
+          if (lista.length === 0) {
+            resultadosEl.innerHTML  = '';
+            resultadosEl.style.display = 'none';
+            mensajeEl.textContent   = `Sin resultados para "${termino}".`;
+            mensajeEl.style.display = 'block';
+            return;
+          }
+
+          resultadosEl.innerHTML = lista.map(u => `
+            <div class="ia-buscador__item" onclick="abrirReporteEstudiante('${u._id}', '${u.nombre} ${u.apellido}')">
+              <div class="ia-buscador__avatar">${u.nombre[0]}${u.apellido[0]}</div>
+              <div class="ia-buscador__info">
+                <div class="ia-buscador__nombre">${u.nombre} ${u.apellido}</div>
+                <div class="ia-buscador__grado">${u.grado}</div>
+              </div>
+              <i data-lucide="arrow-right" style="width:14px;height:14px;color:var(--gris-400);"></i>
+            </div>`).join('');
+
+          lucide.createIcons();
+
+        } catch {
+          resultadosEl.innerHTML  = '<p class="texto-error texto-sm" style="padding:4px;">Error al buscar.</p>';
+        }
+      }, 350);
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       MODAL DE REPORTE
+       ══════════════════════════════════════════════════════════════════ */
+    async function abrirReporteEstudiante(id, nombre) {
+      const modal     = document.getElementById('modalReporte');
+      const contenido = document.getElementById('contenidoModal');
+
+      contenido.innerHTML = `
+        <div class="ia-cargando">
+          <div class="ia-spinner"></div>
+          <p>Generando análisis de ${nombre}…</p>
+        </div>`;
+
+      modal.style.display = 'flex';
+      requestAnimationFrame(() => modal.classList.add('visible'));
+      lucide.createIcons();
+
+      try {
+        const res     = await fetch(`/api/analisis/estudiante/${id}`);
+        const reporte = await res.json();
+
+        if (!reporte.exito) {
+          contenido.innerHTML = `
+            <div class="ia-error">
+              <i data-lucide="alert-circle"></i>
+              <h3>${reporte.requiereEntrenamiento ? 'Modelo no entrenado' : 'Error'}</h3>
+              <p>${reporte.error}</p>
+            </div>`;
+          lucide.createIcons();
+          return;
+        }
+
+        const rg      = reporte.resumenGlobal;
+        const clsGlob = colorStatCard(rg.porcentajeExito);
+
+        contenido.innerHTML = `
+          <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:16px;padding-right:32px;">
+            Análisis: ${reporte.estudiante.nombre} ${reporte.estudiante.apellido}
+            <span style="font-size:0.78rem;font-weight:400;color:var(--gris-400);">
+              ${reporte.estudiante.grado} · ${reporte.año}
+            </span>
+          </h2>
+
+          <div class="ia-resumen-global" style="margin-bottom:16px;">
+            <div class="ia-stat-card ${clsGlob}">
+              <span class="ia-stat-card__label">Prob. éxito global</span>
+              <span class="ia-stat-card__valor">${rg.porcentajeExito}%</span>
+            </div>
+            <div class="ia-stat-card">
+              <span class="ia-stat-card__label">Promedio general</span>
+              <span class="ia-stat-card__valor">${rg.promedioGeneral.toFixed(2)}</span>
+            </div>
+            <div class="ia-stat-card ${rg.materiasEnRiesgo > 0 ? 'ia-stat-card--risk' : 'ia-stat-card--ok'}">
+              <span class="ia-stat-card__label">En riesgo</span>
+              <span class="ia-stat-card__valor">${rg.materiasEnRiesgo} / ${rg.totalMaterias}</span>
+            </div>
+            <div class="ia-stat-card">
+              <span class="ia-stat-card__label">Valoración</span>
+              <span class="ia-stat-card__valor" style="font-size:0.78rem;">${rg.nivelGlobal}</span>
+            </div>
+          </div>
+
+          <div class="ia-grid-materias">
+            ${reporte.materias.map(renderTarjetaMateria).join('')}
+          </div>
+
+          <p class="ia-timestamp">
+            Generado el ${new Date(reporte.generadoEn).toLocaleString('es-CO',{
+              day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',
+            })}
+          </p>`;
+
+        lucide.createIcons();
+
+      } catch (err) {
+        contenido.innerHTML = `
+          <div class="ia-error">
+            <i data-lucide="wifi-off"></i>
+            <h3>Error de conexión</h3>
+            <p>${err.message}</p>
+          </div>`;
+        lucide.createIcons();
+      }
+    }
+
+    function cerrarModal(e) {
+      if (e && e.target !== document.getElementById('modalReporte')) return;
+      const modal = document.getElementById('modalReporte');
+      modal.classList.remove('visible');
+      setTimeout(() => { modal.style.display = 'none'; }, 220);
+    }
+
+    // ESC cierra modal
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') cerrarModal();
+    });
+
+    /* ══════════════════════════════════════════════════════════════════
+       INIT
+       ══════════════════════════════════════════════════════════════════ */
+    cargarEstadoModelo();
+  </script>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/notificaciones.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

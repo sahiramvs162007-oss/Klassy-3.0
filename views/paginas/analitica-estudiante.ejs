@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLASSY — Análisis Académico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Fraunces:wght@700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="/css/analisis.css" />
+    <link rel="stylesheet" href="/css/estilos.css" />
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="contenedor-principal">
+    <%- include('../partials/topbar') %>
+
+    <main class="contenido" id="mainContenido">
+
+      <!-- Estado: cargando -->
+      <div id="estadoCargando" class="ia-cargando">
+        <div class="ia-spinner"></div>
+        <p>Generando tu análisis académico…</p>
+      </div>
+
+      <!-- Estado: error / sin modelo -->
+      <div id="estadoError" style="display:none;">
+        <div class="ia-error">
+          <i data-lucide="cpu"></i>
+          <h3 id="errorTitulo">Error al generar el análisis</h3>
+          <p id="errorMensaje"></p>
+        </div>
+      </div>
+
+      <!-- Contenido del reporte -->
+      <div id="contenidoReporte" style="display:none;">
+
+        <!-- Cabecera -->
+        <div class="cabecera-pagina" id="reporteCabecera">
+          <div>
+            <h1 class="cabecera-pagina__titulo">Análisis Académico</h1>
+            <p class="cabecera-pagina__subtitulo" id="reporteSubtitulo"></p>
+          </div>
+        </div>
+
+        <!-- Resumen global -->
+        <div class="ia-resumen-global" id="resumenGlobal"></div>
+
+        <!-- Nivel global -->
+        <div class="ia-nivel-global" id="nivelGlobal" style="display:none;">
+          <span class="ia-nivel-global__label">Valoración general:</span>
+          <span class="ia-nivel-global__texto" id="nivelGlobalTexto"></span>
+        </div>
+
+        <!-- Título sección materias -->
+        <div class="seccion-titulo" id="tituloMaterias" style="display:none;">
+          Análisis por materia <span id="conteoMaterias" style="font-weight:400;color:var(--gris-400);"></span>
+        </div>
+
+        <!-- Grid de tarjetas por materia -->
+        <div class="ia-grid-materias" id="gridMaterias"></div>
+
+        <!-- Timestamp -->
+        <p class="ia-timestamp" id="timestamp"></p>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ─── Determinar qué endpoint llamar ──────────────────────────────────────
+    // Si llegamos desde /analisis/estudiante/:id (admin/docente), usamos ese ID
+    const ESTUDIANTE_ID_EXTERNO = '<%= typeof estudianteIdExterno !== "undefined" ? estudianteIdExterno : "" %>';
+    const URL_API = ESTUDIANTE_ID_EXTERNO
+      ? `/api/analisis/estudiante/${ESTUDIANTE_ID_EXTERNO}`
+      : '/api/analisis/mi-reporte';
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+    function pct(valor) { return Math.round(valor * 100); }
+
+    function colorBarra(valor) {
+      return valor < 0.40 ? 'ia-barra__relleno--bajo' : '';
+    }
+
+    function iconoSituacion(situacion) {
+      const mapa = {
+        ya_aprobado:      'check-circle',
+        alcanzable:       'target',
+        exigente:         'alert-triangle',
+        fuera_de_alcance: 'x-circle',
+        sin_datos:        'minus-circle',
+      };
+      return mapa[situacion] || 'minus-circle';
+    }
+
+    function colorStatCard(pctExito) {
+      if (pctExito >= 70) return 'ia-stat-card--ok';
+      if (pctExito >= 45) return 'ia-stat-card--warn';
+      return 'ia-stat-card--risk';
+    }
+
+    // ─── Render de una tarjeta de materia ─────────────────────────────────────
+    function renderTarjetaMateria(m) {
+      const pEx = m.porcentajeExito ?? 0;
+      const met = m.metricas ?? {};
+
+      // FODA items
+      const renderFodaSeccion = (letra, items, abierto) => {
+        const count  = items?.length ?? 0;
+        const hidden = abierto ? '' : 'hidden';
+        const expanded = abierto ? 'true' : 'false';
+        const colorLetra = { F:'--verde-600', O:'--azul-600', D:'d97706', A:'--rojo-600' };
+        const nombreLargo = { F:'Fortalezas', O:'Oportunidades', D:'Debilidades', A:'Amenazas' };
+        const id = `foda-${letra}-${Math.random().toString(36).slice(2,7)}`;
+        const itemsHtml = count > 0
+          ? items.map(txt => `<div class="ia-foda__item">${txt}</div>`).join('')
+          : `<div class="ia-foda__vacia">Ninguna identificada en este momento.</div>`;
+
+        return `
+          <div class="ia-foda__seccion">
+            <button class="ia-foda__trigger" aria-expanded="${expanded}" aria-controls="${id}"
+              onclick="toggleFoda(this)">
+              <span class="ia-foda__trigger-izq">
+                <span class="ia-foda__letra ia-foda__letra--${letra}">${letra}</span>
+                ${nombreLargo[letra]}
+                <span class="ia-foda__count">${count}</span>
+              </span>
+              <i data-lucide="chevron-down" class="ia-foda__chevron"></i>
+            </button>
+            <div class="ia-foda__contenido" id="${id}" ${hidden}>
+              ${itemsHtml}
+            </div>
+          </div>`;
+      };
+
+      // Nota proyectada
+      const np = m.notaProyectada ?? {};
+      const numNota = np.notaNecesaria ? `<span class="ia-nota-proyectada__num">${np.notaNecesaria.toFixed(1)}</span>` : '';
+      const notaHtml = `
+        <div class="ia-nota-proyectada ia-nota-proyectada--${np.situacion || 'sin_datos'}">
+          <i data-lucide="${iconoSituacion(np.situacion)}"></i>
+          ${numNota}
+          <span>${np.mensaje || 'Sin datos suficientes.'}</span>
+        </div>`;
+
+      return `
+        <div class="ia-materia-card">
+          <div class="ia-materia-header">
+            <div>
+              <div class="ia-materia-header__nombre">${m.materia}</div>
+              <span class="ia-nivel-badge">${m.nivel}</span>
+            </div>
+            <div class="ia-materia-header__prediccion">
+              <span class="ia-materia-header__pct">${pEx}%</span>
+              <span class="ia-materia-header__label">Prob. éxito</span>
+            </div>
+          </div>
+
+          <div class="ia-materia-cuerpo">
+
+            <!-- Indicadores -->
+            <div class="ia-metricas">
+              <div class="ia-metricas__titulo">Indicadores</div>
+              <div class="ia-metrica-fila">
+                <span class="ia-metrica-fila__label">Compromiso</span>
+                <div class="ia-barra ia-barra--compromiso">
+                  <div class="ia-barra__relleno ${pct(met.compromiso ?? 0) < 40 ? 'ia-barra__relleno--bajo' : ''}"
+                       style="width:${pct(met.compromiso ?? 0)}%"></div>
+                </div>
+                <span class="ia-metrica-fila__pct">${pct(met.compromiso ?? 0)}%</span>
+              </div>
+            </div>
+
+            <!-- Nota proyectada -->
+            ${notaHtml}
+
+            <!-- FODA: D y A abiertas por defecto, F y O cerradas -->
+            <div class="ia-foda">
+              ${renderFodaSeccion('F', m.foda?.fortalezas,    false)}
+              ${renderFodaSeccion('O', m.foda?.oportunidades, false)}
+              ${renderFodaSeccion('D', m.foda?.debilidades,   true)}
+              ${renderFodaSeccion('A', m.foda?.amenazas,      true)}
+            </div>
+
+          </div>
+        </div>`;
+    }
+
+    // ─── Render del resumen global ─────────────────────────────────────────────
+    function renderResumenGlobal(reporte) {
+      const rg  = reporte.resumenGlobal;
+      const cls = colorStatCard(rg.porcentajeExito);
+      return `
+        <div class="ia-stat-card ia-stat-card--azul">
+          <span class="ia-stat-card__label">Estudiante</span>
+          <span class="ia-stat-card__valor" style="font-size:1.1rem;font-weight:600;">
+            ${reporte.estudiante.nombre} ${reporte.estudiante.apellido}
+          </span>
+          <span class="ia-stat-card__sub">${reporte.estudiante.grado} — ${reporte.año}</span>
+        </div>
+        <div class="ia-stat-card ${cls}">
+          <span class="ia-stat-card__label">Probabilidad de éxito global</span>
+          <span class="ia-stat-card__valor">${rg.porcentajeExito}%</span>
+          <span class="ia-stat-card__sub">Predicción IA sobre todas las materias</span>
+        </div>
+        <div class="ia-stat-card">
+          <span class="ia-stat-card__label">Promedio general</span>
+          <span class="ia-stat-card__valor">${rg.promedioGeneral.toFixed(2)}</span>
+          <span class="ia-stat-card__sub">Escala 1.0 – 5.0</span>
+        </div>
+        <div class="ia-stat-card ${rg.materiasEnRiesgo > 0 ? 'ia-stat-card--risk' : 'ia-stat-card--ok'}">
+          <span class="ia-stat-card__label">Materias en riesgo</span>
+          <span class="ia-stat-card__valor">${rg.materiasEnRiesgo}</span>
+          <span class="ia-stat-card__sub">de ${rg.totalMaterias} materias totales</span>
+        </div>`;
+    }
+
+    // ─── Cargar reporte desde la API ──────────────────────────────────────────
+    async function cargarReporte() {
+      try {
+        const res     = await fetch(URL_API);
+        const reporte = await res.json();
+
+        document.getElementById('estadoCargando').style.display = 'none';
+
+        // Modelo no entrenado → aviso especial
+        if (!reporte.exito && reporte.requiereEntrenamiento) {
+          document.getElementById('estadoError').style.display  = 'block';
+          document.getElementById('errorTitulo').textContent    = 'Modelo no entrenado';
+          document.getElementById('errorMensaje').textContent   = reporte.error;
+          lucide.createIcons();
+          return;
+        }
+
+        // Error genérico
+        if (!reporte.exito) {
+          document.getElementById('estadoError').style.display  = 'block';
+          document.getElementById('errorTitulo').textContent    = 'No se pudo generar el análisis';
+          document.getElementById('errorMensaje').textContent   = reporte.error;
+          lucide.createIcons();
+          return;
+        }
+
+        // ── Mostrar contenido ───────────────────────────────────────────────
+        const contenido = document.getElementById('contenidoReporte');
+        contenido.style.display = 'block';
+
+        // Subtítulo
+        document.getElementById('reporteSubtitulo').textContent =
+          `${reporte.estudiante.grado} · Año ${reporte.año}`;
+
+        // Resumen global
+        document.getElementById('resumenGlobal').innerHTML = renderResumenGlobal(reporte);
+
+        // Nivel global
+        const nivelEl = document.getElementById('nivelGlobal');
+        nivelEl.style.display = 'flex';
+        document.getElementById('nivelGlobalTexto').textContent = reporte.resumenGlobal.nivelGlobal;
+
+        // Grid de materias
+        const grid = document.getElementById('gridMaterias');
+        grid.innerHTML = reporte.materias.map(renderTarjetaMateria).join('');
+
+        // Contador y título
+        document.getElementById('tituloMaterias').style.display = 'block';
+        document.getElementById('conteoMaterias').textContent   =
+          `(${reporte.materias.length} materias, ordenadas de mayor a menor riesgo)`;
+
+        // Timestamp
+        document.getElementById('timestamp').textContent =
+          `Análisis generado el ${new Date(reporte.generadoEn).toLocaleString('es-CO', {
+            day: '2-digit', month: 'long', year: 'numeric',
+            hour: '2-digit', minute: '2-digit',
+          })}`;
+
+        lucide.createIcons();
+
+      } catch (err) {
+        document.getElementById('estadoCargando').style.display = 'none';
+        document.getElementById('estadoError').style.display    = 'block';
+        document.getElementById('errorTitulo').textContent      = 'Error de conexión';
+        document.getElementById('errorMensaje').textContent     =
+          'No se pudo contactar al servidor. Recarga la página.';
+        lucide.createIcons();
+      }
+    }
+
+    // ─── Toggle del acordeón FODA ─────────────────────────────────────────────
+    function toggleFoda(btn) {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      const contenidoId = btn.getAttribute('aria-controls');
+      const contenido   = document.getElementById(contenidoId);
+      btn.setAttribute('aria-expanded', !expanded);
+      if (expanded) {
+        contenido.setAttribute('hidden', '');
+      } else {
+        contenido.removeAttribute('hidden');
+      }
+    }
+
+    // ─── Init ─────────────────────────────────────────────────────────────────
+    cargarReporte();
+  </script>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/notificaciones.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

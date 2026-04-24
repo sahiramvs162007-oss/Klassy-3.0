@@ -24,6 +24,12 @@ const rutasNotas          = require('./routes/notas');
 const rutasBoletines      = require('./routes/boletines');
 const rutasNoticias       = require('./routes/noticias');
 const rutasRetiros        = require('./routes/retiros');
+const rutasHistorial      = require('./routes/historial');
+
+// Módulo de IA
+const rutasIa           = require('./routes/ia.routes');
+const rutasAnalisisAcad = require('./routes/analisisAcademico.routes');
+const rutasAnalitica    = require('./routes/analisis.routes');
 
 conectarDB();
 
@@ -85,6 +91,12 @@ app.use('/notas',          rutasNotas);
 app.use('/boletines',      rutasBoletines);
 app.use('/noticias',       rutasNoticias);
 app.use('/retiros',        rutasRetiros);
+app.use('/historial',      rutasHistorial);
+
+// Módulo de IA (antes del 404)
+app.use('/api/ia',       rutasIa);
+app.use('/api/analisis', rutasAnalisisAcad);
+app.use('/analitica',    rutasAnalitica);
 
 // ─── 404 ──────────────────────────────────────────────────────────────────────
 app.use((req, res) => {

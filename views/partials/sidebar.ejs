@@ -15,10 +15,12 @@
     notas:        ['admin','director','docente','estudiante'],
     boletines:    ['admin','director','docente','estudiante'],
     noticias:     ['admin','director','docente'],
-    analitica:    ['estudiante'],
+    noticias:     ['admin','director','docente'],
+    analitica:    ['admin', 'director', 'docente', 'estudiante'],
     historial:    ['admin'],
   };
 
+  // Rutas según rol
   // Rutas según rol (algunos módulos van a sub-rutas distintas)
   const rutaPorRol = {
     actividades: rol === 'docente'    ? '/actividades/docente'
@@ -30,6 +32,8 @@
     boletines:   rol === 'docente'    ? '/boletines/docente'
                : rol === 'estudiante' ? '/boletines/estudiante'
                : '/boletines/admin',
+    analitica: rol === 'estudiante' ? '/analitica'
+               : '/analitica/panel',
   };
 
   const puede = (clave) => acceso[clave] && acceso[clave].includes(rol);
