@@ -38,6 +38,7 @@
       </div>
 
       <!-- ═══════════════ SECCIÓN 2: ENTRENAR ════════════════════════════ -->
+      <% if (typeof rolUsuario === 'undefined' || rolUsuario !== 'docente') { %>
       <div class="seccion-titulo">Entrenamiento</div>
 
       <div class="ia-entrenar-bloque">
@@ -72,6 +73,7 @@
         <!-- Resultado -->
         <div class="ia-resultado-entrenamiento" id="resultadoEntrenamiento"></div>
       </div>
+      <% } %>
 
       <!-- ═══════════════ SECCIÓN 3: BUSCADOR DE ESTUDIANTES ══════════════ -->
       <div class="seccion-titulo">Consultar análisis de un estudiante</div>

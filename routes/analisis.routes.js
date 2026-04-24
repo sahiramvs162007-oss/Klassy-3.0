@@ -1,4 +1,7 @@
-// routes/analisis.routes.js
+/**
+ * routes/analisis.routes.js
+ */
+
 'use strict';
 
 const express   = require('express');
@@ -13,15 +16,17 @@ router.get('/', autorizar('estudiante'), (req, res) => {
   });
 });
 
-// GET /analitica/panel → panel admin/director de IA
-router.get('/panel', autorizar('admin', 'director'), (req, res) => {
+// GET /analitica/panel → panel para admin, director y docente
+// El EJS controla qué secciones ve cada rol via ROL_USUARIO
+router.get('/panel', autorizar('admin', 'director', 'docente'), (req, res) => {
   res.render('paginas/ia-panel', {
     titulo:       'Panel de Inteligencia Académica',
     paginaActual: 'analitica',
+    rolUsuario:   req.session.usuario.rol,  // lo usa el EJS para ocultar botón entrenar
   });
 });
 
-// GET /analitica/estudiante/:id → admin/director/docente consulta reporte de un estudiante
+// GET /analitica/estudiante/:id → admin, director y docente consultan un estudiante
 router.get('/estudiante/:id', autorizar('admin', 'director', 'docente'), (req, res) => {
   res.render('paginas/analitica-estudiante', {
     titulo:              'Análisis Académico',
