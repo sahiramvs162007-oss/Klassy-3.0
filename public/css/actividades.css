@@ -1,0 +1,146 @@
+
+/* ── Nuevos estilos Sprint 9 revisado ─────────────────────────────── */
+
+/* Estado programada en tarjeta docente */
+.tarjeta-actividad-docente--programada .tarjeta-actividad-docente__left {
+  background: #8b5cf6;
+}
+.tarjeta-actividad-docente--cerrada .tarjeta-actividad-docente__left {
+  background: var(--gris-400);
+}
+
+/* Chips de configuración de actividad */
+.actividad-opciones-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 10px 0 4px;
+}
+
+.opcion-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.opcion-chip svg { width: 11px; height: 11px; stroke-width: 2.5; }
+.opcion-chip--activo  { background: var(--verde-100); color: var(--verde-600); border: 1px solid #bbf7d0; }
+.opcion-chip--inactivo { background: var(--gris-100); color: var(--gris-400); border: 1px solid var(--gris-200); }
+
+/* Excepción activa en detalle estudiante */
+.actividad-encabezado-est__limite--excepcion {
+  background: #eff6ff;
+  color: var(--azul-700);
+  border: 1px solid var(--azul-200);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  padding: 8px 12px;
+  border-radius: var(--radio);
+}
+.actividad-encabezado-est__limite--excepcion svg { width: 14px; height: 14px; stroke-width: 2; }
+
+/* Checks grupo (formulario de opciones) */
+.checks-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.check-opcion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--gris-700);
+}
+
+.check-opcion input[type="checkbox"] { display: none; }
+
+.check-opcion__box {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--gris-300);
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--trans-rapida), border-color var(--trans-rapida);
+}
+
+.check-opcion input:checked + .check-opcion__box {
+  background: var(--azul-600);
+  border-color: var(--azul-600);
+}
+
+.check-opcion input:checked + .check-opcion__box::after {
+  content: '';
+  width: 5px;
+  height: 9px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translateY(-1px);
+  display: block;
+}
+
+.check-opcion--peligro .check-opcion__box--peligro {
+  border-color: var(--rojo-400);
+}
+
+.check-opcion input:checked + .check-opcion__box--peligro {
+  background: var(--rojo-600);
+  border-color: var(--rojo-600);
+}
+
+.check-opcion--peligro { color: var(--rojo-600); font-weight: 500; }
+
+/* Panel de excepciones */
+.excepciones-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.excepcion-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--azul-50);
+  border: 1px solid var(--azul-100);
+  border-radius: var(--radio);
+}
+
+.excepcion-item__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.excepcion-item__nombre {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--gris-900);
+}
+
+.excepcion-item__fecha {
+  font-size: 0.72rem;
+  color: var(--gris-500);
+}
+
+.excepcion-form {
+  padding-top: 12px;
+  border-top: 1px solid var(--gris-100);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
