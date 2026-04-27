@@ -27,6 +27,10 @@ router.post('/docente/:id/comentarios',  soloDocente, ctrl.comentarActividadDoce
 // Calificar entrega → genera Nota
 router.put('/docente/entregas/:entregaId/calificar', soloDocente, ctrl.calificarEntrega);
 
+// [NUEVO Claude] Excepciones individuales por estudiante
+router.post('/docente/:id/excepciones',                 soloDocente, ctrl.agregarExcepcion);
+router.delete('/docente/:id/excepciones/:estudianteId', soloDocente, ctrl.quitarExcepcion);
+
 // ─── RUTAS ESTUDIANTE ─────────────────────────────────────────────────────────
 const soloEstudiante = autorizar('estudiante');
 

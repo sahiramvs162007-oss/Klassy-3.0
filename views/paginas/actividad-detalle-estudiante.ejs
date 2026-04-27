@@ -48,14 +48,42 @@
                 <i data-lucide="user" style="width:14px;height:14px;"></i>
                 <%= actividad.docenteId ? actividad.docenteId.nombre + ' ' + actividad.docenteId.apellido : '—' %>
               </p>
-              <div class="actividad-encabezado-est__limite <%= vencida ? 'actividad-encabezado-est__limite--vencida' : '' %>">
-                <i data-lucide="<%= vencida ? 'alert-circle' : 'clock' %>"></i>
-                <% if (vencida) { %>
-                  Fecha límite vencida:
-                <% } else { %>
-                  Entrega antes de:
+
+              <!-- [NUEVO Claude] Mostrar fecha personalizada si hay excepción activa -->
+              <% if (excepcion) { %>
+                <div class="actividad-encabezado-est__limite actividad-encabezado-est__limite--excepcion">
+                  <i data-lucide="user-check"></i>
+                  Tienes acceso especial hasta:
+                  <strong><%= new Date(excepcion.fechaLimitePersonalizada).toLocaleString('es-CO', {day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) %></strong>
+                </div>
+              <% } else { %>
+                <div class="actividad-encabezado-est__limite <%= vencida ? 'actividad-encabezado-est__limite--vencida' : '' %>">
+                  <i data-lucide="<%= vencida ? 'alert-circle' : 'clock' %>"></i>
+                  <% if (actividad.estado === 'cerrada') { %>
+                    Actividad cerrada por el docente
+                  <% } else if (vencida) { %>
+                    Fecha límite vencida:
+                  <% } else { %>
+                    Entrega antes de:
+                  <% } %>
+                  <% if (actividad.estado !== 'cerrada') { %>
+                    <strong><%= new Date(actividad.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }) %></strong>
+                  <% } %>
+                </div>
+              <% } %>
+
+              <!-- [NUEVO Claude] Indicadores de configuración de la actividad -->
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+                <% if (!actividad.permitirMultiplesEntregas) { %>
+                  <span class="opcion-chip opcion-chip--inactivo" style="font-size:0.72rem;">
+                    <i data-lucide="alert-triangle"></i> Solo una entrega permitida
+                  </span>
                 <% } %>
-                <strong><%= new Date(actividad.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }) %></strong>
+                <% if (actividad.permitirEntregaTardia && !excepcion) { %>
+                  <span class="opcion-chip opcion-chip--activo" style="font-size:0.72rem;">
+                    <i data-lucide="check"></i> Se acepta entrega tardía
+                  </span>
+                <% } %>
               </div>
             </div>
 
@@ -167,13 +195,15 @@
             </div>
           <% } %>
 
-          <!-- Formulario de nueva entrega -->
-          <% if (!vencida) { %>
+          <!-- Formulario de nueva entrega o mensaje de bloqueo -->
+          <!-- [NUEVO Claude] Usa puedeEntregar + razonBloqueo para mensajes específicos -->
+          <% if (typeof puedeEntregar !== 'undefined' ? puedeEntregar : !vencida) { %>
             <div class="tarjeta">
               <div class="tarjeta__cabecera">
                 <i data-lucide="upload-cloud"></i>
                 <h3 class="tarjeta__titulo">
                   <%= misEntregas.length > 0 ? 'Enviar otra entrega' : 'Enviar entrega' %>
+                  <% if (excepcion) { %><span class="badge badge--azul" style="margin-left:8px;">Acceso especial</span><% } %>
                 </h3>
               </div>
 
@@ -208,10 +238,21 @@
                 </button>
               </form>
             </div>
+
           <% } else { %>
+            <!-- [NUEVO Claude] Mensajes de bloqueo específicos según razonBloqueo -->
+            <%
+              const _razon = typeof razonBloqueo !== 'undefined' ? razonBloqueo : 'vencida';
+              const _mensajesBloqueo = {
+                cerrada:          { icono: 'lock',          texto: 'El docente cerró esta actividad manualmente.' },
+                vencida:          { icono: 'alert-circle',  texto: 'La fecha límite de esta actividad ya venció. No puedes enviar más entregas.' },
+                una_sola_entrega: { icono: 'check-circle',  texto: 'Esta actividad solo permite una entrega y ya la realizaste.' },
+              };
+              const _info = _mensajesBloqueo[_razon] || { icono: 'lock', texto: 'No puedes entregar en este momento.' };
+            %>
             <div class="tarjeta tarjeta-vencida">
-              <i data-lucide="lock"></i>
-              <p>La fecha límite de esta actividad ya venció. No puedes enviar más entregas.</p>
+              <i data-lucide="<%= _info.icono %>"></i>
+              <p><%= _info.texto %></p>
             </div>
           <% } %>
 

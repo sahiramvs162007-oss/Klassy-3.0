@@ -59,6 +59,14 @@
             <div class="tarjeta__cabecera">
               <i data-lucide="clipboard-list"></i>
               <h2 class="tarjeta__titulo"><%= actividad.titulo %></h2>
+              <!-- [NUEVO Claude] Badge de estado de la actividad -->
+              <% if (actividad.estado === 'cerrada') { %>
+                <span class="badge badge--inactivo" style="margin-left:auto;">Cerrada</span>
+              <% } else if (actividad.fechaInicio && actividad.fechaInicio > new Date()) { %>
+                <span class="badge badge--pendiente" style="margin-left:auto;">Programada</span>
+              <% } else { %>
+                <span class="badge badge--activo" style="margin-left:auto;">Abierta</span>
+              <% } %>
             </div>
 
             <div class="actividad-meta-grid">
@@ -74,12 +82,33 @@
                 <span class="actividad-meta-item__label">Periodo</span>
                 <span class="actividad-meta-item__valor"><%= actividad.periodoId?.nombre || '—' %></span>
               </div>
+              <!-- [NUEVO Claude] Fecha de inicio si existe -->
+              <% if (actividad.fechaInicio) { %>
+                <div class="actividad-meta-item">
+                  <span class="actividad-meta-item__label">Publica el</span>
+                  <span class="actividad-meta-item__valor">
+                    <%= new Date(actividad.fechaInicio).toLocaleString('es-CO', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) %>
+                  </span>
+                </div>
+              <% } %>
               <div class="actividad-meta-item">
                 <span class="actividad-meta-item__label">Fecha límite</span>
                 <span class="actividad-meta-item__valor">
                   <%= new Date(actividad.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }) %>
                 </span>
               </div>
+            </div>
+
+            <!-- [NUEVO Claude] Indicadores de configuración -->
+            <div class="actividad-opciones-chips">
+              <span class="opcion-chip <%= actividad.permitirMultiplesEntregas ? 'opcion-chip--activo' : 'opcion-chip--inactivo' %>">
+                <i data-lucide="<%= actividad.permitirMultiplesEntregas ? 'check' : 'x' %>"></i>
+                Múltiples entregas
+              </span>
+              <span class="opcion-chip <%= actividad.permitirEntregaTardia ? 'opcion-chip--activo' : 'opcion-chip--inactivo' %>">
+                <i data-lucide="<%= actividad.permitirEntregaTardia ? 'check' : 'x' %>"></i>
+                Entrega tardía
+              </span>
             </div>
 
             <% if (actividad.descripcion) { %>
@@ -130,6 +159,72 @@
               <div class="entrega-progreso__barra">
                 <div class="entrega-progreso__relleno" style="width:<%= porcentaje %>%"></div>
               </div>
+            </div>
+          </div>
+
+          <!-- [NUEVO Claude] Panel de EXCEPCIONES por estudiante -->
+          <div class="tarjeta">
+            <div class="tarjeta__cabecera">
+              <i data-lucide="user-plus"></i>
+              <h3 class="tarjeta__titulo">Acceso especial por estudiante</h3>
+              <span class="texto-secundario texto-sm" style="margin-left:auto;"><%= actividad.excepciones?.length || 0 %> activa<%= actividad.excepciones?.length !== 1 ? 's' : '' %></span>
+            </div>
+            <p class="texto-secundario texto-sm" style="margin-bottom:12px;">
+              Otorga a un estudiante un plazo personalizado para entregar aunque la actividad esté cerrada o vencida.
+            </p>
+
+            <!-- Excepciones existentes -->
+            <% if (actividad.excepciones?.length > 0) { %>
+              <div class="excepciones-lista">
+                <% actividad.excepciones.forEach(exc => { %>
+                  <div class="excepcion-item">
+                    <div class="usuario-celda__avatar usuario-celda__avatar--estudiante" style="width:30px;height:30px;font-size:0.72rem;flex-shrink:0;">
+                      <%= exc.estudianteId?.nombre?.charAt(0).toUpperCase() || '?' %><%= exc.estudianteId?.apellido?.charAt(0).toUpperCase() || '' %>
+                    </div>
+                    <div class="excepcion-item__info">
+                      <span class="excepcion-item__nombre">
+                        <%= exc.estudianteId ? exc.estudianteId.nombre + ' ' + exc.estudianteId.apellido : 'Estudiante' %>
+                      </span>
+                      <span class="excepcion-item__fecha texto-sm">
+                        Hasta: <%= new Date(exc.fechaLimitePersonalizada).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) %>
+                        <% if (new Date(exc.fechaLimitePersonalizada) < new Date()) { %>
+                          <span class="texto-error">(vencida)</span>
+                        <% } %>
+                      </span>
+                    </div>
+                    <button class="btn-icono btn-icono--eliminar"
+                      onclick="quitarExcepcion('<%= actividad._id %>','<%= exc.estudianteId?._id %>')"
+                      title="Quitar excepción">
+                      <i data-lucide="x"></i>
+                    </button>
+                  </div>
+                <% }) %>
+              </div>
+            <% } %>
+
+            <!-- Formulario para agregar excepción -->
+            <div class="excepcion-form">
+              <div class="formulario-2col">
+                <div class="campo">
+                  <label class="campo__etiqueta">Estudiante</label>
+                  <select id="selectEstudianteExcepcion" class="campo__select">
+                    <option value="">Seleccionar…</option>
+                    <% resumenEstudiantes.forEach(r => { %>
+                      <option value="<%= r.estudiante?._id %>">
+                        <%= r.estudiante ? r.estudiante.nombre + ' ' + r.estudiante.apellido : '' %>
+                        <%= r.entrego ? '(ya entregó)' : '' %>
+                      </option>
+                    <% }) %>
+                  </select>
+                </div>
+                <div class="campo">
+                  <label class="campo__etiqueta">Nueva fecha límite</label>
+                  <input type="datetime-local" id="inputFechaExcepcion" class="campo__entrada" />
+                </div>
+              </div>
+              <button class="btn btn--secundario btn--sm" onclick="agregarExcepcion('<%= actividad._id %>')">
+                <i data-lucide="user-plus"></i> Otorgar acceso especial
+              </button>
             </div>
           </div>
 
@@ -204,9 +299,14 @@
                       <%= r.entregas.length %> entrega<%= r.entregas.length !== 1 ? 's' : '' %>
                       <% const calificada = r.entregas.find(e => e.estado === 'calificada'); %>
                       <% if (calificada) { %>
-                        · <span class="nota-chip nota-chip--ok"><%= calificada.nota?.toFixed(1) %></span>
+                        <!-- [NUEVO Claude] Color de nota según aprobación -->
+                        · <span class="nota-chip nota-chip--<%= calificada.nota >= 3 ? 'ok' : 'mal' %>"><%= calificada.nota?.toFixed(1) %></span>
                       <% } else { %>
                         · <span class="badge badge--pendiente">Sin calificar</span>
+                      <% } %>
+                      <!-- [NUEVO Claude] Badge de excepción activa -->
+                      <% if (r.excepcion) { %>
+                        · <span class="badge badge--azul">Excepción</span>
                       <% } %>
                     </span>
                   </div>
@@ -229,7 +329,13 @@
                     <span class="entrega-estudiante-item__nombre">
                       <%= r.estudiante ? r.estudiante.nombre + ' ' + r.estudiante.apellido : 'Estudiante' %>
                     </span>
-                    <span class="entrega-estudiante-item__meta texto-secundario">No ha entregado</span>
+                    <span class="entrega-estudiante-item__meta texto-secundario">
+                      No ha entregado
+                      <!-- [NUEVO Claude] Mostrar excepción activa en faltantes -->
+                      <% if (r.excepcion) { %>
+                        · <span class="badge badge--azul">Tiene excepción hasta <%= new Date(r.excepcion.fechaLimitePersonalizada).toLocaleDateString('es-CO') %></span>
+                      <% } %>
+                    </span>
                   </div>
                 </div>
               <% }) %>
@@ -282,18 +388,6 @@
       if (mime.includes('word') || mime.includes('document')) return 'file-text';
       if (mime.includes('presentation') || mime.includes('powerpoint')) return 'presentation';
       if (mime.includes('sheet') || mime.includes('excel')) return 'table';
-      if (mime.includes('audio')) return 'music';
-      if (mime.includes('video')) return 'video';
-      return 'file';
-    }
-  </script>
-
-  <script>
-    // Helper también en EJS (para los archivos del docente)
-    function iconoArchivo(mime) {
-      if (!mime) return 'file';
-      if (mime.includes('image'))  return 'image';
-      if (mime.includes('pdf'))    return 'file-text';
       if (mime.includes('audio')) return 'music';
       if (mime.includes('video')) return 'video';
       return 'file';

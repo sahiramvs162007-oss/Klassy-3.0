@@ -310,11 +310,23 @@
                             <% } %>
                           </div>
                         </div>
-                        <% if (!vencida) { %>
-                          <span class="act-card__badge act-card__badge--abierta">Vigente</span>
-                        <% } else { %>
-                          <span class="act-card__badge act-card__badge--cerrada">Finalizada</span>
-                        <% } %>
+                        <!-- [NUEVO Claude] Badges de estado y opciones -->
+                        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+                          <% if (!vencida) { %>
+                            <span class="act-card__badge act-card__badge--abierta">Vigente</span>
+                          <% } else { %>
+                            <span class="act-card__badge act-card__badge--cerrada">Finalizada</span>
+                          <% } %>
+                          <% if (!act.permitirMultiplesEntregas) { %>
+                            <span class="badge badge--azul" title="Solo una entrega por estudiante">1 entrega</span>
+                          <% } %>
+                          <% if (act.permitirEntregaTardia) { %>
+                            <span class="badge badge--pendiente" title="Permite entrega tardía">Tardía OK</span>
+                          <% } %>
+                          <% if (act.excepciones?.length > 0) { %>
+                            <span class="badge badge--azul"><%= act.excepciones.length %> excepción<%= act.excepciones.length !== 1 ? 'es' : '' %></span>
+                          <% } %>
+                        </div>
                       </div>
 
                       <% if (act.descripcion) { %>
@@ -324,6 +336,13 @@
                       <% } %>
 
                       <div class="act-card__meta">
+                        <!-- [NUEVO Claude] Fecha de inicio si existe -->
+                        <% if (act.fechaInicio) { %>
+                          <span class="act-card__meta-item">
+                            <i data-lucide="calendar-check"></i>
+                            Inicia: <%= new Date(act.fechaInicio).toLocaleString('es-CO', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) %>
+                          </span>
+                        <% } %>
                         <span class="act-card__meta-item">
                           <i data-lucide="calendar-clock"></i>
                           <%= new Date(act.fechaLimite).toLocaleString('es-CO', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) %>
@@ -355,7 +374,7 @@
                         <div class="act-card__acciones-sec">
                           <% if (!vencida) { %>
                             <button class="btn-icono btn-icono--editar"
-                              onclick="abrirDrawerEditar('<%= act._id %>', `<%= act.titulo.replace(/`/g,'\\`') %>`, `<%= (act.descripcion||'').replace(/`/g,'\\`') %>`, '<%= act.fechaLimite.toISOString().slice(0,16) %>')"
+                              onclick="abrirDrawerEditar('<%= act._id %>', `<%= act.titulo.replace(/`/g,'\\`') %>`, `<%= (act.descripcion||'').replace(/`/g,'\\`') %>`, '<%= act.fechaInicio ? act.fechaInicio.toISOString().slice(0,16) : "" %>', '<%= act.fechaLimite.toISOString().slice(0,16) %>', <%= act.permitirMultiplesEntregas ? 'true' : 'false' %>, <%= act.permitirEntregaTardia ? 'true' : 'false' %>)"
                               title="Editar">
                               <i data-lucide="pencil"></i>
                             </button>
@@ -457,13 +476,6 @@
                           <i data-lucide="eye"></i> Ver entregas
                         </a>
                         <div class="act-card__acciones-sec">
-                          <% if (!vencida) { %>
-                            <button class="btn-icono btn-icono--editar"
-                              onclick="abrirDrawerEditar('<%= act._id %>', `<%= act.titulo.replace(/`/g,'\\`') %>`, `<%= (act.descripcion||'').replace(/`/g,'\\`') %>`, '<%= act.fechaLimite.toISOString().slice(0,16) %>')"
-                              title="Editar">
-                              <i data-lucide="pencil"></i>
-                            </button>
-                          <% } %>
                           <form method="POST" action="/actividades/docente/<%= act._id %>?_method=DELETE&materiaId=<%= materiaIdActiva %>&gradoId=<%= gradoIdActivo %>"
                             onsubmit="return confirm('¿Eliminar la actividad «<%= act.titulo %>»? Se eliminarán todas las entregas.')"
                             style="display:inline">
@@ -514,10 +526,56 @@
           placeholder="Describe las instrucciones, criterios de evaluación, recursos necesarios..."></textarea>
       </div>
 
-      <div class="campo">
-        <label class="campo__etiqueta">Fecha y hora límite *</label>
-        <input type="datetime-local" name="fechaLimite" class="campo__entrada" required />
+      <!-- [NUEVO Claude] Fechas en dos columnas con fecha de inicio opcional -->
+      <div class="formulario-2col">
+        <div class="campo">
+          <label class="campo__etiqueta">
+            Fecha de inicio
+            <span class="campo__ayuda">(dejar vacío = publicar ahora)</span>
+          </label>
+          <input type="datetime-local" name="fechaInicio" class="campo__entrada" />
+        </div>
+        <div class="campo">
+          <label class="campo__etiqueta">Fecha y hora límite *</label>
+          <input type="datetime-local" name="fechaLimite" class="campo__entrada" required />
+        </div>
       </div>
+
+      <!-- [NUEVO Claude] Opciones de entrega -->
+      <div class="campo">
+        <label class="campo__etiqueta">Opciones de entrega</label>
+        <div class="checks-grupo">
+          <label class="check-opcion">
+            <input type="checkbox" name="permitirMultiplesEntregas" checked />
+            <span class="check-opcion__box"></span>
+            <span>Permitir múltiples entregas</span>
+          </label>
+          <label class="check-opcion">
+            <input type="checkbox" name="permitirEntregaTardia" />
+            <span class="check-opcion__box"></span>
+            <span>Permitir entrega después del plazo</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- [NUEVO Claude] Publicación en otros grados de la misma materia -->
+      <% if (gradosMismaMateria && gradosMismaMateria.length > 0) { %>
+        <div class="campo">
+          <label class="campo__etiqueta">
+            Publicar también en otros grados
+            <span class="campo__ayuda">(misma materia)</span>
+          </label>
+          <div class="checks-grupo">
+            <% gradosMismaMateria.forEach(g => { %>
+              <label class="check-opcion">
+                <input type="checkbox" name="gradosExtras" value="<%= g.grado._id %>" />
+                <span class="check-opcion__box"></span>
+                <span><%= g.grado.nombre %> (Nivel <%= g.grado.nivel %>)</span>
+              </label>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
 
       <div class="campo">
         <label class="campo__etiqueta">Archivos adjuntos</label>
@@ -547,6 +605,7 @@
   <!-- ─── Template: Editar actividad ─────────────────────────────────── -->
   <template id="templateEditarActividad">
     <form method="POST" action="" enctype="multipart/form-data" class="formulario-grupo" id="formEditarActividad">
+      <input type="hidden" name="_method" value="PUT"/>
 
       <div class="campo">
         <label class="campo__etiqueta">Título *</label>
@@ -558,9 +617,38 @@
         <textarea name="descripcion" id="editDesc" class="campo__area" rows="4"></textarea>
       </div>
 
+      <!-- [NUEVO Claude] Fechas en dos columnas -->
+      <div class="formulario-2col">
+        <div class="campo">
+          <label class="campo__etiqueta">Fecha de inicio</label>
+          <input type="datetime-local" name="fechaInicio" id="editFechaInicio" class="campo__entrada" />
+        </div>
+        <div class="campo">
+          <label class="campo__etiqueta">Nueva fecha límite *</label>
+          <input type="datetime-local" name="fechaLimite" id="editFechaLimite" class="campo__entrada" required />
+        </div>
+      </div>
+
+      <!-- [NUEVO Claude] Opciones de entrega al editar -->
       <div class="campo">
-        <label class="campo__etiqueta">Nueva fecha límite *</label>
-        <input type="datetime-local" name="fechaLimite" id="editFecha" class="campo__entrada" required />
+        <label class="campo__etiqueta">Opciones de entrega</label>
+        <div class="checks-grupo">
+          <label class="check-opcion">
+            <input type="checkbox" name="permitirMultiplesEntregas" id="editMultiEntrega" />
+            <span class="check-opcion__box"></span>
+            <span>Permitir múltiples entregas</span>
+          </label>
+          <label class="check-opcion">
+            <input type="checkbox" name="permitirEntregaTardia" id="editTardiaOk" />
+            <span class="check-opcion__box"></span>
+            <span>Permitir entrega después del plazo</span>
+          </label>
+          <label class="check-opcion check-opcion--peligro">
+            <input type="checkbox" name="cerrarAhora" id="editCerrarAhora" />
+            <span class="check-opcion__box check-opcion__box--peligro"></span>
+            <span>Cerrar actividad ahora</span>
+          </label>
+        </div>
       </div>
 
       <div class="campo">

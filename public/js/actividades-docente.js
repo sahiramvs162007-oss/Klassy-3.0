@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   lucide.createIcons();
 });
+
 /**
  * public/js/actividades-docente.js
  * Drawer de crear/editar actividad y preview de archivos.
@@ -59,7 +60,12 @@ function abrirDrawerCrear() {
   // Fecha mínima: ahora
   const ahora = new Date();
   ahora.setMinutes(ahora.getMinutes() - ahora.getTimezoneOffset());
-  form.querySelector('[name="fechaLimite"]').min = ahora.toISOString().slice(0, 16);
+  const ahoraStr = ahora.toISOString().slice(0, 16);
+
+  // [NUEVO Claude] También soporta fechaInicio si existe el campo
+  const campoInicio = form.querySelector('[name="fechaInicio"]');
+  if (campoInicio) campoInicio.min = ahoraStr;
+  form.querySelector('[name="fechaLimite"]').min = ahoraStr;
 
   document.getElementById('drawerTitulo').textContent = 'Nueva actividad';
   document.getElementById('drawerCuerpo').innerHTML   = '';
@@ -69,14 +75,26 @@ function abrirDrawerCrear() {
   lucide.createIcons();
 }
 
-function abrirDrawerEditar(id, titulo, desc, fechaLimite) {
+// [NUEVO Claude] Firma extendida: fechaInicio, multiEntrega, tardiaOk
+function abrirDrawerEditar(id, titulo, desc, fechaInicio, fechaLimite, multiEntrega, tardiaOk) {
   const template = document.getElementById('templateEditarActividad');
   const form     = template.content.cloneNode(true).querySelector('form');
 
   form.action = `/actividades/docente/${id}?_method=PUT`;
   form.querySelector('#editTitulo').value = titulo;
-  form.querySelector('#editDesc').value   = desc;
-  form.querySelector('#editFecha').value  = fechaLimite;
+  form.querySelector('#editDesc').value   = desc || '';
+
+  // [NUEVO Claude] Campos extendidos del editor
+  const campoInicio = form.querySelector('#editFechaInicio');
+  if (campoInicio) campoInicio.value = fechaInicio || '';
+
+  const campoLimite = form.querySelector('#editFechaLimite') || form.querySelector('#editFecha');
+  if (campoLimite) campoLimite.value = fechaLimite;
+
+  const campoMulti  = form.querySelector('#editMultiEntrega');
+  const campoTardia = form.querySelector('#editTardiaOk');
+  if (campoMulti  && multiEntrega) campoMulti.checked  = true;
+  if (campoTardia && tardiaOk)     campoTardia.checked = true;
 
   document.getElementById('drawerTitulo').textContent = 'Editar actividad';
   document.getElementById('drawerCuerpo').innerHTML   = '';
@@ -108,20 +126,62 @@ function abrirPanelDrawer() {
 }
 
 function cambiarTab(tab) {
-    // Tabs
-    document.querySelectorAll('.act-tab').forEach(t => {
-      t.classList.remove('act-tab--activo');
-      t.setAttribute('aria-selected', 'false');
-    });
-    const tabEl = document.getElementById('tab-' + tab);
-    if (tabEl) { tabEl.classList.add('act-tab--activo'); tabEl.setAttribute('aria-selected', 'true'); }
+  // Tabs
+  document.querySelectorAll('.act-tab').forEach(t => {
+    t.classList.remove('act-tab--activo');
+    t.setAttribute('aria-selected', 'false');
+  });
+  const tabEl = document.getElementById('tab-' + tab);
+  if (tabEl) { tabEl.classList.add('act-tab--activo'); tabEl.setAttribute('aria-selected', 'true'); }
 
-    // Paneles
-    document.querySelectorAll('.act-panel').forEach(p => p.classList.remove('act-panel--visible'));
-    const panel = document.getElementById('panel-' + tab);
-    if (panel) panel.classList.add('act-panel--visible');
-  }
+  // Paneles
+  document.querySelectorAll('.act-panel').forEach(p => p.classList.remove('act-panel--visible'));
+  const panel = document.getElementById('panel-' + tab);
+  if (panel) panel.classList.add('act-panel--visible');
+
   lucide.createIcons();
+}
 
 // ── Picker de grado multinivel: mostrarSalones / volverNiveles → main.js
-  lucide.createIcons();
+
+// ─── [NUEVO Claude] Gestión de excepciones (detalle docente) ────────────────
+
+async function agregarExcepcion(actividadId) {
+  const estudianteId = document.getElementById('selectEstudianteExcepcion').value;
+  const fechaLimite  = document.getElementById('inputFechaExcepcion').value;
+
+  if (!estudianteId || !fechaLimite) {
+    alert('Selecciona el estudiante y la fecha límite personalizada.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/actividades/docente/${actividadId}/excepciones`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ estudianteId, fechaLimitePersonalizada: fechaLimite }),
+    });
+    const datos = await res.json();
+    if (datos.ok) {
+      location.reload();
+    } else {
+      alert(datos.error || 'Error al agregar excepción.');
+    }
+  } catch (err) {
+    alert('Error de conexión.');
+  }
+}
+
+async function quitarExcepcion(actividadId, estudianteId) {
+  if (!confirm('¿Quitar el acceso especial de este estudiante?')) return;
+  try {
+    const res = await fetch(`/actividades/docente/${actividadId}/excepciones/${estudianteId}`, {
+      method: 'DELETE',
+    });
+    const datos = await res.json();
+    if (datos.ok) location.reload();
+    else alert(datos.error || 'Error al quitar excepción.');
+  } catch (err) {
+    alert('Error de conexión.');
+  }
+}
