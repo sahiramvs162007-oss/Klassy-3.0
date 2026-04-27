@@ -710,15 +710,6 @@
   height: 100%;
 }
 
-
-
-
-
-
-
-
-
-
 /* ══════════════════════════════════════════════════════
    BORDES DE NOTICIA-CARD SEGÚN ETIQUETA
    El borde izquierdo refleja el color de la etiqueta
@@ -807,4 +798,181 @@
 @media (max-width: 480px) {
   .noticia-card__foto { height: 160px !important; }
   .accesos-grid { grid-template-columns: repeat(3, 1fr); }
+}
+/* ══════════════════════════════════════════════════════════════════════
+   DASHBOARD — MOBILE ONLY  (max-width: 768px)
+   Todos los ajustes que siguen son exclusivos para teléfono.
+   ══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* ── HERO ADMIN: apilado vertical, sin grid de 2 col ─────────────── */
+  .hero-admin {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 16px 0;
+    gap: 20px;
+    border-radius: 18px;
+    min-height: unset;
+    overflow: visible;
+  }
+
+  .hero-admin__bienvenida {
+    gap: 8px;
+    padding-bottom: 0;
+  }
+
+  .titu1 { font-size: 1.65rem; }
+
+  /* Botones de acción: columna completa */
+  .hero-admin__acciones {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .hero-admin__acciones .btn-hero {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Imágenes decorativas: se ocultan para no ocupar espacio */
+  .hero-admin__ilustracion {
+    display: none;
+  }
+
+  /* ── STATS: 2 columnas en móvil (en lugar de 4 en fila) ─────────── */
+  .acceso-rapido-seccion {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  /* Segundo nivel anidado igual */
+  .acceso-rapido-seccion .acceso-rapido-seccion {
+    display: contents;
+  }
+
+  /* ── SECCIÓN INFO INSTITUCIONAL: más separada, padding ajustado ─── */
+  #infocolegio {
+    margin-top: 4px;
+    padding: 18px 14px;
+    gap: 14px;
+    border-radius: 18px;
+  }
+
+  .infocolegio__nombre-grande {
+    font-size: 1.2rem;
+  }
+
+  .infocolegio__titulo {
+    font-size: 1.05rem;
+  }
+
+  /* ── VISIÓN ARRIBA, MISIÓN ABAJO (usando order en flex-column) ───── */
+  .cuadricula-2col {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px;
+  }
+
+  .tarjeta--vision { order: 1; }
+  .tarjeta--mision { order: 2; }
+
+  /* ── TEXTO COLAPSADO: máx 3 líneas con "Ver más" ────────────────── */
+  .tarjeta__texto {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+
+  /* Cuando el admin expande la tarjeta */
+  .tarjeta--expandida .tarjeta__texto {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+  }
+
+  /* Botón "Ver más / Ver menos" */
+  .tarjeta__btn-ver-mas {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #2563eb;
+    background: none;
+    border: none;
+    padding: 4px 0;
+    cursor: pointer;
+    font-family: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: opacity 0.2s ease;
+  }
+  .tarjeta__btn-ver-mas:hover { opacity: 0.75; }
+  .tarjeta__btn-ver-mas svg {
+    width: 13px;
+    height: 13px;
+    transition: transform 0.25s ease;
+  }
+  .tarjeta--expandida .tarjeta__btn-ver-mas svg {
+    transform: rotate(180deg);
+  }
+
+  /* ── NOTICIAS ADMIN: 1 columna en móvil ─────────────────────────── */
+  .mosaico-mini {
+    grid-template-columns: 1fr;
+  }
+
+  /* ── SECCIÓN MV (docente/estudiante): ocultar ilustración ───────── */
+  .mv-ilustracion {
+    display: none;
+  }
+
+  .mv-seccion {
+    grid-template-columns: 1fr;
+  }
+
+  .mv-card {
+    max-width: 100%;
+  }
+
+  /* ── NOTICIAS (docente/estudiante): 1 col en móvil ──────────────── */
+  .mosaico-noticias-3col.mosaico-activo-3col,
+  .mosaico-noticias-3col.lista-simple-3col {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+
+  .noticia-card {
+    grid-column: auto !important;
+    grid-row: auto !important;
+    height: auto !important;
+  }
+
+  .noticia-card--wide,
+  .noticia-card--banner {
+    flex-direction: column;
+  }
+  .noticia-card--wide .noticia-card__foto,
+  .noticia-card--banner .noticia-card__foto,
+  .noticia-card--wide .noticia-card__foto--vacia,
+  .noticia-card--banner .noticia-card__foto--vacia {
+    width: 100%;
+    height: 160px;
+  }
+
+  .noticia-card__foto { height: 160px !important; }
+
+  /* ── HERO COLEGIO (docente/estudiante) ──────────────────────────── */
+  .hero-colegio {
+    height: 220px;
+    border-radius: 16px;
+  }
+  .hero-colegio__overlay {
+    padding: 18px 20px;
+  }
+  .hero-colegio__nombre {
+    font-size: 1.5rem;
+  }
 }

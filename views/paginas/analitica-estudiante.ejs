@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/css/analisis.css" />
     <link rel="stylesheet" href="/css/estilos.css" />
   <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/paginas/boletines.css" />
 </head>
 <body>
 
@@ -36,12 +37,27 @@
       </div>
 
       <!-- Contenido del reporte -->
-      <div id="contenidoReporte" style="display:none;">
+      <div id="contenidoReporte" style="display:none;flex-direction:column;gap:22px;">
 
         <!-- Cabecera -->
         <div class="cabecera-pagina" id="reporteCabecera">
-          <div>
-            <h1 class="cabecera-pagina__titulo">Análisis Académico</h1>
+          <div style="display:flex;flex-direction:column;gap:8px;width:100%;">
+            <div class="ia-cabecera-nav">
+              <% if (typeof estudianteIdExterno !== 'undefined' && estudianteIdExterno) { %>
+              <a href="javascript:history.back()" class="btn-back">
+                <i data-lucide="arrow-left"></i> Volver
+              </a>
+              <% } %>
+              <div class="notas-header__tags">
+                <span class="chip chip--materia" id="chipEstudiante" style="display:none;">
+                  <i data-lucide="user"></i>&nbsp;<span id="chipEstudianteNombre"></span>
+                </span>
+                <span class="chip chip--grado" id="chipGrado" style="display:none;">
+                  <i data-lucide="graduation-cap"></i>&nbsp;<span id="chipGradoNombre"></span>
+                </span>
+              </div>
+            </div>
+            <h1 class="cabecera-pagina__titulo">Análisis Académico con IA</h1>
             <p class="cabecera-pagina__subtitulo" id="reporteSubtitulo"></p>
           </div>
         </div>
@@ -51,17 +67,70 @@
 
         <!-- Nivel global -->
         <div class="ia-nivel-global" id="nivelGlobal" style="display:none;">
+          <div class="ia-nivel-global__icono"><i data-lucide="star"></i></div>
           <span class="ia-nivel-global__label">Valoración general:</span>
           <span class="ia-nivel-global__texto" id="nivelGlobalTexto"></span>
         </div>
 
         <!-- Título sección materias -->
+        <br>
         <div class="seccion-titulo" id="tituloMaterias" style="display:none;">
           Análisis por materia <span id="conteoMaterias" style="font-weight:400;color:var(--gris-400);"></span>
         </div>
 
+        <!-- Filtro: materia-picker + chips de desempeño -->
+        <div class="ia-filtro-barra barra-filtros" id="filtroDesempeno" style="display:none;width:100%;border-radius:var(--radio-lg);overflow:visible;">
+          <div class="barra-filtros__fila-superior" style="padding:10px 14px;gap:10px;flex-wrap:wrap;align-items:center;">
+
+            <!-- Materia picker — mismo componente que notas/boletines -->
+            <div class="materia-picker-wrap" id="iaMateriaPicker">
+              <button type="button" class="materia-picker__trigger" id="iaMateriaPickerTrigger">
+                <i data-lucide="book-open" style="width:14px;height:14px;flex-shrink:0;"></i>
+                <span id="iaMateriaPickerLabel">Todas las materias</span>
+                <i data-lucide="chevron-down" class="materia-picker__chevron" style="width:13px;height:13px;margin-left:auto;"></i>
+              </button>
+              <div class="materia-picker__panel" id="iaMateriaPickerPanel">
+                <div class="materia-picker__search-wrap">
+                  <i data-lucide="search" style="width:13px;height:13px;color:var(--gris-500);flex-shrink:0;"></i>
+                  <input type="text" id="iaMateriaBuscador" class="materia-picker__search" placeholder="Buscar materia…" autocomplete="off" />
+                </div>
+                <ul class="materia-picker__lista" id="iaMateriaLista">
+                  <li class="materia-picker__opcion materia-picker__opcion--activa" data-nombre="Todas las materias" data-valor="">
+                    <i data-lucide="list" style="width:13px;height:13px;flex-shrink:0;"></i>
+                    Todas las materias
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Botón limpiar materia (aparece solo cuando hay una seleccionada) -->
+            <button id="iaBtnLimpiarMateria" onclick="limpiarFiltroMateria()" style="display:none;"
+              class="btn btn--secundario btn--sm">
+              <i data-lucide="x" style="width:12px;height:12px;"></i> Limpiar
+            </button>
+
+            <!-- Divisor vertical -->
+            <div style="width:1px;height:22px;background:var(--gris-200);flex-shrink:0;"></div>
+
+            <!-- Chips de desempeño -->
+            <div class="ia-filtro-chips" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+              <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--gris-400);white-space:nowrap;">Desempeño:</span>
+              <button class="ia-filtro-chip ia-filtro-chip--todos activo" onclick="filtrarDesempeno('todos', this)">Todos</button>
+              <button class="ia-filtro-chip ia-filtro-chip--satisfactorio" onclick="filtrarDesempeno('satisfactorio', this)"><span class="ia-filtro-chip__dot ia-filtro-chip__dot--satisfactorio"></span> Satisfactorio</button>
+              <button class="ia-filtro-chip ia-filtro-chip--proceso" onclick="filtrarDesempeno('proceso', this)"><span class="ia-filtro-chip__dot ia-filtro-chip__dot--proceso"></span> En proceso</button>
+              <button class="ia-filtro-chip ia-filtro-chip--atencion" onclick="filtrarDesempeno('atencion', this)"><span class="ia-filtro-chip__dot ia-filtro-chip__dot--atencion"></span> Requiere atención</button>
+              <button class="ia-filtro-chip ia-filtro-chip--riesgo" onclick="filtrarDesempeno('riesgo', this)"><span class="ia-filtro-chip__dot ia-filtro-chip__dot--riesgo"></span> En riesgo</button>
+            </div>
+
+          </div>
+        </div>
+
         <!-- Grid de tarjetas por materia -->
         <div class="ia-grid-materias" id="gridMaterias"></div>
+        <div class="ia-filtro-vacio" id="filtroVacio">
+          <i data-lucide="search-x"></i>
+          <span>No hay materias en este nivel de desempeño.</span>
+        </div>
 
         <!-- Timestamp -->
         <p class="ia-timestamp" id="timestamp"></p>
@@ -72,7 +141,6 @@
 
   <script>
     // ─── Determinar qué endpoint llamar ──────────────────────────────────────
-    // Si llegamos desde /analisis/estudiante/:id (admin/docente), usamos ese ID
     const ESTUDIANTE_ID_EXTERNO = '<%= typeof estudianteIdExterno !== "undefined" ? estudianteIdExterno : "" %>';
     const URL_API = ESTUDIANTE_ID_EXTERNO
       ? `/api/analisis/estudiante/${ESTUDIANTE_ID_EXTERNO}`
@@ -107,12 +175,10 @@
       const pEx = m.porcentajeExito ?? 0;
       const met = m.metricas ?? {};
 
-      // FODA items
       const renderFodaSeccion = (letra, items, abierto) => {
         const count  = items?.length ?? 0;
         const hidden = abierto ? '' : 'hidden';
         const expanded = abierto ? 'true' : 'false';
-        const colorLetra = { F:'--verde-600', O:'--azul-600', D:'d97706', A:'--rojo-600' };
         const nombreLargo = { F:'Fortalezas', O:'Oportunidades', D:'Debilidades', A:'Amenazas' };
         const id = `foda-${letra}-${Math.random().toString(36).slice(2,7)}`;
         const itemsHtml = count > 0
@@ -136,7 +202,6 @@
           </div>`;
       };
 
-      // Nota proyectada
       const np = m.notaProyectada ?? {};
       const numNota = np.notaNecesaria ? `<span class="ia-nota-proyectada__num">${np.notaNecesaria.toFixed(1)}</span>` : '';
       const notaHtml = `
@@ -146,10 +211,12 @@
           <span>${np.mensaje || 'Sin datos suficientes.'}</span>
         </div>`;
 
+      // FIX 1: data-materia añadido para que funcione el filtro por materia
       return `
-        <div class="ia-materia-card">
+        <div class="ia-materia-card" data-nivel="${m.nivel?.toLowerCase?.() || ''}" data-materia="${m.materia}">
           <div class="ia-materia-header">
-            <div>
+            <div class="ia-materia-header__info">
+              <div class="ia-materia-header__icono"><i data-lucide="book-open"></i></div>
               <div class="ia-materia-header__nombre">${m.materia}</div>
               <span class="ia-nivel-badge">${m.nivel}</span>
             </div>
@@ -161,7 +228,6 @@
 
           <div class="ia-materia-cuerpo">
 
-            <!-- Indicadores -->
             <div class="ia-metricas">
               <div class="ia-metricas__titulo">Indicadores</div>
               <div class="ia-metrica-fila">
@@ -174,15 +240,13 @@
               </div>
             </div>
 
-            <!-- Nota proyectada -->
             ${notaHtml}
 
-            <!-- FODA: D y A abiertas por defecto, F y O cerradas -->
             <div class="ia-foda">
               ${renderFodaSeccion('F', m.foda?.fortalezas,    false)}
               ${renderFodaSeccion('O', m.foda?.oportunidades, false)}
-              ${renderFodaSeccion('D', m.foda?.debilidades,   true)}
-              ${renderFodaSeccion('A', m.foda?.amenazas,      true)}
+              ${renderFodaSeccion('D', m.foda?.debilidades,   false)}
+              ${renderFodaSeccion('A', m.foda?.amenazas,      false)}
             </div>
 
           </div>
@@ -193,28 +257,32 @@
     function renderResumenGlobal(reporte) {
       const rg  = reporte.resumenGlobal;
       const cls = colorStatCard(rg.porcentajeExito);
+      const chipEst = document.getElementById('chipEstudiante');
+      const chipGrado = document.getElementById('chipGrado');
+      if (chipEst) { document.getElementById('chipEstudianteNombre').textContent = `${reporte.estudiante.nombre} ${reporte.estudiante.apellido}`; chipEst.style.display = ''; }
+      if (chipGrado) { document.getElementById('chipGradoNombre').textContent = reporte.estudiante.grado; chipGrado.style.display = ''; }
       return `
         <div class="ia-stat-card ia-stat-card--azul">
           <span class="ia-stat-card__label">Estudiante</span>
-          <span class="ia-stat-card__valor" style="font-size:1.1rem;font-weight:600;">
+          <span class="ia-stat-card__valor" style="font-size:1.25rem;font-weight:700;line-height:1.2;">
             ${reporte.estudiante.nombre} ${reporte.estudiante.apellido}
           </span>
-          <span class="ia-stat-card__sub">${reporte.estudiante.grado} — ${reporte.año}</span>
+          <span class="ia-stat-card__sub">${reporte.estudiante.grado} &mdash; ${reporte.año}</span>
         </div>
         <div class="ia-stat-card ${cls}">
           <span class="ia-stat-card__label">Probabilidad de éxito global</span>
           <span class="ia-stat-card__valor">${rg.porcentajeExito}%</span>
-          <span class="ia-stat-card__sub">Predicción IA sobre todas las materias</span>
+          <span class="ia-stat-card__sub">Predicción IA · todas las materias</span>
         </div>
-        <div class="ia-stat-card">
+        <div class="ia-stat-card ia-stat-card--morado">
           <span class="ia-stat-card__label">Promedio general</span>
           <span class="ia-stat-card__valor">${rg.promedioGeneral.toFixed(2)}</span>
-          <span class="ia-stat-card__sub">Escala 1.0 – 5.0</span>
+          <span class="ia-stat-card__sub">Escala 1.0 &ndash; 5.0</span>
         </div>
         <div class="ia-stat-card ${rg.materiasEnRiesgo > 0 ? 'ia-stat-card--risk' : 'ia-stat-card--ok'}">
           <span class="ia-stat-card__label">Materias en riesgo</span>
           <span class="ia-stat-card__valor">${rg.materiasEnRiesgo}</span>
-          <span class="ia-stat-card__sub">de ${rg.totalMaterias} materias totales</span>
+          <span class="ia-stat-card__sub">de ${rg.totalMaterias} en total</span>
         </div>`;
     }
 
@@ -226,7 +294,6 @@
 
         document.getElementById('estadoCargando').style.display = 'none';
 
-        // Modelo no entrenado → aviso especial
         if (!reporte.exito && reporte.requiereEntrenamiento) {
           document.getElementById('estadoError').style.display  = 'block';
           document.getElementById('errorTitulo').textContent    = 'Modelo no entrenado';
@@ -235,7 +302,6 @@
           return;
         }
 
-        // Error genérico
         if (!reporte.exito) {
           document.getElementById('estadoError').style.display  = 'block';
           document.getElementById('errorTitulo').textContent    = 'No se pudo generar el análisis';
@@ -244,32 +310,29 @@
           return;
         }
 
-        // ── Mostrar contenido ───────────────────────────────────────────────
         const contenido = document.getElementById('contenidoReporte');
-        contenido.style.display = 'block';
+        contenido.style.display = 'flex';
 
-        // Subtítulo
         document.getElementById('reporteSubtitulo').textContent =
           `${reporte.estudiante.grado} · Año ${reporte.año}`;
 
-        // Resumen global
         document.getElementById('resumenGlobal').innerHTML = renderResumenGlobal(reporte);
 
-        // Nivel global
         const nivelEl = document.getElementById('nivelGlobal');
         nivelEl.style.display = 'flex';
         document.getElementById('nivelGlobalTexto').textContent = reporte.resumenGlobal.nivelGlobal;
 
-        // Grid de materias
         const grid = document.getElementById('gridMaterias');
         grid.innerHTML = reporte.materias.map(renderTarjetaMateria).join('');
 
-        // Contador y título
+        // FIX 2: mostrar filtro y poblar el materia-picker con las materias reales
+        document.getElementById('filtroDesempeno').style.display = '';
+        poblarSelectMaterias(reporte.materias);
+
         document.getElementById('tituloMaterias').style.display = 'block';
         document.getElementById('conteoMaterias').textContent   =
           `(${reporte.materias.length} materias, ordenadas de mayor a menor riesgo)`;
 
-        // Timestamp
         document.getElementById('timestamp').textContent =
           `Análisis generado el ${new Date(reporte.generadoEn).toLocaleString('es-CO', {
             day: '2-digit', month: 'long', year: 'numeric',
@@ -299,6 +362,108 @@
       } else {
         contenido.removeAttribute('hidden');
       }
+    }
+
+    // ─── Filtros: materia + desempeño ─────────────────────────────────────────
+    let _filtroMateria   = '';
+    let _filtroDesempeno = 'todos';
+
+    const NIVEL_KEYWORDS = {
+      satisfactorio: ['satisfactorio', 'desempeño satisfactorio', 'desempeño general satisfactorio'],
+      proceso:       ['proceso', 'consolidación', 'en proceso'],
+      atencion:      ['atención', 'atencion', 'requiere atención', 'requiere atencion'],
+      riesgo:        ['riesgo', 'crítico', 'critico', 'en riesgo'],
+    };
+
+    function _aplicarFiltros() {
+      const cards = document.querySelectorAll('.ia-materia-card');
+      let visible = 0;
+      cards.forEach(card => {
+        const materia = (card.dataset.materia || '').toLowerCase();
+        const nivel   = (card.dataset.nivel   || '').toLowerCase();
+        const passM   = !_filtroMateria || materia === _filtroMateria.toLowerCase();
+        const passD   = _filtroDesempeno === 'todos' ||
+                        (NIVEL_KEYWORDS[_filtroDesempeno] || []).some(k => nivel.includes(k));
+        card.setAttribute('data-oculta', (passM && passD) ? 'false' : 'true');
+        if (passM && passD) visible++;
+      });
+      const vacioEl = document.getElementById('filtroVacio');
+      if (vacioEl) vacioEl.style.display = visible === 0 ? 'flex' : 'none';
+      // Mostrar/ocultar botón limpiar
+      const btnLimpiar = document.getElementById('iaBtnLimpiarMateria');
+      if (btnLimpiar) btnLimpiar.style.display = _filtroMateria ? '' : 'none';
+    }
+
+    function limpiarFiltroMateria() {
+      _filtroMateria = '';
+      document.getElementById('iaMateriaPickerLabel').textContent = 'Todas las materias';
+      document.getElementById('iaMateriaLista').querySelectorAll('.materia-picker__opcion').forEach(li => {
+        li.classList.toggle('materia-picker__opcion--activa', li.dataset.valor === '');
+      });
+      document.getElementById('iaBtnLimpiarMateria').style.display = 'none';
+      _aplicarFiltros();
+    }
+
+    function filtrarDesempeno(filtro, btnEl) {
+      _filtroDesempeno = filtro;
+      document.querySelectorAll('.ia-filtro-chip').forEach(b => b.classList.remove('activo'));
+      if (btnEl) btnEl.classList.add('activo');
+      _aplicarFiltros();
+    }
+
+    // FIX 3: inicializar el materia-picker con las materias del reporte
+    function poblarSelectMaterias(materias) {
+      const lista    = document.getElementById('iaMateriaLista');
+      const trigger  = document.getElementById('iaMateriaPickerTrigger');
+      const panel    = document.getElementById('iaMateriaPickerPanel');
+      const buscador = document.getElementById('iaMateriaBuscador');
+      const label    = document.getElementById('iaMateriaPickerLabel');
+      if (!lista) return;
+
+      lista.innerHTML =
+        `<li class="materia-picker__opcion materia-picker__opcion--activa" data-nombre="Todas las materias" data-valor="">
+          <i data-lucide="list" style="width:13px;height:13px;flex-shrink:0;"></i>
+          Todas las materias
+        </li>` +
+        materias.map(m =>
+          `<li class="materia-picker__opcion" data-nombre="${m.materia}" data-valor="${m.materia}">
+            <i data-lucide="book" style="width:13px;height:13px;flex-shrink:0;"></i>
+            ${m.materia}
+          </li>`
+        ).join('');
+
+      lucide.createIcons({ nodes: [lista] });
+
+      trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const open = panel.classList.toggle('materia-picker__panel--abierto');
+        trigger.classList.toggle('materia-picker__trigger--abierto', open);
+        if (open) setTimeout(() => buscador.focus(), 50);
+      });
+      document.addEventListener('click', function() {
+        panel.classList.remove('materia-picker__panel--abierto');
+        trigger.classList.remove('materia-picker__trigger--abierto');
+      });
+      panel.addEventListener('click', e => e.stopPropagation());
+
+      buscador.addEventListener('input', function() {
+        const q = this.value.toLowerCase().trim();
+        lista.querySelectorAll('.materia-picker__opcion').forEach(li => {
+          li.style.display = li.dataset.nombre.toLowerCase().includes(q) ? '' : 'none';
+        });
+      });
+
+      lista.addEventListener('click', function(e) {
+        const opt = e.target.closest('.materia-picker__opcion');
+        if (!opt) return;
+        _filtroMateria = opt.dataset.valor;
+        label.textContent = opt.dataset.valor ? opt.dataset.nombre : 'Todas las materias';
+        lista.querySelectorAll('.materia-picker__opcion').forEach(li => li.classList.remove('materia-picker__opcion--activa'));
+        opt.classList.add('materia-picker__opcion--activa');
+        panel.classList.remove('materia-picker__panel--abierto');
+        trigger.classList.remove('materia-picker__trigger--abierto');
+        _aplicarFiltros();
+      });
     }
 
     // ─── Init ─────────────────────────────────────────────────────────────────

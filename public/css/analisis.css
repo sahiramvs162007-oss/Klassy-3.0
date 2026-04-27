@@ -68,81 +68,169 @@
 .ia-banner-sin-modelo p  { font-size: 0.8rem; color: #78350f; line-height: 1.5; }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   RESUMEN GLOBAL
+   RESUMEN GLOBAL — diseño acceso-card
    ═══════════════════════════════════════════════════════════════════════ */
 
 .ia-resumen-global {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 
+/* Tarjetas de resumen — misma base que .acceso-card del dashboard */
 .ia-stat-card {
-  background: #fff;
-  border: 1px solid var(--gris-200);
-  border-radius: var(--radio-lg);
-  padding: 18px 20px;
-  box-shadow: var(--sombra-xs);
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
   gap: 6px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease;
 }
+
+.ia-stat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.ia-stat-card:hover::before { opacity: 1; }
+.ia-stat-card:hover { transform: translateY(-4px) scale(1.02); }
 
 .ia-stat-card__label {
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--gris-400);
+  color: inherit;
+  opacity: 0.7;
 }
 
 .ia-stat-card__valor {
   font-family: var(--fuente-marca);
   font-size: 2rem;
   font-weight: 700;
-  color: var(--gris-900);
+  color: inherit;
   line-height: 1;
 }
 
 .ia-stat-card__sub {
-  font-size: 0.78rem;
-  color: var(--gris-500);
+  font-size: 0.75rem;
+  color: inherit;
+  opacity: 0.75;
   line-height: 1.4;
 }
 
-/* Variantes de color por nivel global */
-.ia-stat-card--ok    { border-top: 3px solid var(--verde-600); }
-.ia-stat-card--warn  { border-top: 3px solid #d97706; }
-.ia-stat-card--risk  { border-top: 3px solid var(--rojo-600); }
-.ia-stat-card--azul  { border-top: 3px solid var(--azul-600); }
+/* Variantes de color — mismo sistema que acceso-card */
+.ia-stat-card--azul {
+  background: linear-gradient(135deg, #e0f0ff 0%, #c7e2ff 100%);
+  color: #1d4ed8;
+  border-color: rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.12);
+}
+.ia-stat-card--azul:hover {
+  background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+  box-shadow: 0 10px 28px rgba(59, 130, 246, 0.22);
+}
 
-.ia-stat-card--ok   .ia-stat-card__valor { color: var(--verde-600); }
-.ia-stat-card--warn .ia-stat-card__valor { color: #d97706; }
-.ia-stat-card--risk .ia-stat-card__valor { color: var(--rojo-600); }
+.ia-stat-card--ok {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #15803d;
+  border-color: rgba(22, 163, 74, 0.2);
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.10);
+}
+.ia-stat-card--ok:hover {
+  background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%);
+  box-shadow: 0 10px 28px rgba(22, 163, 74, 0.20);
+}
 
-/* Barra de nivel global */
+.ia-stat-card--warn {
+  background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+  color: #c2410c;
+  border-color: rgba(234, 88, 12, 0.18);
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.10);
+}
+.ia-stat-card--warn:hover {
+  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+  box-shadow: 0 10px 28px rgba(234, 88, 12, 0.20);
+}
+
+.ia-stat-card--risk {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #b91c1c;
+  border-color: rgba(220, 38, 38, 0.18);
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.10);
+}
+.ia-stat-card--risk:hover {
+  background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+  box-shadow: 0 10px 28px rgba(220, 38, 38, 0.20);
+}
+/* Variante morada — promedio */
+.ia-stat-card--morado {
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  color: #6d28d9;
+  border-color: rgba(109, 40, 217, 0.18);
+  box-shadow: 0 4px 14px rgba(109, 40, 217, 0.10);
+}
+.ia-stat-card--morado:hover {
+  background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+  box-shadow: 0 10px 28px rgba(109, 40, 217, 0.20);
+}
+
+
+/* ── Valoración general — diseño tipo badge prominente ── */
 .ia-nivel-global {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: #fff;
-  border: 1px solid var(--gris-200);
+  gap: 12px;
+  padding: 16px 22px;
+  background-color: white;
+   border: 1px solid var(--gris-200);
   border-radius: var(--radio-lg);
-  padding: 14px 20px;
   box-shadow: var(--sombra-xs);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.ia-nivel-global:hover {
+  box-shadow: 0 8px 24px rgba(202, 138, 4, 0.22);
+  transform: translateY(-2px);
 }
 
+.ia-nivel-global__icono {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: rgba(202, 138, 4, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #92400e;
+}
+.ia-nivel-global__icono svg { width: 20px; height: 20px; stroke-width: 2; }
+
 .ia-nivel-global__label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--gris-500);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #92400e;
+  opacity: 0.75;
   flex-shrink: 0;
 }
 
 .ia-nivel-global__texto {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--gris-900);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #78350f;
   flex: 1;
 }
 
@@ -692,4 +780,153 @@
 @media (max-width: 600px) {
   .ia-resumen-global { grid-template-columns: 1fr 1fr; }
   .ia-estado-grid    { grid-template-columns: 1fr 1fr; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CABECERA ANALÍTICA — botón volver + filtro desempeño
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.ia-cabecera-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+/* ── Filtro de desempeño ── */
+.ia-filtro-desempeno {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-xs);
+  flex-wrap: wrap;
+}
+
+.ia-filtro-desempeno__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gris-400);
+  white-space: nowrap;
+}
+
+.ia-filtro-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ia-filtro-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  background: var(--gris-100);
+  color: var(--gris-500);
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.ia-filtro-chip:hover {
+  background: var(--gris-200);
+  color: var(--gris-700);
+}
+.ia-filtro-chip.activo {
+  background: var(--azul-50);
+  border-color: var(--azul-500);
+  color: var(--azul-700);
+}
+.ia-filtro-chip--todos.activo   { background: var(--gris-200); border-color: var(--gris-400); color: var(--gris-700); }
+.ia-filtro-chip--satisfactorio.activo { background: #dcfce7; border-color: var(--verde-600); color: #14532d; }
+.ia-filtro-chip--proceso.activo       { background: #e0f2fe; border-color: #0284c7; color: #0c4a6e; }
+.ia-filtro-chip--atencion.activo      { background: #ffedd5; border-color: var(--naranja-600); color: #7c2d12; }
+.ia-filtro-chip--riesgo.activo        { background: #fee2e2; border-color: var(--rojo-600); color: #7f1d1d; }
+
+.ia-filtro-chip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ia-filtro-chip__dot--satisfactorio { background: var(--verde-600); }
+.ia-filtro-chip__dot--proceso       { background: #0284c7; }
+.ia-filtro-chip__dot--atencion      { background: var(--naranja-600); }
+.ia-filtro-chip__dot--riesgo        { background: var(--rojo-600); }
+
+/* ── Mensaje sin resultados en filtro ── */
+.ia-filtro-vacio {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 24px;
+  color: var(--gris-400);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.ia-filtro-vacio svg { width: 36px; height: 36px; stroke-width: 1.25; }
+
+/* ── Tarjeta oculta por filtro ── */
+.ia-materia-card[data-oculta="true"] { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HEADER DE MATERIA ESTILO BLOQUE (como actividades/notas)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Sobreescribir el header de la tarjeta para que use el patrón bloque */
+.ia-materia-card .ia-materia-header {
+  padding: 20px 20px 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ia-materia-header__icono {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: var(--radio);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+.ia-materia-header__icono svg { width: 20px; height: 20px; stroke-width: 1.75; color: #fff; }
+
+.ia-materia-header__info { flex: 1; min-width: 0; }
+
+.ia-materia-header__nombre {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+/* Re-usar el badge de nivel ya existente — solo ajustar que quede en el info */
+.ia-materia-header__info .ia-nivel-badge {
+  margin-top: 2px;
+}
+
+/* ── Chips de cabecera (materia/grado) — copiados de actividades.css ── */
+.chip--materia  { background-color: var(--azul-100);    color: var(--azul-700);    border-color: var(--azul-200); }
+.chip--grado    { background-color: var(--verde-100);   color: var(--verde-600);   border-color: #bbf7d0; }
+.chip svg { width: 11px; height: 11px; stroke-width: 2; margin-right: 3px; vertical-align: middle; }
+
+/* ── Gap entre secciones del reporte de estudiante ── */
+#contenidoReporte {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }

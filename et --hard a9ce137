@@ -1,0 +1,74 @@
+[33m5c7a4c7[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mEstilos[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/ibg[m[33m, [m[1;31morigin/ia[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{0}: checkout: moving from main to Estilos
+[33m5c7a4c7[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mEstilos[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/ibg[m[33m, [m[1;31morigin/ia[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{1}: pull origin main: Fast-forward
+[33m03b723a[m HEAD@{2}: checkout: moving from Estilos to main
+[33ma9ce137[m HEAD@{3}: reset: moving to HEAD
+[33ma9ce137[m HEAD@{4}: commit (merge): estilos actualizado
+[33me929852[m HEAD@{5}: commit: Cambios estilos
+[33mcb6cbda[m HEAD@{6}: commit: Actualizacion estilos
+[33mda99ef6[m HEAD@{7}: reset: moving to HEAD
+[33mda99ef6[m HEAD@{8}: pull origin main: Merge made by the 'ort' strategy.
+[33m3737829[m HEAD@{9}: commit: Actualización estilos
+[33m580b0c0[m[33m ([m[1;31morigin/sas[m[33m, [m[1;32msas[m[33m)[m HEAD@{10}: merge sas: Fast-forward
+[33m03b723a[m HEAD@{11}: checkout: moving from sas to Estilos
+[33m580b0c0[m[33m ([m[1;31morigin/sas[m[33m, [m[1;32msas[m[33m)[m HEAD@{12}: pull origin sas: Fast-forward
+[33m95ee3cd[m HEAD@{13}: checkout: moving from Estilos to sas
+[33m03b723a[m HEAD@{14}: reset: moving to HEAD
+[33m03b723a[m HEAD@{15}: checkout: moving from Estilos to Estilos
+[33m03b723a[m HEAD@{16}: merge main: Fast-forward
+[33mb8682a1[m HEAD@{17}: checkout: moving from main to Estilos
+[33m03b723a[m HEAD@{18}: pull origin main: Fast-forward
+[33m9c69e3a[m HEAD@{19}: checkout: moving from Estilos to main
+[33mb8682a1[m HEAD@{20}: reset: moving to HEAD
+[33mb8682a1[m HEAD@{21}: commit: Organizar js
+[33meb27125[m HEAD@{22}: commit: CSS carpetas
+[33mc46fb8b[m HEAD@{23}: commit: Actualización estilos
+[33md777e7f[m HEAD@{24}: pull origin main: Merge made by the 'ort' strategy.
+[33m308a096[m HEAD@{25}: commit: Actualizacion Estilos
+[33m0958a68[m HEAD@{26}: merge main: Merge made by the 'ort' strategy.
+[33m273b5c7[m HEAD@{27}: checkout: moving from main to Estilos
+[33m9c69e3a[m HEAD@{28}: pull origin main: Fast-forward
+[33mee9dd3d[m HEAD@{29}: checkout: moving from Estilos to main
+[33m273b5c7[m HEAD@{30}: pull origin main: Merge made by the 'ort' strategy.
+[33m476083c[m HEAD@{31}: checkout: moving from sas to Estilos
+[33m95ee3cd[m HEAD@{32}: checkout: moving from main to sas
+[33mee9dd3d[m HEAD@{33}: pull origin main: Fast-forward
+[33m67f71f4[m HEAD@{34}: checkout: moving from Estilos to main
+[33m476083c[m HEAD@{35}: commit: Actualizacion de Estilos
+[33me89b965[m HEAD@{36}: checkout: moving from sas to Estilos
+[33m95ee3cd[m HEAD@{37}: checkout: moving from main to sas
+[33m67f71f4[m HEAD@{38}: checkout: moving from Estilos to main
+[33me89b965[m HEAD@{39}: reset: moving to HEAD
+[33me89b965[m HEAD@{40}: commit: Actualizacion estilos
+[33m95ee3cd[m HEAD@{41}: checkout: moving from main to Estilos
+[33m67f71f4[m HEAD@{42}: checkout: moving from Estilos to main
+[33m95ee3cd[m HEAD@{43}: reset: moving to HEAD
+[33m95ee3cd[m HEAD@{44}: checkout: moving from sas to Estilos
+[33m95ee3cd[m HEAD@{45}: checkout: moving from Estilos to sas
+[33m95ee3cd[m HEAD@{46}: checkout: moving from Estilos to Estilos
+[33m95ee3cd[m HEAD@{47}: checkout: moving from sas to Estilos
+[33m95ee3cd[m HEAD@{48}: checkout: moving from Estilos to sas
+[33m95ee3cd[m HEAD@{49}: merge sas: Fast-forward
+[33m6adeeef[m HEAD@{50}: checkout: moving from Estilos to Estilos
+[33m6adeeef[m HEAD@{51}: checkout: moving from sas to Estilos
+[33m95ee3cd[m HEAD@{52}: merge Estilos: Merge made by the 'ort' strategy.
+[33m0afd2de[m HEAD@{53}: checkout: moving from sas to sas
+[33m0afd2de[m HEAD@{54}: checkout: moving from Estilos to sas
+[33m6adeeef[m HEAD@{55}: checkout: moving from Estilos to Estilos
+[33m6adeeef[m HEAD@{56}: checkout: moving from main to Estilos
+[33m67f71f4[m HEAD@{57}: checkout: moving from Estilos to main
+[33m6adeeef[m HEAD@{58}: pull origin main: Merge made by the 'ort' strategy.
+[33mfc6a47f[m HEAD@{59}: checkout: moving from main to Estilos
+[33m67f71f4[m HEAD@{60}: pull origin main: Fast-forward
+[33ma384e86[m HEAD@{61}: checkout: moving from Estilos to main
+[33mfc6a47f[m HEAD@{62}: checkout: moving from main to Estilos
+[33ma384e86[m HEAD@{63}: checkout: moving from Estilos to main
+[33mfc6a47f[m HEAD@{64}: commit: Actualizacion de estilos y login
+[33mdfbb0a3[m HEAD@{65}: reset: moving to origin/main
+[33m90492e7[m HEAD@{66}: merge origin/main: Fast-forward
+[33ma384e86[m HEAD@{67}: checkout: moving from Estilos to Estilos
+[33ma384e86[m HEAD@{68}: checkout: moving from main to Estilos
+[33ma384e86[m HEAD@{69}: checkout: moving from Estilos to main
+[33ma384e86[m HEAD@{70}: checkout: moving from main to Estilos
+[33ma384e86[m HEAD@{71}: commit (merge): Resolviendo conflicto del README
+[33mbac1425[m HEAD@{72}: Branch: renamed refs/heads/main to refs/heads/main
+[33mbac1425[m HEAD@{74}: commit (initial): se agrega el proyecto

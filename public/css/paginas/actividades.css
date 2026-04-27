@@ -83,6 +83,9 @@
 /* ═══════════════════════════════════════════════════════
    TARJETAS DE MATERIAS (docente y estudiante)
    ═══════════════════════════════════════════════════════ */
+/* Estudiantes: grid de tarjetas tipo card */
+/* Estudiantes: grid de cards — ORIGINAL restaurado.
+   El docente nunca carga este archivo, así que no se necesita override aquí. */
 .bloques-materias {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
@@ -1280,7 +1283,7 @@
 }
 
 @media (max-width: 640px) {
-  .bloques-materias { grid-template-columns: 1fr; }
+  /* bloques-materias: flex column, no grid needed */
   .tarjeta-actividad-docente__acciones {
     flex-direction: row;
     padding: 0 12px 12px;
