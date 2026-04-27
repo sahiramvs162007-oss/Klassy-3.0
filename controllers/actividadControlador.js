@@ -566,6 +566,16 @@ const agregarExcepcion = async (req, res) => {
     const actividad = await Actividad.findOne({ _id: id, docenteId });
     if (!actividad) return res.status(404).json({ ok: false, error: 'Actividad no encontrada' });
 
+    // Validar que la fecha especial sea POSTERIOR a la fecha límite de la actividad
+    const fechaEspecial  = new Date(fechaLimitePersonalizada);
+    const fechaLimiteAct = actividad.fechaLimite;
+    if (fechaLimiteAct && fechaEspecial <= fechaLimiteAct) {
+      return res.status(400).json({
+        ok:    false,
+        error: 'La fecha de acceso especial debe ser posterior a la fecha límite de la actividad.',
+      });
+    }
+
     // Eliminar excepción anterior del mismo estudiante si existe
     actividad.excepciones = actividad.excepciones.filter(
       e => e.estudianteId.toString() !== estudianteId
@@ -719,6 +729,7 @@ const panelEstudiante = async (req, res) => {
         act._estaCalificada = entregas.some(e => e.estado === 'calificada');
         act._mejorNota      = entregas.reduce((max, e) => e.nota > max ? e.nota : max, 0);
         act._vencida        = new Date() > act.fechaLimite;
+        act._cerrada        = act.estado === 'cerrada'; // FIX: exponer estado cerrada
 
         // [NUEVO Claude] Calcular si puede entregar
         const { puede } = puedeEntregarAhora(act, estudianteId, entregas);

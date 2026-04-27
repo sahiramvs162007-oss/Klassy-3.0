@@ -218,8 +218,10 @@
                   </select>
                 </div>
                 <div class="campo">
-                  <label class="campo__etiqueta">Nueva fecha límite</label>
-                  <input type="datetime-local" id="inputFechaExcepcion" class="campo__entrada" />
+                  <label class=\"campo__etiqueta\">Nueva fecha límite</label>
+                  <input type="datetime-local" id="inputFechaExcepcion" class="campo__entrada"
+                    min="<%= actividad.fechaLimite ? new Date(actividad.fechaLimite.getTime() + 60000).toISOString().slice(0,16) : '' %>"
+                    title="Debe ser posterior a la fecha límite de la actividad" />
                 </div>
               </div>
               <button class="btn btn--secundario btn--sm" onclick="agregarExcepcion('<%= actividad._id %>')">
@@ -365,6 +367,8 @@
   <!-- Datos de entregas inyectados para JS -->
   <script>
     // Usar window. para que sea accesible desde actividad-detalle-docente.js (scope global)
+    window.ACTIVIDAD_FECHA_LIMITE = "<%= actividad.fechaLimite?.toISOString() %>";
+    window.ACTIVIDAD_ID           = "<%= actividad._id %>";
     window.RESUMEN_ENTREGAS = <%- JSON.stringify(
       resumenEstudiantes.filter(r => r.entrego).map(r => ({
         estudianteId:   r.estudiante?._id?.toString(),
@@ -397,6 +401,7 @@
   <script src="/js/drawer.js"></script>
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
+  <script src="/js/actividades-docente.js"></script>
   <script src="/js/actividad-detalle-docente.js"></script>
   <script>lucide.createIcons();</script>
 </body>
