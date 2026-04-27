@@ -53,14 +53,15 @@
           </div>
         <% } %>
 
-        <div class="bloques-materias">
+        <%/* ─── Clase adaptativa: 1 materia = horizontal; 2+ = vertical ─── */%>
+        <div class="bloques-materias <%= bloques.length === 1 ? 'solo-una' : 'varias' %>">
           <% bloques.forEach((bloque, bIdx) => { %>
             <%
               const colores = ['bloque--azul','bloque--verde','bloque--morado','bloque--naranja','bloque--rojo'];
               const colorCls = colores[bIdx % colores.length];
               const soloUnGrado = bloque.grados.length === 1;
 
-              // Agrupar grados por nivel para el picker multinivel
+              // Agrupar grados por nivel — para el picker de dos pasos
               const gradosPorNivel = {};
               bloque.grados.forEach(g => {
                 const n = g.grado.nivel;
@@ -69,29 +70,53 @@
               });
               const nivelesOrdenados = Object.keys(gradosPorNivel).map(Number).sort((a,b) => a-b);
               const mId = bloque.materia._id.toString().replace(/[^a-z0-9]/gi,'');
+
+              // Detectar el nivel de cada grado para mostrarlo en el chip
+              const nivelNombre = n => n <= 6 ? 'PRIMARIA' : 'SECUNDARIA';
             %>
             <div class="bloque-materia <%= colorCls %>">
+
+              <%/* ── Panel de color: detalle de la materia ── */%>
               <div class="bloque-materia__cabecera">
                 <div class="bloque-materia__icono">
                   <i data-lucide="book-open"></i>
                 </div>
-                <h3 class="bloque-materia__nombre"><%= bloque.materia.nombre %></h3>
-                <% if (bloque.materia.descripcion) { %>
-                  <p class="bloque-materia__desc"><%= bloque.materia.descripcion %></p>
+                <%/* En modo varias: wrap en .info para truncado */%>
+                <% if (bloques.length > 1) { %>
+                  <div class="bloque-materia__info">
+                    <h3 class="bloque-materia__nombre"><%= bloque.materia.nombre %></h3>
+                    <% if (bloque.materia.descripcion) { %>
+                      <p class="bloque-materia__desc"><%= bloque.materia.descripcion %></p>
+                    <% } %>
+                  </div>
+                <% } else { %>
+                  <h3 class="bloque-materia__nombre"><%= bloque.materia.nombre %></h3>
+                  <% if (bloque.materia.descripcion) { %>
+                    <p class="bloque-materia__desc"><%= bloque.materia.descripcion %></p>
+                  <% } %>
                 <% } %>
               </div>
 
+              <%/* ── Panel blanco: grados ── */%>
               <div class="bloque-materia__grados">
 
+                <%/* Encabezado solo en modo 1 materia */%>
+                <% if (bloques.length === 1) { %>
+                  <div class="bloque-materia__grados-header">
+                    <p class="bloque-materia__grados-title">Selecciona el Grado</p>
+                    <p class="bloque-materia__grados-subtitle">Niveles curriculares disponibles para esta materia</p>
+                  </div>
+                <% } %>
+
                 <% if (soloUnGrado) { %>
-                  <%/* Un solo grado: barra directa como enlace */%>
+                  <%/* Un solo grado: barra directa */%>
                   <a
                     href="/actividades/docente?materiaId=<%= bloque.materia._id %>&gradoId=<%= bloque.grados[0].grado._id %>"
                     class="grado-picker-barra grado-picker-barra--unico"
                   >
                     <span class="grado-picker-barra__icono"><i data-lucide="graduation-cap"></i></span>
                     <span class="grado-picker-barra__nombre"><%= bloque.grados[0].grado.nombre %></span>
-                    <span class="grado-picker-barra__nivel">Nivel <%= bloque.grados[0].grado.nivel %></span>
+                    <span class="grado-picker-barra__nivel"><%= nivelNombre(bloque.grados[0].grado.nivel) %></span>
                     <span class="grado-picker-barra__arrow"><i data-lucide="arrow-right"></i></span>
                   </a>
 
@@ -99,10 +124,10 @@
                   <%/* Múltiples grados: picker de dos pasos */%>
                   <div class="grado-picker-multi" id="picker-<%= mId %>">
 
-                    <%/* Paso 1: chips de nivel */%>
+                    <%/* Paso 1: chips de nivel — tarjetitas cuadradas */%>
                     <div class="grado-picker-multi__paso1" id="paso1-<%= mId %>">
                       <span class="grado-picker-multi__label">
-                        <i data-lucide="map-pin"></i> Selecciona el nivel
+                        <i data-lucide="layers"></i> Selecciona el grado
                       </span>
                       <div class="grado-picker-multi__niveles">
                         <% nivelesOrdenados.forEach(nivel => { %>
@@ -111,16 +136,18 @@
                             class="grado-nivel-chip"
                             onclick="mostrarSalones('<%= mId %>', <%= nivel %>)"
                           >
-                            <%= nivel %>°
                             <% if (gradosPorNivel[nivel].length > 1) { %>
                               <span class="grado-nivel-chip__count"><%= gradosPorNivel[nivel].length %></span>
                             <% } %>
+                            <i data-lucide="graduation-cap" class="chip-icon"></i>
+                            <span class="grado-nivel-chip__num"><%= nivel %>°</span>
+                            <span class="grado-nivel-chip__sub"><%= nivelNombre(nivel) %></span>
                           </button>
                         <% }) %>
                       </div>
                     </div>
 
-                    <%/* Paso 2: salones por nivel (ocultos hasta seleccionar) */%>
+                    <%/* Paso 2: salones (ocultos hasta elegir nivel) */%>
                     <% nivelesOrdenados.forEach(nivel => { %>
                       <div
                         class="grado-picker-multi__paso2"
@@ -133,7 +160,7 @@
                           onclick="volverNiveles('<%= mId %>', <%= nivel %>)"
                         >
                           <i data-lucide="arrow-left"></i>
-                          <span><%= nivel %>° grado</span>
+                          <span><%= nivel %>° — Elige el salón</span>
                         </button>
                         <div class="grado-picker-multi__salones">
                           <% gradosPorNivel[nivel].forEach(g => { %>
@@ -149,9 +176,8 @@
                       </div>
                     <% }) %>
 
-                  </div><%/* /grado-picker-multi */%>
+                  </div>
                 <% } %>
-
               </div>
             </div>
           <% }) %>

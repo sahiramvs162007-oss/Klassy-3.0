@@ -292,249 +292,492 @@
 /* ═══════════════════════════════════════════════════════════════════
    BLOQUES DE MATERIA — compartido por actividades, notas y cualquier
    sección que muestre una cuadrícula de materias con picker de grado.
+
+   LÓGICA ADAPTATIVA:
+   • .solo-una  → tarjeta horizontal compacta: panel color izq. + grados der.
+   • .varias    → tarjetas apiladas: cabecera fila arriba + grados debajo
    ═══════════════════════════════════════════════════════════════════ */
 
-.bloques-materias {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-  gap: 22px;
-}
-
-.bloque-materia {
-  border-radius: var(--radio-lg);
-  padding: 0;
-  overflow: hidden;
-  box-shadow: var(--sombra-sm);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.bloque-materia:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.10);
-}
-
-.bloque-materia__cabecera {
-  padding: 26px 24px 20px;
-  color: #fff;
-}
-
-.bloque-materia__icono {
-  width: 46px;
-  height: 46px;
-  background: rgba(255,255,255,0.2);
-  border-radius: var(--radio);
+/* ── Contenedor raíz ──────────────────────────────────────────────── */
+/* ── Modos docente: .solo-una y .varias (clases puestas por EJS docente) ──────
+   El base .bloques-materias (grid de estudiante) vive en actividades.css.
+   El docente carga main.css → tarjetas.css, NO actividades.css, así que
+   necesitamos definir aquí las reglas de flex para los modos docente. */
+.bloques-materias.solo-una,
+.bloques-materias.varias {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 10px;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
 }
 
-.bloque-materia__icono svg { width: 22px; height: 22px; stroke-width: 1.75; }
+/* ── Tarjeta base ─────────────────────────────────────────────────── */
+.bloque-materia {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--gris-200);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.bloque-materia:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+  transform: translateY(-1px);
+}
 
-.bloque-materia__nombre {
-  font-size: 1.08rem;
+/* ══════════════════════════════════════════════════════════════════
+   VARIANTES DE COLOR — aplican en ambos modos
+   ══════════════════════════════════════════════════════════════════ */
+.bloque--azul    .bloque-materia__cabecera { background: linear-gradient(140deg, #1a4aad 0%, #4a8df8 100%); }
+.bloque--verde   .bloque-materia__cabecera { background: linear-gradient(140deg, #15803d 0%, #22c55e 100%); }
+.bloque--morado  .bloque-materia__cabecera { background: linear-gradient(140deg, #6d28d9 0%, #a855f7 100%); }
+.bloque--naranja .bloque-materia__cabecera { background: linear-gradient(140deg, #c2410c 0%, #f97316 100%); }
+.bloque--rojo    .bloque-materia__cabecera { background: linear-gradient(140deg, #b91c1c 0%, #ef4444 100%); }
+
+/* ══════════════════════════════════════════════════════════════════
+   MODO: 1 MATERIA — layout horizontal (panel color izq | grados der)
+   Altura: se ajusta al contenido, no llena el viewport.
+   ══════════════════════════════════════════════════════════════════ */
+.bloques-materias.solo-una .bloque-materia {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  overflow: hidden;     /* border-radius funciona con hidden */
+  width: 90%;
+  max-width: 980px;
+  border-radius: 18px;  /* border-radius visible en todos los bordes */
+}
+
+/* Panel izquierdo de color — ancho fijo, altura orgánica */
+.bloques-materias.solo-una .bloque-materia__cabecera {
+  width: 260px;
+  min-width: 260px;
+  flex-shrink: 0;
+  padding: 26px 22px 24px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.bloques-materias.solo-una .bloque-materia__cabecera::before {
+  content: '';
+  position: absolute;
+  width: 150px; height: 150px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+  bottom: -55px; right: -40px;
+  pointer-events: none;
+}
+.bloques-materias.solo-una .bloque-materia__cabecera::after {
+  content: '';
+  position: absolute;
+  width: 75px; height: 75px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  top: -22px; right: 28px;
+  pointer-events: none;
+}
+.bloques-materias.solo-una .bloque-materia__icono {
+  width: 46px; height: 46px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 13px;
+  border: 1px solid rgba(255,255,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  position: relative; z-index: 1;
+}
+.bloques-materias.solo-una .bloque-materia__icono svg { width: 22px; height: 22px; stroke-width: 1.75; }
+.bloques-materias.solo-una .bloque-materia__nombre {
+  font-size: 1.45rem;
   font-weight: 700;
-  margin-bottom: 6px;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  position: relative; z-index: 1;
+}
+.bloques-materias.solo-una .bloque-materia__desc {
+  font-size: 0.78rem;
+  opacity: 0.76;
+  line-height: 1.4;
+  position: relative; z-index: 1;
 }
 
-.bloque-materia__desc {
-  font-size: 0.78rem;
-  opacity: 0.8;
+/* Panel derecho de grados — min-width garantiza espacio para el grid de chips */
+.bloques-materias.solo-una .bloque-materia__grados {
+  flex: 1 1 0%;        /* ocupa todo el espacio restante junto al panel de color */
+  min-width: 0;
+  background: #fff;
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-left: 1px solid var(--gris-100);
+  box-sizing: border-box;
+}
+/* Picker y grid deben ocupar todo el ancho disponible */
+.bloques-materias.solo-una .grado-picker-multi,
+.bloques-materias.solo-una .grado-picker-multi__paso1,
+.bloques-materias.solo-una .grado-picker-multi__paso2 {
+  width: 100%;
+}
+.bloques-materias.solo-una .grado-picker-multi__niveles,
+.bloques-materias.solo-una .grado-picker-multi__salones {
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 9px;
+  width: 100%;
+}
+
+/* Encabezado del panel de grados */
+.bloque-materia__grados-header { margin-bottom: 14px; }
+.bloque-materia__grados-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--gris-900);
+  margin-bottom: 2px;
+}
+.bloque-materia__grados-subtitle {
+  font-size: 0.74rem;
+  color: var(--gris-500);
   line-height: 1.4;
 }
 
-/* Variantes de color */
-.bloque--azul    .bloque-materia__cabecera { background: linear-gradient(135deg, var(--azul-700), var(--azul-500)); }
-.bloque--verde   .bloque-materia__cabecera { background: linear-gradient(135deg, #15803d, var(--verde-600)); }
-.bloque--morado  .bloque-materia__cabecera { background: linear-gradient(135deg, #6d28d9, var(--morado-600)); }
-.bloque--naranja .bloque-materia__cabecera { background: linear-gradient(135deg, #c2410c, var(--naranja-600)); }
-.bloque--rojo    .bloque-materia__cabecera { background: linear-gradient(135deg, #b91c1c, var(--rojo-600)); }
-
-.bloque-materia__grados {
-  background: #fff;
-  padding: 14px 18px 18px;
+/* ══════════════════════════════════════════════════════════════════
+   MODO: VARIAS MATERIAS — tarjetas apiladas, header arriba + grados abajo
+   ══════════════════════════════════════════════════════════════════ */
+.bloques-materias.varias .bloque-materia {
   display: flex;
   flex-direction: column;
-  gap: 9px;
 }
 
-.bloque-materia__grados-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--gris-400);
-}
-
-.bloque-grado {
+/* Cabecera en fila horizontal compacta */
+.bloques-materias.varias .bloque-materia__cabecera {
+  padding: 16px 20px;
+  color: #fff;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 10px;
-  padding: 11px 14px;
-  background: var(--gris-50);
-  border: 1.5px solid var(--gris-200);
-  border-radius: var(--radio);
-  text-decoration: none;
-  transition: background 0.18s, border-color 0.18s, transform 0.18s, box-shadow 0.18s;
-  color: var(--gris-900);
-  font-weight: 500;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
 }
-
-.bloque-grado:hover {
-  background: var(--azul-50);
-  border-color: var(--azul-300);
-  transform: translateX(3px);
-  box-shadow: 0 3px 10px rgba(59,130,246,0.12);
+.bloques-materias.varias .bloque-materia__cabecera::before {
+  content: '';
+  position: absolute;
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  right: -20px; top: -40px;
+  pointer-events: none;
 }
-
-.bloque-grado svg { width: 15px; height: 15px; stroke-width: 1.75; color: var(--azul-500); flex-shrink: 0; }
-.bloque-grado span { font-size: 0.875rem; font-weight: 500; flex: 1; }
-.bloque-grado__nivel { font-size: 0.72rem; color: var(--gris-400); flex-shrink: 0; }
-
-.bloque-grado::after {
-  content: "";
-  display: block;
-  width: 14px;
-  height: 14px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23d1d5db' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'%3E%3C/line%3E%3Cpolyline points='12 5 19 12 12 19'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
+.bloques-materias.varias .bloque-materia__icono {
+  width: 40px; height: 40px;
   flex-shrink: 0;
-  transition: transform 0.18s;
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.26);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; z-index: 1;
+}
+.bloques-materias.varias .bloque-materia__icono svg { width: 18px; height: 18px; stroke-width: 1.75; }
+.bloques-materias.varias .bloque-materia__info {
+  flex: 1; min-width: 0;
+  position: relative; z-index: 1;
+}
+.bloques-materias.varias .bloque-materia__nombre {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bloques-materias.varias .bloque-materia__desc {
+  font-size: 0.73rem;
+  opacity: 0.74;
+  line-height: 1.3;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bloques-materias.varias .bloque-materia__grados {
+  background: #fff;
+  padding: 14px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--gris-100);
 }
 
-.bloque-grado:hover::after {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'%3E%3C/line%3E%3Cpolyline points='12 5 19 12 12 19'%3E%3C/polyline%3E%3C/svg%3E");
-  transform: translateX(2px);
+/* ══════════════════════════════════════════════════════════════════
+   CHIPS DE GRADO — tarjetitas cuadradas con ícono, número y nivel
+   Fiel al diseño de la captura: compactas, en grid auto-fill.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Grid de chips — columnas automáticas según espacio disponible */
+.grado-picker-multi__niveles,
+.grado-picker-multi__salones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 9px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* Picker multinivel */
+/* Chip base — tarjetita cuadrada */
+.grado-nivel-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 11px 6px 10px;
+  border-radius: 10px;
+  border: 1.5px solid var(--gris-200);
+  background: #fff;
+  color: var(--gris-700);
+  font-family: var(--fuente-ui);
+  cursor: pointer;
+  text-align: center;
+  line-height: 1;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.15s, color 0.15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+/* Ícono de birrete */
+.grado-nivel-chip > svg,
+.grado-nivel-chip .chip-icon {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.75;
+  color: var(--gris-400);
+  transition: color 0.15s;
+}
+/* Número del grado */
+.grado-nivel-chip__num {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gris-800, #1f2937);
+  line-height: 1;
+}
+/* Etiqueta de nivel: PRIMARIA / SECUNDARIA */
+.grado-nivel-chip__sub {
+  font-size: 0.56rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gris-400);
+  line-height: 1;
+}
+/* Hover */
+.grado-nivel-chip:hover {
+  border-color: var(--azul-400);
+  background: var(--azul-50);
+  box-shadow: 0 3px 10px rgba(59,130,246,0.13);
+  transform: translateY(-2px);
+}
+.grado-nivel-chip:hover > svg,
+.grado-nivel-chip:hover .chip-icon { color: var(--azul-500); }
+.grado-nivel-chip:hover .grado-nivel-chip__num { color: var(--azul-700); }
+.grado-nivel-chip:hover .grado-nivel-chip__sub { color: var(--azul-400); }
+
+/* Badge de conteo de salones */
+.grado-nivel-chip__count {
+  position: absolute;
+  top: 5px; right: 5px;
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--azul-100);
+  color: var(--azul-700);
+  font-size: 0.57rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+.grado-nivel-chip:hover .grado-nivel-chip__count { background: var(--azul-600); color: #fff; }
+
+/* Chip activo — azul sólido (como en la captura) */
+.grado-nivel-chip--activo {
+  border-color: var(--azul-500);
+  background: var(--azul-600);
+  box-shadow: 0 3px 12px rgba(37,99,235,0.28);
+  transform: none;
+}
+.grado-nivel-chip--activo > svg,
+.grado-nivel-chip--activo .chip-icon { color: rgba(255,255,255,0.9); }
+.grado-nivel-chip--activo .grado-nivel-chip__num { color: #fff; }
+.grado-nivel-chip--activo .grado-nivel-chip__sub { color: rgba(255,255,255,0.7); }
+.grado-nivel-chip--activo .grado-nivel-chip__count { background: rgba(255,255,255,0.25); color: #fff; }
+
+/* Chips de salón (paso 2) */
+.grado-salon-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 11px 6px 10px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1.5px solid var(--gris-200);
+  color: var(--gris-700);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  text-align: center;
+  line-height: 1.2;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.grado-salon-chip svg { width: 16px; height: 16px; stroke-width: 1.75; color: var(--gris-400); transition: color 0.15s; }
+.grado-salon-chip:hover {
+  background: var(--azul-50);
+  border-color: var(--azul-400);
+  color: var(--azul-700);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(59,130,246,0.13);
+}
+.grado-salon-chip:hover svg { color: var(--azul-500); }
+
+/* Barra de único grado */
 .grado-picker-barra--unico {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 11px 14px;
   background: var(--gris-50);
-  border: 1px solid var(--gris-200);
+  border: 1.5px solid var(--gris-200);
   border-radius: 10px;
   text-decoration: none;
   color: var(--gris-900);
-  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 340px;
 }
 .grado-picker-barra--unico:hover {
   background: var(--azul-50);
-  border-color: var(--azul-200);
-  transform: translateX(3px);
+  border-color: var(--azul-300);
+  box-shadow: 0 2px 8px rgba(59,130,246,0.10);
 }
-.grado-picker-barra__icono {
-  display: flex;
-  align-items: center;
-  color: var(--azul-500);
-  flex-shrink: 0;
-}
+.grado-picker-barra__icono { display: flex; align-items: center; color: var(--azul-500); flex-shrink: 0; }
 .grado-picker-barra__icono svg { width: 15px; height: 15px; stroke-width: 1.75; }
 .grado-picker-barra__nombre { font-size: 0.9rem; font-weight: 600; flex: 1; }
 .grado-picker-barra__nivel  { font-size: 0.72rem; color: var(--gris-400); font-weight: 500; }
 .grado-picker-barra__arrow  { display: flex; align-items: center; color: var(--gris-300); transition: color 0.15s, transform 0.15s; }
 .grado-picker-barra__arrow svg { width: 14px; height: 14px; stroke-width: 2; }
-.grado-picker-barra--unico:hover .grado-picker-barra__arrow { color: var(--azul-400); transform: translateX(2px); }
+.grado-picker-barra--unico:hover .grado-picker-barra__arrow { color: var(--azul-500); transform: translateX(3px); }
 
-.grado-picker-multi { display: flex; flex-direction: column; gap: 0; min-height: 44px; }
+/* Picker multinivel — contenedor y label */
+.grado-picker-multi { display: flex; flex-direction: column; gap: 0; width: 100%; }
 .grado-picker-multi__label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.67rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.07em;
   color: var(--gris-400);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .grado-picker-multi__label svg { width: 10px; height: 10px; }
-.grado-picker-multi__niveles  { display: flex; flex-wrap: wrap; gap: 7px; }
 
-.grado-nivel-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 7px 14px;
-  border-radius: 999px;
-  border: 1.5px solid rgba(209,213,219,0.9);
-  background: rgba(255,255,255,0.7);
-  color: var(--gris-600);
-  font-size: 0.85rem;
-  font-family: var(--fuente-ui);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.16s ease;
-  backdrop-filter: blur(4px);
-}
-.grado-nivel-chip:hover {
-  background: rgba(255,255,255,0.95);
-  border-color: var(--azul-300);
-  color: var(--azul-700);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59,130,246,0.15);
-}
-.grado-nivel-chip__count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--azul-100);
-  color: var(--azul-700);
-  font-size: 0.62rem;
-  font-weight: 700;
-}
-.grado-nivel-chip:hover .grado-nivel-chip__count { background: var(--azul-600); color: #fff; }
-
+/* Botón volver */
 .grado-picker-multi__volver {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  display: inline-flex; align-items: center; gap: 6px;
   padding: 5px 10px;
   border-radius: 8px;
-  border: 1px solid rgba(209,213,219,0.7);
-  background: rgba(255,255,255,0.6);
+  border: 1px solid var(--gris-200);
+  background: var(--gris-50);
   color: var(--gris-500);
-  font-size: 0.77rem;
-  font-family: var(--fuente-ui);
-  font-weight: 600;
-  cursor: pointer;
-  margin-bottom: 8px;
-  transition: all 0.14s;
+  font-size: 0.76rem; font-family: var(--fuente-ui); font-weight: 600;
+  cursor: pointer; margin-bottom: 10px;
+  transition: background 0.14s, border-color 0.14s, color 0.14s;
 }
-.grado-picker-multi__volver:hover { background: rgba(239,246,255,0.9); border-color: var(--azul-300); color: var(--azul-700); }
+.grado-picker-multi__volver:hover { background: var(--azul-50); border-color: var(--azul-300); color: var(--azul-700); }
 .grado-picker-multi__volver svg { width: 12px; height: 12px; }
 
-.grado-picker-multi__salones { display: flex; flex-wrap: wrap; gap: 7px; }
-.grado-salon-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.65);
-  border: 1.5px solid rgba(255,255,255,0.85);
-  color: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background 0.15s, border-color 0.15s, transform 0.15s, box-shadow 0.15s;
-  backdrop-filter: blur(4px);
-}
-.grado-salon-chip svg { width: 13px; height: 13px; stroke-width: 1.75; flex-shrink: 0; }
-.grado-salon-chip:hover {
-  background: rgba(255,255,255,0.9);
-  border-color: rgba(255,255,255,1);
-  transform: translateX(3px);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+/* Label reutilizable */
+.bloque-materia__grados-label {
+  font-size: 0.67rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--gris-400);
+  margin-bottom: 10px;
+  display: block;
 }
 
-@media (max-width: 640px) {
-  .bloques-materias { grid-template-columns: 1fr; }
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVO — móvil: tarjeta pasa a layout vertical
+   El panel de grados ocupa todo el ancho → chips en grid auto-fill
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 680px) {
+  /* Tarjeta: columna en lugar de fila */
+  .bloques-materias.solo-una .bloque-materia {
+    flex-direction: column;
+    width: 100%;           /* en móvil ocupa todo el ancho disponible */
+    max-width: 100%;
+  }
+  /* Cabecera: en móvil crece para compensar el espacio del header oculto */
+  .bloques-materias.solo-una .bloque-materia__cabecera {
+    width: 100%;
+    min-width: 0;
+    flex-direction: column;   /* vuelve a columna: ícono arriba, nombre abajo */
+    align-items: flex-start;
+    justify-content: flex-end; /* empuja el contenido hacia abajo */
+    padding: 28px 20px 24px;
+    gap: 10px;
+    min-height: 160px;         /* espacio extra que antes ocupaba el header */
+  }
+  .bloques-materias.solo-una .bloque-materia__nombre { font-size: 1.25rem; }
+  .bloques-materias.solo-una .bloque-materia__desc   { font-size: 0.78rem; opacity: 0.8; }
+
+  /* Ocultar título y subtítulo del panel de grados en móvil */
+  .bloques-materias.solo-una .bloque-materia__grados-header {
+    display: none;
+  }
+
+  /* Panel de grados: resetea el truco width:0 para que ocupe todo el ancho */
+  .bloques-materias.solo-una .bloque-materia__grados {
+    width: 100% !important;
+    flex: none !important;
+    min-width: 0 !important;
+    border-left: none;
+    border-top: 1px solid var(--gris-100);
+    padding: 14px 14px 16px;
+    box-sizing: border-box;
+  }
+  .bloques-materias.solo-una .bloque-materia__grados-header { margin-bottom: 10px; }
+
+  /* Picker y grids: también deben tomar el ancho real del contenedor */
+  .bloques-materias.solo-una .grado-picker-multi,
+  .bloques-materias.solo-una .grado-picker-multi__paso1,
+  .bloques-materias.solo-una .grado-picker-multi__paso2 {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Chips: auto-fill con ~70px → 4 columnas en pantallas de ~320px */
+  .bloques-materias.solo-una .grado-picker-multi__niveles,
+  .bloques-materias.solo-una .grado-picker-multi__salones,
+  .grado-picker-multi__niveles,
+  .grado-picker-multi__salones {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .grado-picker-barra--unico { max-width: 100%; }
 }
 
+@media (max-width: 400px) {
+  .bloques-materias.solo-una .grado-picker-multi__niveles,
+  .bloques-materias.solo-una .grado-picker-multi__salones,
+  .grado-picker-multi__niveles,
+  .grado-picker-multi__salones {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 6px;
+  }
+}

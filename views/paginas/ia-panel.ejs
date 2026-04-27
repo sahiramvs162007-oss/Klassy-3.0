@@ -9,6 +9,277 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="/css/estilos.css" />
   <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/analisis.css" />
+  <style>
+    /* ── Buscador con dropdown inline ── */
+    .ia-buscador-wrap { position: relative; }
+
+    .ia-buscador-campo { position: relative; }
+
+    .ia-buscador-campo__icono {
+      position: absolute; left: 12px; top: 50%;
+      transform: translateY(-50%);
+      width: 15px; height: 15px;
+      color: var(--gris-500); pointer-events: none;
+    }
+
+    .ia-buscador-campo__input {
+      width: 100%;
+      padding: 10px 12px 10px 38px;
+      border: 1px solid var(--gris-300);
+      border-radius: var(--radio);
+      font-size: 0.875rem;
+      font-family: var(--fuente-ui);
+      color: var(--gris-900);
+      background: var(--gris-50);
+      transition: border-color var(--trans-rapida), box-shadow var(--trans-rapida), background var(--trans-rapida);
+      box-sizing: border-box;
+    }
+    .ia-buscador-campo__input:focus {
+      outline: none; background: #fff;
+      border-color: var(--azul-500);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    }
+    .ia-buscador-campo__input::placeholder { color: var(--gris-400); }
+
+    /* Dropdown */
+    .ia-dropdown-resultados {
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: #fff; border: 1px solid var(--gris-200);
+      border-radius: var(--radio-lg);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+      z-index: 50; overflow: hidden;
+      max-height: 320px; overflow-y: auto;
+      display: none;
+    }
+    .ia-dropdown-resultados.visible { display: block; }
+    .ia-dropdown-resultados::-webkit-scrollbar { width: 4px; }
+    .ia-dropdown-resultados::-webkit-scrollbar-thumb { background: var(--gris-200); border-radius: 4px; }
+
+    .ia-dropdown-header {
+      padding: 8px 14px 6px;
+      font-size: 0.66rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.09em;
+      color: var(--gris-400); border-bottom: 1px solid var(--gris-100);
+    }
+
+    .ia-dropdown-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; cursor: pointer;
+      transition: background var(--trans-rapida);
+      border-bottom: 1px solid var(--gris-100);
+      text-decoration: none;
+    }
+    .ia-dropdown-item:last-child { border-bottom: none; }
+    .ia-dropdown-item:hover { background: var(--azul-50); }
+
+    .ia-dropdown-item__avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--azul-500), var(--azul-700));
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+      transition: background var(--trans-rapida);
+    }
+    .ia-dropdown-item:hover .ia-dropdown-item__avatar {
+      background: linear-gradient(135deg, var(--azul-600), var(--azul-900));
+    }
+
+    .ia-dropdown-item__info { flex: 1; min-width: 0; }
+    .ia-dropdown-item__nombre {
+      font-size: 0.875rem; font-weight: 600; color: var(--gris-900);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ia-dropdown-item__grado { font-size: 0.72rem; color: var(--gris-500); margin-top: 1px; }
+
+    .ia-dropdown-item__arrow {
+      width: 14px; height: 14px; color: var(--gris-300); flex-shrink: 0;
+      transition: color var(--trans-rapida), transform var(--trans-rapida);
+    }
+    .ia-dropdown-item:hover .ia-dropdown-item__arrow {
+      color: var(--azul-500);
+      transform: translateX(3px);
+    }
+
+    .ia-dropdown-vacio {
+      padding: 20px 14px; text-align: center;
+      font-size: 0.82rem; color: var(--gris-400); font-style: italic;
+    }
+
+    .ia-dropdown-buscando {
+      padding: 14px; display: flex; align-items: center; gap: 10px;
+      font-size: 0.82rem; color: var(--gris-500);
+    }
+
+    .ia-dropdown-spinner {
+      width: 16px; height: 16px;
+      border: 2px solid var(--gris-200); border-top-color: var(--azul-500);
+      border-radius: 50%; animation: ia-girar 0.6s linear infinite; flex-shrink: 0;
+    }
+
+    /* ── Cards de estado del modelo — estilo acceso-card ── */
+    .ia-estado-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 14px;
+    }
+
+    .ia-estado-card {
+      display: flex; flex-direction: column; align-items: flex-start;
+      gap: 6px; padding: 18px 20px;
+      border-radius: 16px; border: 1px solid transparent;
+      position: relative; overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+    }
+    .ia-estado-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg,rgba(255,255,255,0.22) 0%,transparent 60%);
+      opacity: 0; transition: opacity 0.3s ease;
+    }
+    .ia-estado-card:hover::before { opacity: 1; }
+    .ia-estado-card:hover { transform: translateY(-4px) scale(1.02); }
+
+    /* Verde — Estado */
+    .ia-estado-card--verde {
+      background: linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%);
+      color: #15803d; border-color: rgba(22,163,74,0.2);
+      box-shadow: 0 4px 14px rgba(22,163,74,0.10);
+    }
+    .ia-estado-card--verde:hover { background: linear-gradient(135deg,#bbf7d0 0%,#86efac 100%); box-shadow: 0 10px 28px rgba(22,163,74,0.20); }
+
+    /* Azul — Entrenado, Registros, Iteraciones */
+    .ia-estado-card--azul {
+      background: linear-gradient(135deg,#e0f0ff 0%,#c7e2ff 100%);
+      color: #1d4ed8; border-color: rgba(59,130,246,0.2);
+      box-shadow: 0 4px 14px rgba(59,130,246,0.12);
+    }
+    .ia-estado-card--azul:hover { background: linear-gradient(135deg,#bfdbfe 0%,#93c5fd 100%); box-shadow: 0 10px 28px rgba(59,130,246,0.22); }
+
+    /* Naranja — Error final */
+    .ia-estado-card--naranja {
+      background: linear-gradient(135deg,#ffedd5 0%,#fed7aa 100%);
+      color: #c2410c; border-color: rgba(234,88,12,0.18);
+      box-shadow: 0 4px 14px rgba(234,88,12,0.10);
+    }
+    .ia-estado-card--naranja:hover { background: linear-gradient(135deg,#fed7aa 0%,#fdba74 100%); box-shadow: 0 10px 28px rgba(234,88,12,0.20); }
+
+    /* Morado — Versión */
+    .ia-estado-card--morado {
+      background: linear-gradient(135deg,#ede9fe 0%,#ddd6fe 100%);
+      color: #6d28d9; border-color: rgba(109,40,217,0.18);
+      box-shadow: 0 4px 14px rgba(109,40,217,0.10);
+    }
+    .ia-estado-card--morado:hover { background: linear-gradient(135deg,#ddd6fe 0%,#c4b5fd 100%); box-shadow: 0 10px 28px rgba(109,40,217,0.20); }
+
+    .ia-estado-card__icono {
+      width: 32px; height: 32px; border-radius: 9px;
+      background: rgba(255,255,255,0.30);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 4px; flex-shrink: 0; color: inherit;
+    }
+    .ia-estado-card__icono svg { width: 16px; height: 16px; stroke-width: 2; }
+
+    .ia-estado-card__label {
+      font-size: 0.66rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.09em;
+      color: inherit; opacity: 0.68;
+    }
+    .ia-estado-card__valor {
+      font-family: var(--fuente-marca); font-size: 1.35rem;
+      font-weight: 700; color: inherit; line-height: 1.15;
+    }
+    .ia-estado-card__valor--sm {
+      font-family: var(--fuente-ui); font-size: 0.84rem;
+      font-weight: 700; line-height: 1.35; color: inherit;
+    }
+
+    /* ── Cargando estado ── */
+    .ia-cargando-estado {
+      display: flex; align-items: center; gap: 12px;
+      padding: 20px; color: var(--gris-500); font-size: 0.85rem;
+    }
+
+    /* ── Sin modelo ── */
+    .ia-sin-modelo {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding: 18px 22px; background: #fffbeb;
+      border: 1px solid #fcd34d; border-radius: var(--radio-lg);
+    }
+    .ia-sin-modelo__icono {
+      width: 36px; height: 36px; background: #fef3c7; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .ia-sin-modelo__icono svg { width: 18px; height: 18px; color: #d97706; stroke-width: 2; }
+    .ia-sin-modelo h4 { font-size: 0.9rem; font-weight: 600; color: #92400e; margin-bottom: 4px; }
+    .ia-sin-modelo p  { font-size: 0.8rem; color: #78350f; line-height: 1.55; }
+
+    /* ── Bloque entrenamiento ── */
+    .ia-entrenar-card {
+      background: #fff; border: 1px solid var(--gris-200);
+      border-radius: var(--radio-lg); padding: 20px 24px;
+      box-shadow: var(--sombra-xs); display: flex; flex-direction: column; gap: 16px;
+    }
+    .ia-entrenar-card__titulo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.9rem; font-weight: 600; color: var(--gris-900);
+      margin-bottom: 6px;
+    }
+    .ia-entrenar-card__titulo-icono {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--azul-500), var(--azul-700));
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .ia-entrenar-card__titulo-icono svg { width: 15px; height: 15px; color: #fff; stroke-width: 2; }
+    .ia-entrenar-card__desc {
+      font-size: 0.82rem; color: var(--gris-500); line-height: 1.6; max-width: 700px;
+    }
+    .ia-entrenar-card__acciones {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+
+    /* ── Buscador card ── */
+    .ia-buscador-card {
+      background: #fff; border: 1px solid var(--gris-200);
+      border-radius: var(--radio-lg); padding: 20px 24px;
+      box-shadow: var(--sombra-xs); display: flex; flex-direction: column; gap: 14px;
+      min-height: 380px; /* espacio para el dropdown */
+    }
+    .ia-buscador-card__header {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .ia-buscador-card__icono {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #7c3aed, #6d28d9);
+      border-radius: 9px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .ia-buscador-card__icono svg { width: 16px; height: 16px; color: #fff; stroke-width: 2; }
+    .ia-buscador-card__titulo { font-size: 0.9rem; font-weight: 600; color: var(--gris-900); }
+    .ia-buscador-card__desc { font-size: 0.82rem; color: var(--gris-500); line-height: 1.5; margin-top: 2px; }
+
+    /* ── Hint de atajo de teclado ── */
+    .ia-buscador-hint {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.72rem; color: var(--gris-400);
+    }
+    .ia-buscador-hint kbd {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 1px 6px; border: 1px solid var(--gris-300);
+      border-radius: 4px; font-size: 0.68rem; font-family: var(--fuente-ui);
+      color: var(--gris-500); background: var(--gris-50);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .ia-estado-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .ia-estado-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ── Gap global entre secciones del panel ── */
+    .contenido { gap: 24px !important; }
+  </style>
 </head>
 <body>
 
@@ -19,6 +290,7 @@
 
     <main class="contenido">
 
+      <!-- ── Cabecera ────────────────────────────────────────────────── -->
       <div class="cabecera-pagina">
         <div>
           <h1 class="cabecera-pagina__titulo">Panel de Inteligencia Académica</h1>
@@ -26,28 +298,35 @@
         </div>
       </div>
 
-      <!-- ═══════════════ SECCIÓN 1: ESTADO DEL MODELO ═══════════════════ -->
-      <div class="seccion-titulo">Estado del modelo</div>
+      <!-- ═══════════════ SECCIÓN 1: ESTADO DEL MODELO ═══════════════ -->
+      <div class="seccion-titulo">
+        <i data-lucide="activity"></i>
+        Estado del modelo
+      </div>
 
       <div id="estadoModeloWrap">
-        <!-- Se llena desde JS -->
-        <div class="ia-cargando" style="padding:24px;">
-          <div class="ia-spinner"></div>
-          <p>Consultando estado del modelo…</p>
+        <div class="ia-cargando-estado">
+          <div class="ia-spinner" style="width:20px;height:20px;border-width:2px;"></div>
+          <span>Consultando estado del modelo…</span>
         </div>
       </div>
 
-      <!-- ═══════════════ SECCIÓN 2: ENTRENAR ════════════════════════════ -->
+      <!-- ═══════════════ SECCIÓN 2: ENTRENAR ═══════════════════════ -->
       <% if (typeof rolUsuario === 'undefined' || rolUsuario !== 'docente') { %>
-      <div class="seccion-titulo">Entrenamiento</div>
+      <div class="seccion-titulo">
+        <i data-lucide="cpu"></i>
+        Entrenamiento
+      </div>
 
-      <div class="ia-entrenar-bloque">
+      <div class="ia-entrenar-card">
         <div>
-          <div class="ia-entrenar-bloque__titulo">
-            <i data-lucide="cpu" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
+          <div class="ia-entrenar-card__titulo">
+            <div class="ia-entrenar-card__titulo-icono">
+              <i data-lucide="cpu"></i>
+            </div>
             Entrenar modelo de IA
           </div>
-          <p class="ia-entrenar-bloque__desc">
+          <p class="ia-entrenar-card__desc">
             El entrenamiento procesa todos los resultados académicos históricos (años cerrados)
             y ajusta la red neuronal. El proceso puede tardar varios minutos dependiendo del
             volumen de datos. Una vez completado, los estudiantes verán su análisis actualizado
@@ -55,174 +334,72 @@
           </p>
         </div>
 
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <div class="ia-entrenar-card__acciones">
           <button id="btnEntrenar" class="btn btn--primario" onclick="iniciarEntrenamiento()">
             <i data-lucide="play"></i> Entrenar modelo ahora
           </button>
           <span id="estadoEntrenarTexto" class="texto-secundario texto-sm"></span>
         </div>
 
-        <!-- Barra de progreso -->
         <div class="ia-progreso-wrap" id="progresoWrap">
           <div class="ia-progreso-barra">
             <div class="ia-progreso-relleno" id="progresoRelleno"></div>
           </div>
-          <span class="ia-progreso-texto" id="progresoTexto">Cargando datos históricos y entrenando red neuronal…</span>
+          <span class="ia-progreso-texto" id="progresoTexto">
+            Cargando datos históricos y entrenando red neuronal…
+          </span>
         </div>
 
-        <!-- Resultado -->
         <div class="ia-resultado-entrenamiento" id="resultadoEntrenamiento"></div>
       </div>
       <% } %>
 
-      <!-- ═══════════════ SECCIÓN 3: BUSCADOR DE ESTUDIANTES ══════════════ -->
-      <div class="seccion-titulo">Consultar análisis de un estudiante</div>
+      <!-- ═══════════════ SECCIÓN 3: BUSCADOR ═══════════════════════ -->
+      <div class="seccion-titulo">
+        <i data-lucide="search"></i>
+        Consultar análisis de un estudiante
+      </div>
 
-      <div class="ia-buscador">
-        <div>
-          <p class="ia-entrenar-bloque__desc">
-            Busca un estudiante por nombre o apellido para consultar su análisis académico
-            generado por la IA.
-          </p>
-        </div>
-
-        <div class="barra-filtros" style="margin:0;">
-          <div class="barra-filtros__grupo" style="flex:1;">
-            <div style="position:relative;flex:1;">
-              <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--gris-400);pointer-events:none;"></i>
-              <input
-                type="text"
-                id="inputBusquedaEst"
-                class="campo__entrada"
-                style="padding-left:36px;"
-                placeholder="Nombre o apellido del estudiante (mín. 3 caracteres)…"
-                oninput="buscarEstudiante(this.value)"
-                autocomplete="off"
-              />
-            </div>
+      <div class="ia-buscador-card">
+        <div class="ia-buscador-card__header">
+          <div class="ia-buscador-card__icono">
+            <i data-lucide="user-search"></i>
+          </div>
+          <div>
+            <div class="ia-buscador-card__titulo">Buscar estudiante</div>
+            <p class="ia-buscador-card__desc">
+              Selecciona un estudiante para ver su análisis completo en una página dedicada.
+            </p>
           </div>
         </div>
 
-        <div id="resultadosBusqueda" class="ia-buscador__resultados" style="display:none;"></div>
-        <p id="mensajeBusqueda" class="texto-secundario texto-sm" style="display:none;"></p>
+        <div class="ia-buscador-wrap">
+          <div class="ia-buscador-campo">
+            <i data-lucide="search" class="ia-buscador-campo__icono"></i>
+            <input
+              type="text"
+              id="inputBusquedaEst"
+              class="ia-buscador-campo__input"
+              placeholder="Buscar por nombre o apellido del estudiante…"
+              oninput="buscarEstudiante(this.value)"
+              autocomplete="off"
+            />
+          </div>
+          <!-- Dropdown de resultados: cada item es un enlace a /analitica/estudiante/:id -->
+          <div id="dropdownResultados" class="ia-dropdown-resultados" role="listbox"></div>
+        </div>
+
+        <div class="ia-buscador-hint">
+          <i data-lucide="corner-down-right" style="width:11px;height:11px;"></i>
+          Al seleccionar un estudiante abrirás su análisis completo en una nueva página
+        </div>
       </div>
 
     </main>
   </div>
 
-  <!-- ═══════════════ MODAL DEL REPORTE DE ESTUDIANTE ══════════════════ -->
-  <div id="modalReporte" class="ia-modal-overlay" onclick="cerrarModal(event)">
-    <div class="ia-modal" onclick="event.stopPropagation()">
-      <button class="ia-modal__cerrar" onclick="cerrarModal()">
-        <i data-lucide="x"></i>
-      </button>
-      <div id="contenidoModal">
-        <div class="ia-cargando">
-          <div class="ia-spinner"></div>
-          <p>Generando análisis…</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <script>
-    /* ══════════════════════════════════════════════════════════════════
-       Helpers compartidos con analisis.ejs (inline para no duplicar)
-       ══════════════════════════════════════════════════════════════════ */
-    function pct(v) { return Math.round((v ?? 0) * 100); }
-
-    function colorBarra(v) { return v < 0.40 ? 'ia-barra__relleno--bajo' : ''; }
-
-    function iconoSituacion(s) {
-      return ({
-        ya_aprobado: 'check-circle', alcanzable: 'target',
-        exigente: 'alert-triangle', fuera_de_alcance: 'x-circle',
-      })[s] || 'minus-circle';
-    }
-
-    function colorStatCard(p) {
-      return p >= 70 ? 'ia-stat-card--ok' : p >= 45 ? 'ia-stat-card--warn' : 'ia-stat-card--risk';
-    }
-
-    function renderFodaSeccion(letra, items, abierto) {
-      const count   = items?.length ?? 0;
-      const hidden  = abierto ? '' : 'hidden';
-      const exp     = abierto ? 'true' : 'false';
-      const nombres = { F:'Fortalezas', O:'Oportunidades', D:'Debilidades', A:'Amenazas' };
-      const uid     = `foda-${letra}-${Math.random().toString(36).slice(2,7)}`;
-      const items_html = count > 0
-        ? items.map(t => `<div class="ia-foda__item">${t}</div>`).join('')
-        : `<div class="ia-foda__vacia">Ninguna identificada.</div>`;
-      return `
-        <div class="ia-foda__seccion">
-          <button class="ia-foda__trigger" aria-expanded="${exp}" aria-controls="${uid}"
-            onclick="toggleFoda(this)">
-            <span class="ia-foda__trigger-izq">
-              <span class="ia-foda__letra ia-foda__letra--${letra}">${letra}</span>
-              ${nombres[letra]}
-              <span class="ia-foda__count">${count}</span>
-            </span>
-            <i data-lucide="chevron-down" class="ia-foda__chevron"></i>
-          </button>
-          <div class="ia-foda__contenido" id="${uid}" ${hidden}>${items_html}</div>
-        </div>`;
-    }
-
-    function renderTarjetaMateria(m) {
-      const met  = m.metricas ?? {};
-      const pEx  = m.porcentajeExito ?? 0;
-      const np   = m.notaProyectada  ?? {};
-      const numN = np.notaNecesaria ? `<span class="ia-nota-proyectada__num">${np.notaNecesaria.toFixed(1)}</span>` : '';
-
-      return `
-        <div class="ia-materia-card">
-          <div class="ia-materia-header">
-            <div>
-              <div class="ia-materia-header__nombre">${m.materia}</div>
-              <span class="ia-nivel-badge">${m.nivel}</span>
-            </div>
-            <div class="ia-materia-header__prediccion">
-              <span class="ia-materia-header__pct">${pEx}%</span>
-              <span class="ia-materia-header__label">Prob. éxito</span>
-            </div>
-          </div>
-          <div class="ia-materia-cuerpo">
-            <div class="ia-metricas">
-              <div class="ia-metricas__titulo">Métricas</div>
-              ${['nota','tendencia','compromiso','estabilidad'].map(k => `
-                <div class="ia-metrica-fila">
-                  <span class="ia-metrica-fila__label">${{nota:'Promedio',tendencia:'Tendencia',compromiso:'Compromiso',estabilidad:'Estabilidad'}[k]}</span>
-                  <div class="ia-barra ia-barra--${k}">
-                    <div class="ia-barra__relleno ${k!=='tendencia'?colorBarra(met[k]):''}" style="width:${pct(met[k]??0.5)}%"></div>
-                  </div>
-                  <span class="ia-metrica-fila__pct">${k==='tendencia'?(met[k]>0.5?'↑':met[k]<0.5?'↓':'→'):pct(met[k]??0)+'%'}</span>
-                </div>`).join('')}
-            </div>
-            <div class="ia-nota-proyectada ia-nota-proyectada--${np.situacion||'sin_datos'}">
-              <i data-lucide="${iconoSituacion(np.situacion)}"></i>
-              ${numN}
-              <span>${np.mensaje||'Sin datos suficientes.'}</span>
-            </div>
-            <div class="ia-foda">
-              ${renderFodaSeccion('F',m.foda?.fortalezas,false)}
-              ${renderFodaSeccion('O',m.foda?.oportunidades,false)}
-              ${renderFodaSeccion('D',m.foda?.debilidades,true)}
-              ${renderFodaSeccion('A',m.foda?.amenazas,true)}
-            </div>
-          </div>
-        </div>`;
-    }
-
-    function toggleFoda(btn) {
-      const exp = btn.getAttribute('aria-expanded') === 'true';
-      const el  = document.getElementById(btn.getAttribute('aria-controls'));
-      btn.setAttribute('aria-expanded', !exp);
-      exp ? el.setAttribute('hidden','') : el.removeAttribute('hidden');
-    }
-
-    /* ══════════════════════════════════════════════════════════════════
-       ESTADO DEL MODELO
-       ══════════════════════════════════════════════════════════════════ */
+    /* ══ Estado del modelo ═════════════════════════════════════════════ */
     async function cargarEstadoModelo() {
       const wrap = document.getElementById('estadoModeloWrap');
       try {
@@ -231,8 +408,8 @@
 
         if (!data.modeloExiste) {
           wrap.innerHTML = `
-            <div class="ia-banner-sin-modelo">
-              <i data-lucide="alert-triangle"></i>
+            <div class="ia-sin-modelo">
+              <div class="ia-sin-modelo__icono"><i data-lucide="alert-triangle"></i></div>
               <div>
                 <h4>Modelo no entrenado</h4>
                 <p>${data.mensaje || 'Presiona el botón de entrenamiento para crear el modelo inicial.'}</p>
@@ -241,55 +418,67 @@
         } else {
           const m = data.meta;
           const fechaFmt = m.entrenadoEn
-            ? new Date(m.entrenadoEn).toLocaleString('es-CO',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})
+            ? new Date(m.entrenadoEn).toLocaleString('es-CO', {
+                day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+              })
             : '—';
+          const errNum = parseFloat(m.errorFinal);
+          const errCls = errNum < 0.01 ? 'ia-estado-card--ok' : 'ia-estado-card--warn';
+
           wrap.innerHTML = `
             <div class="ia-estado-grid">
-              <div class="ia-estado-card ia-estado-card--ok">
+              <div class="ia-estado-card ia-estado-card--verde">
+                <div class="ia-estado-card__icono"><i data-lucide="check-circle"></i></div>
                 <span class="ia-estado-card__label">Estado</span>
-                <span class="ia-estado-card__valor" style="font-size:1rem;">✓ Modelo listo</span>
+                <span class="ia-estado-card__valor ia-estado-card__valor--sm">✓ Modelo listo</span>
               </div>
-              <div class="ia-estado-card">
+              <div class="ia-estado-card ia-estado-card--azul">
+                <div class="ia-estado-card__icono"><i data-lucide="calendar"></i></div>
                 <span class="ia-estado-card__label">Entrenado el</span>
-                <span class="ia-estado-card__valor--sm ia-estado-card__valor">${fechaFmt}</span>
+                <span class="ia-estado-card__valor ia-estado-card__valor--sm">${fechaFmt}</span>
               </div>
-              <div class="ia-estado-card">
+              <div class="ia-estado-card ia-estado-card--azul">
+                <div class="ia-estado-card__icono"><i data-lucide="database"></i></div>
                 <span class="ia-estado-card__label">Registros</span>
                 <span class="ia-estado-card__valor">${m.registros?.toLocaleString() || '—'}</span>
               </div>
-              <div class="ia-estado-card">
+              <div class="ia-estado-card ia-estado-card--azul">
+                <div class="ia-estado-card__icono"><i data-lucide="refresh-cw"></i></div>
                 <span class="ia-estado-card__label">Iteraciones</span>
                 <span class="ia-estado-card__valor">${m.iteraciones?.toLocaleString() || '—'}</span>
               </div>
-              <div class="ia-estado-card ${parseFloat(m.errorFinal) < 0.01 ? 'ia-estado-card--ok' : 'ia-estado-card--warn'}">
+              <div class="ia-estado-card ia-estado-card--naranja">
+                <div class="ia-estado-card__icono"><i data-lucide="target"></i></div>
                 <span class="ia-estado-card__label">Error final</span>
-                <span class="ia-estado-card__valor">${parseFloat(m.errorFinal).toFixed(5) || '—'}</span>
+                <span class="ia-estado-card__valor">${isNaN(errNum) ? '—' : errNum.toFixed(5)}</span>
               </div>
-              <div class="ia-estado-card">
+              <div class="ia-estado-card ia-estado-card--morado">
+                <div class="ia-estado-card__icono"><i data-lucide="tag"></i></div>
                 <span class="ia-estado-card__label">Versión</span>
-                <span class="ia-estado-card__valor" style="font-size:1rem;">${m.version || '1.0.0'}</span>
+                <span class="ia-estado-card__valor ia-estado-card__valor--sm">${m.version || '1.0.0'}</span>
               </div>
             </div>`;
         }
       } catch {
-        wrap.innerHTML = `<p class="texto-error texto-sm">Error al consultar el estado del modelo.</p>`;
+        wrap.innerHTML = `
+          <div class="alerta alerta--error">
+            <i data-lucide="alert-circle"></i>
+            <span>Error al consultar el estado del modelo.</span>
+          </div>`;
       }
       lucide.createIcons();
     }
 
-    /* ══════════════════════════════════════════════════════════════════
-       ENTRENAMIENTO
-       ══════════════════════════════════════════════════════════════════ */
+    /* ══ Entrenamiento ═════════════════════════════════════════════════ */
     async function iniciarEntrenamiento() {
-      const btn        = document.getElementById('btnEntrenar');
-      const progWrap   = document.getElementById('progresoWrap');
-      const progTxt    = document.getElementById('progresoTexto');
-      const resultado  = document.getElementById('resultadoEntrenamiento');
-      const estadoTxt  = document.getElementById('estadoEntrenarTexto');
+      const btn       = document.getElementById('btnEntrenar');
+      const progWrap  = document.getElementById('progresoWrap');
+      const resultado = document.getElementById('resultadoEntrenamiento');
+      const estadoTxt = document.getElementById('estadoEntrenarTexto');
 
-      btn.disabled   = true;
-      btn.innerHTML  = '<i data-lucide="loader-2" style="animation:ia-girar 0.7s linear infinite;"></i> Entrenando…';
-      resultado.className  = 'ia-resultado-entrenamiento';
+      btn.disabled          = true;
+      btn.innerHTML         = '<i data-lucide="loader-2" style="animation:ia-girar 0.7s linear infinite;"></i> Entrenando…';
+      resultado.className   = 'ia-resultado-entrenamiento';
       resultado.textContent = '';
       progWrap.classList.add('visible');
       estadoTxt.textContent = 'Este proceso puede tardar varios minutos…';
@@ -298,16 +487,13 @@
       try {
         const res  = await fetch('/api/ia/entrenar', { method: 'POST' });
         const data = await res.json();
-
         progWrap.classList.remove('visible');
 
         if (data.exito) {
-          resultado.className   = 'ia-resultado-entrenamiento exito';
-          resultado.innerHTML   = `
-            ✓ <strong>Entrenamiento completado.</strong><br/>
+          resultado.className = 'ia-resultado-entrenamiento exito';
+          resultado.innerHTML = `✓ <strong>Entrenamiento completado.</strong><br/>
             ${data.registros?.toLocaleString()} registros · ${data.iterations?.toLocaleString()} iteraciones · 
-            Error: ${parseFloat(data.error).toFixed(5)} · 
-            Duración: ${(data.duracionMs/1000).toFixed(1)}s`;
+            Error: ${parseFloat(data.error).toFixed(5)} · Duración: ${(data.duracionMs/1000).toFixed(1)}s`;
           estadoTxt.textContent = '';
           // Refrescar cards de estado
           await cargarEstadoModelo();
@@ -328,159 +514,83 @@
       lucide.createIcons();
     }
 
-    /* ══════════════════════════════════════════════════════════════════
-       BUSCADOR DE ESTUDIANTES
-       ══════════════════════════════════════════════════════════════════ */
+    /* ══ Buscador — dropdown que navega a página ═══════════════════════ */
     let _debounceTimer = null;
 
     function buscarEstudiante(termino) {
       clearTimeout(_debounceTimer);
-      const resultadosEl = document.getElementById('resultadosBusqueda');
-      const mensajeEl    = document.getElementById('mensajeBusqueda');
+      const dropdown = document.getElementById('dropdownResultados');
 
-      if (termino.length < 3) {
-        resultadosEl.style.display = 'none';
-        mensajeEl.style.display    = 'none';
+      if (termino.trim().length < 3) {
+        ocultarDropdown();
         return;
       }
 
-      _debounceTimer = setTimeout(async () => {
-        resultadosEl.innerHTML   = '<p class="texto-secundario texto-sm" style="padding:4px;">Buscando…</p>';
-        resultadosEl.style.display = 'flex';
-        mensajeEl.style.display    = 'none';
+      dropdown.innerHTML = `
+        <div class="ia-dropdown-buscando">
+          <div class="ia-dropdown-spinner"></div>
+          <span>Buscando estudiantes…</span>
+        </div>`;
+      dropdown.classList.add('visible');
 
+      _debounceTimer = setTimeout(async () => {
         try {
-          // Reutilizamos el API de usuarios (si existe) o hacemos la consulta directamente
-          const res  = await fetch(`/api/analisis/buscar-estudiantes?q=${encodeURIComponent(termino)}`);
-          const data = await res.json();
+          const res   = await fetch(`/api/analisis/buscar-estudiantes?q=${encodeURIComponent(termino.trim())}`);
+          const data  = await res.json();
           const lista = data.usuarios || data || [];
 
           if (lista.length === 0) {
-            resultadosEl.innerHTML  = '';
-            resultadosEl.style.display = 'none';
-            mensajeEl.textContent   = `Sin resultados para "${termino}".`;
-            mensajeEl.style.display = 'block';
+            dropdown.innerHTML = `
+              <div class="ia-dropdown-vacio">
+                Sin resultados para "<strong>${termino}</strong>"
+              </div>`;
             return;
           }
 
-          resultadosEl.innerHTML = lista.map(u => `
-            <div class="ia-buscador__item" onclick="abrirReporteEstudiante('${u._id}', '${u.nombre} ${u.apellido}')">
-              <div class="ia-buscador__avatar">${u.nombre[0]}${u.apellido[0]}</div>
-              <div class="ia-buscador__info">
-                <div class="ia-buscador__nombre">${u.nombre} ${u.apellido}</div>
-                <div class="ia-buscador__grado">${u.grado}</div>
-              </div>
-              <i data-lucide="arrow-right" style="width:14px;height:14px;color:var(--gris-400);"></i>
-            </div>`).join('');
+          // Cada item es un <a> que navega directamente a /analitica/estudiante/:id
+          dropdown.innerHTML = `
+            <div class="ia-dropdown-header">
+              ${lista.length} estudiante${lista.length !== 1 ? 's' : ''} encontrado${lista.length !== 1 ? 's' : ''}
+            </div>
+            ${lista.map(u => `
+              <a class="ia-dropdown-item" href="/analitica/estudiante/${u._id}" role="option">
+                <div class="ia-dropdown-item__avatar">${u.nombre[0]}${u.apellido[0]}</div>
+                <div class="ia-dropdown-item__info">
+                  <div class="ia-dropdown-item__nombre">${u.nombre} ${u.apellido}</div>
+                  <div class="ia-dropdown-item__grado">${u.grado || '—'}</div>
+                </div>
+                <i data-lucide="arrow-right" class="ia-dropdown-item__arrow"></i>
+              </a>`).join('')}`;
 
           lucide.createIcons();
-
         } catch {
-          resultadosEl.innerHTML  = '<p class="texto-error texto-sm" style="padding:4px;">Error al buscar.</p>';
-        }
-      }, 350);
-    }
-
-    /* ══════════════════════════════════════════════════════════════════
-       MODAL DE REPORTE
-       ══════════════════════════════════════════════════════════════════ */
-    async function abrirReporteEstudiante(id, nombre) {
-      const modal     = document.getElementById('modalReporte');
-      const contenido = document.getElementById('contenidoModal');
-
-      contenido.innerHTML = `
-        <div class="ia-cargando">
-          <div class="ia-spinner"></div>
-          <p>Generando análisis de ${nombre}…</p>
-        </div>`;
-
-      modal.style.display = 'flex';
-      requestAnimationFrame(() => modal.classList.add('visible'));
-      lucide.createIcons();
-
-      try {
-        const res     = await fetch(`/api/analisis/estudiante/${id}`);
-        const reporte = await res.json();
-
-        if (!reporte.exito) {
-          contenido.innerHTML = `
-            <div class="ia-error">
-              <i data-lucide="alert-circle"></i>
-              <h3>${reporte.requiereEntrenamiento ? 'Modelo no entrenado' : 'Error'}</h3>
-              <p>${reporte.error}</p>
+          dropdown.innerHTML = `
+            <div class="ia-dropdown-vacio" style="color:var(--rojo-600);">
+              Error al buscar. Intenta de nuevo.
             </div>`;
-          lucide.createIcons();
-          return;
         }
+      }, 320);
+    }
 
-        const rg      = reporte.resumenGlobal;
-        const clsGlob = colorStatCard(rg.porcentajeExito);
+    function ocultarDropdown() {
+      const d = document.getElementById('dropdownResultados');
+      d.classList.remove('visible');
+      d.innerHTML = '';
+    }
 
-        contenido.innerHTML = `
-          <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:16px;padding-right:32px;">
-            Análisis: ${reporte.estudiante.nombre} ${reporte.estudiante.apellido}
-            <span style="font-size:0.78rem;font-weight:400;color:var(--gris-400);">
-              ${reporte.estudiante.grado} · ${reporte.año}
-            </span>
-          </h2>
-
-          <div class="ia-resumen-global" style="margin-bottom:16px;">
-            <div class="ia-stat-card ${clsGlob}">
-              <span class="ia-stat-card__label">Prob. éxito global</span>
-              <span class="ia-stat-card__valor">${rg.porcentajeExito}%</span>
-            </div>
-            <div class="ia-stat-card">
-              <span class="ia-stat-card__label">Promedio general</span>
-              <span class="ia-stat-card__valor">${rg.promedioGeneral.toFixed(2)}</span>
-            </div>
-            <div class="ia-stat-card ${rg.materiasEnRiesgo > 0 ? 'ia-stat-card--risk' : 'ia-stat-card--ok'}">
-              <span class="ia-stat-card__label">En riesgo</span>
-              <span class="ia-stat-card__valor">${rg.materiasEnRiesgo} / ${rg.totalMaterias}</span>
-            </div>
-            <div class="ia-stat-card">
-              <span class="ia-stat-card__label">Valoración</span>
-              <span class="ia-stat-card__valor" style="font-size:0.78rem;">${rg.nivelGlobal}</span>
-            </div>
-          </div>
-
-          <div class="ia-grid-materias">
-            ${reporte.materias.map(renderTarjetaMateria).join('')}
-          </div>
-
-          <p class="ia-timestamp">
-            Generado el ${new Date(reporte.generadoEn).toLocaleString('es-CO',{
-              day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',
-            })}
-          </p>`;
-
-        lucide.createIcons();
-
-      } catch (err) {
-        contenido.innerHTML = `
-          <div class="ia-error">
-            <i data-lucide="wifi-off"></i>
-            <h3>Error de conexión</h3>
-            <p>${err.message}</p>
-          </div>`;
-        lucide.createIcons();
+    // Cerrar al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      if (!document.querySelector('.ia-buscador-wrap')?.contains(e.target)) {
+        ocultarDropdown();
       }
-    }
-
-    function cerrarModal(e) {
-      if (e && e.target !== document.getElementById('modalReporte')) return;
-      const modal = document.getElementById('modalReporte');
-      modal.classList.remove('visible');
-      setTimeout(() => { modal.style.display = 'none'; }, 220);
-    }
-
-    // ESC cierra modal
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') cerrarModal();
     });
 
-    /* ══════════════════════════════════════════════════════════════════
-       INIT
-       ══════════════════════════════════════════════════════════════════ */
+    // ESC cierra el dropdown
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') ocultarDropdown();
+    });
+
+    /* ══ Init ══════════════════════════════════════════════════════════ */
     cargarEstadoModelo();
   </script>
 

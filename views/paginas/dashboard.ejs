@@ -84,8 +84,16 @@
                 </div>
               </div>
               <div class="cuadricula-2col">
-                <div class="tarjeta tarjeta--vision"><div class="tarjeta__cabecera"><i data-lucide="eye"></i><h3 class="tarjeta__titulo">Visión</h3></div><p class="tarjeta__texto"><% if(config&&config.vision){%><%= config.vision %><%}else{%><em class="texto-vacio">Sin configurar.</em><%}%></p></div>
-                <div class="tarjeta tarjeta--mision"><div class="tarjeta__cabecera"><i data-lucide="target"></i><h3 class="tarjeta__titulo">Misión</h3></div><p class="tarjeta__texto"><% if(config&&config.mision){%><%= config.mision %><%}else{%><em class="texto-vacio">Sin configurar.</em><%}%></p></div>
+                <div class="tarjeta tarjeta--vision" id="tarjetaVision">
+                  <div class="tarjeta__cabecera"><i data-lucide="eye"></i><h3 class="tarjeta__titulo">Visión</h3></div>
+                  <p class="tarjeta__texto"><% if(config&&config.vision){%><%= config.vision %><%}else{%><em class="texto-vacio">Sin configurar.</em><%}%></p>
+                  <button class="tarjeta__btn-ver-mas" id="btnVisionMas" onclick="toggleTarjeta('tarjetaVision','btnVisionMas')" style="display:none;">Ver más <i data-lucide="chevron-down"></i></button>
+                </div>
+                <div class="tarjeta tarjeta--mision" id="tarjetaMision">
+                  <div class="tarjeta__cabecera"><i data-lucide="target"></i><h3 class="tarjeta__titulo">Misión</h3></div>
+                  <p class="tarjeta__texto"><% if(config&&config.mision){%><%= config.mision %><%}else{%><em class="texto-vacio">Sin configurar.</em><%}%></p>
+                  <button class="tarjeta__btn-ver-mas" id="btnMisionMas" onclick="toggleTarjeta('tarjetaMision','btnMisionMas')" style="display:none;">Ver más <i data-lucide="chevron-down"></i></button>
+                </div>
               </div>
             </div>
           </section>
@@ -316,5 +324,37 @@
   <script src="/js/main.js"></script>
   <script src="/js/notificaciones.js"></script>
   <script src="/js/dashboard.js"></script>
+  <script>
+    /* ── "Ver más / Ver menos" en tarjetas visión y misión — solo móvil ── */
+    function toggleTarjeta(tarjetaId, btnId) {
+      var tarjeta = document.getElementById(tarjetaId);
+      var btn = document.getElementById(btnId);
+      if (!tarjeta || !btn) return;
+      var expandida = tarjeta.classList.toggle('tarjeta--expandida');
+      btn.innerHTML = expandida
+        ? 'Ver menos <i data-lucide="chevron-up"></i>'
+        : 'Ver más <i data-lucide="chevron-down"></i>';
+      lucide.createIcons();
+    }
+
+    function iniciarVerMas() {
+      if (window.innerWidth > 768) return;
+      [
+        { sel: '.tarjeta--vision .tarjeta__texto', btn: 'btnVisionMas' },
+        { sel: '.tarjeta--mision .tarjeta__texto', btn: 'btnMisionMas' },
+      ].forEach(function(item) {
+        var p = document.querySelector(item.sel);
+        var b = document.getElementById(item.btn);
+        if (!p || !b) return;
+        var lineH = parseFloat(getComputedStyle(p).lineHeight) || 22;
+        if (p.scrollHeight > lineH * 3 + 6) {
+          b.style.display = 'inline-flex';
+          lucide.createIcons();
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', iniciarVerMas);
+  </script>
 </body>
 </html>
