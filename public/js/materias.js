@@ -1,15 +1,31 @@
 /**
  * public/js/materias.js
- * Drawer de creación y edición de materias.
+ * Drawer de creación y edición de materias (con soporte de portada).
  */
 
+// ─── Preview de imagen antes de subir ────────────────────────────────────────
+function previsualizarPortada(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const preview = document.getElementById('previewPortada');
+    if (preview) preview.src = e.target.result;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+// ─── Abrir drawer para crear ──────────────────────────────────────────────────
 function abrirDrawerCrearMateria() {
   const contenedor = clonarFormMateria();
 
-  contenedor.querySelector('#metodoMateria').value             = '';
-  contenedor.querySelector('#formMateria').action              = '/materias';
-  contenedor.querySelector('#textoGuardarMateria').textContent = 'Crear materia';
+  contenedor.querySelector('#metodoMateria').value              = '';
+  contenedor.querySelector('#formMateria').action               = '/materias';
+  contenedor.querySelector('#textoGuardarMateria').textContent  = 'Crear materia';
   contenedor.querySelector('#grupoActivoMateria').style.display = 'none';
+
+  // Preview con imagen predeterminada
+  const preview = contenedor.querySelector('#previewPortada');
+  if (preview) preview.src = '/imagenes/portada-default.png';
 
   document.getElementById('drawerTitulo').textContent = 'Nueva materia';
   document.getElementById('drawerCuerpo').innerHTML   = '';
@@ -19,6 +35,7 @@ function abrirDrawerCrearMateria() {
   lucide.createIcons();
 }
 
+// ─── Abrir drawer para editar ─────────────────────────────────────────────────
 async function abrirDrawerEditarMateria(id) {
   document.getElementById('drawerTitulo').textContent = 'Cargando...';
   abrirPanelDrawer();
@@ -38,9 +55,16 @@ async function abrirDrawerEditarMateria(id) {
     contenedor.querySelector('#campoActivoMateria').value         = materia.activo ? 'true' : 'false';
     contenedor.querySelector('#textoGuardarMateria').textContent  = 'Guardar cambios';
 
+    // Mostrar la portada actual en el preview
+    const preview = contenedor.querySelector('#previewPortada');
+    if (preview) {
+      preview.src = materia.portada || '/imagenes/portada-default.png';
+    }
+
     document.getElementById('drawerTitulo').textContent = `Editar: ${materia.nombre}`;
     document.getElementById('drawerCuerpo').innerHTML   = '';
     document.getElementById('drawerCuerpo').appendChild(contenedor);
+
     lucide.createIcons();
 
   } catch (e) {
@@ -49,6 +73,7 @@ async function abrirDrawerEditarMateria(id) {
   }
 }
 
+// ─── Clonar template ──────────────────────────────────────────────────────────
 function clonarFormMateria() {
   const template   = document.getElementById('templateFormMateria');
   const contenedor = document.createElement('div');
@@ -56,6 +81,7 @@ function clonarFormMateria() {
   return contenedor;
 }
 
+// ─── Drawer helpers ───────────────────────────────────────────────────────────
 function abrirPanelDrawer() {
   document.getElementById('drawer').classList.add('drawer--abierto');
   document.getElementById('drawerOverlay').classList.add('drawer-overlay--visible');

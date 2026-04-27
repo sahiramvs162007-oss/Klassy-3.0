@@ -3,12 +3,14 @@ const router    = express.Router();
 const autorizar = require('../middlewares/autorizar');
 const ctrl      = require('../controllers/gradoControlador');
 
-const soloAdmin = autorizar('admin');
+const soloAdmin        = autorizar('admin');
+const adminODirector   = autorizar('admin', 'director');
 
-router.get('/',          soloAdmin, ctrl.listarGrados);
-router.get('/:id/datos', soloAdmin, ctrl.obtenerGrado);
-router.post('/',         soloAdmin, ctrl.crearGrado);
-router.put('/:id',       soloAdmin, ctrl.editarGrado);
-router.delete('/:id',    soloAdmin, ctrl.eliminarGrado);
+router.get('/',            soloAdmin,      ctrl.listarGrados);
+router.get('/:id/datos',   soloAdmin,      ctrl.obtenerGrado);
+router.get('/:id/detalle', adminODirector, ctrl.obtenerDetalleGrado);
+router.post('/',           soloAdmin,      ctrl.crearGrado);
+router.put('/:id',         soloAdmin,      ctrl.editarGrado);
+router.delete('/:id',      soloAdmin,      ctrl.eliminarGrado);
 
 module.exports = router;

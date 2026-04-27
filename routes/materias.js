@@ -7,8 +7,8 @@ const soloAdmin = autorizar('admin');
 
 router.get('/',          soloAdmin, ctrl.listarMaterias);
 router.get('/:id/datos', soloAdmin, ctrl.obtenerMateria);
-router.post('/',         soloAdmin, ctrl.crearMateria);
-router.put('/:id',       soloAdmin, ctrl.editarMateria);
+router.post('/',         soloAdmin, ctrl.manejarPortada, ctrl.crearMateria);
+router.put('/:id',       soloAdmin, ctrl.manejarPortada, ctrl.editarMateria);
 router.delete('/:id',    soloAdmin, ctrl.eliminarMateria);
 
 module.exports = router;

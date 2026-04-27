@@ -71,14 +71,18 @@
               const mId = bloque.materia._id.toString().replace(/[^a-z0-9]/gi,'');
             %>
             <div class="bloque-materia <%= colorCls %>">
-              <div class="bloque-materia__cabecera">
-                <div class="bloque-materia__icono">
-                  <i data-lucide="book-open"></i>
+              <div class="bloque-materia__cabecera"
+                style="background-image: url('<%= bloque.materia.portada || '/imagenes/portada-default.png' %>');
+                       background-size: cover; background-position: center;">
+                <div class="bloque-materia__cabecera-overlay">
+                  <div class="bloque-materia__icono">
+                    <i data-lucide="book-open"></i>
+                  </div>
+                  <h3 class="bloque-materia__nombre"><%= bloque.materia.nombre %></h3>
+                  <% if (bloque.materia.descripcion) { %>
+                    <p class="bloque-materia__desc"><%= bloque.materia.descripcion %></p>
+                  <% } %>
                 </div>
-                <h3 class="bloque-materia__nombre"><%= bloque.materia.nombre %></h3>
-                <% if (bloque.materia.descripcion) { %>
-                  <p class="bloque-materia__desc"><%= bloque.materia.descripcion %></p>
-                <% } %>
               </div>
 
               <div class="bloque-materia__grados">

@@ -11,6 +11,61 @@
   <link rel="stylesheet" href="/css/estilos.css" />
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/componentes/busqueda-panel.css">
+  <style>
+    /* ── Portada en tabla ── */
+    .materia-portada {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+
+    /* ── Upload de portada en el drawer ── */
+    .portada-uploader {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .portada-preview-wrap {
+      position: relative;
+      width: 100%;
+      height: 140px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f3f4f6;
+      border: 2px dashed #d1d5db;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .portada-preview-wrap:hover { border-color: #2E75B6; }
+    .portada-preview-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .portada-preview-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba(0,0,0,.35);
+      color: #fff;
+      opacity: 0;
+      transition: opacity .2s;
+      font-size: 13px;
+    }
+    .portada-preview-wrap:hover .portada-preview-overlay { opacity: 1; }
+    .portada-preview-overlay i { width: 24px; height: 24px; }
+    .portada-hint {
+      font-size: 12px;
+      color: #6b7280;
+    }
+  </style>
 </head>
 <body>
 
@@ -43,29 +98,22 @@
 
       <!-- Panel de búsqueda -->
       <div class="busqueda-panel">
-        <!-- Stat card -->
-        <div class="acceso-card acceso-card--morado"><div class="tarjeta-stat__icono tarjeta-stat__icono--morado"><i data-lucide="book-open"></i></div><div class="tarjeta-stat__datos"><span class="tarjeta-stat__valor"><%= materias.length %></span><span class="tarjeta-stat__etiqueta">Materias</span></div></div>
-
-        <!-- Barra de búsqueda -->
-        <form method="GET" action="/materias" class="busqueda-panel__barra busqueda-panel__barra--morado" >
+        <div class="acceso-card acceso-card--morado">
+          <div class="tarjeta-stat__icono tarjeta-stat__icono--morado"><i data-lucide="book-open"></i></div>
+          <div class="tarjeta-stat__datos">
+            <span class="tarjeta-stat__valor"><%= materias.length %></span>
+            <span class="tarjeta-stat__etiqueta">Materias</span>
+          </div>
+        </div>
+        <form method="GET" action="/materias" class="busqueda-panel__barra busqueda-panel__barra--morado">
           <div class="busqueda-panel__campo">
             <i data-lucide="search" class="busqueda-panel__icono-buscar"></i>
-            <input
-              type="text"
-              name="buscar"
-              value="<%= buscar %>"
-              placeholder="Buscar materia por nombre..."
-              class="busqueda-panel__entrada"
-            />
+            <input type="text" name="buscar" value="<%= buscar %>" placeholder="Buscar materia por nombre..." class="busqueda-panel__entrada" />
           </div>
           <div class="busqueda-panel__acciones">
-            <button type="submit" class="btn btn--primario btn--sm">
-              <i data-lucide="search"></i> Buscar
-            </button>
+            <button type="submit" class="btn btn--primario btn--sm"><i data-lucide="search"></i> Buscar</button>
             <% if (buscar) { %>
-              <a href="/materias" class="btn btn--secundario btn--sm">
-                <i data-lucide="x"></i> Limpiar
-              </a>
+              <a href="/materias" class="btn btn--secundario btn--sm"><i data-lucide="x"></i> Limpiar</a>
             <% } %>
           </div>
         </form>
@@ -82,6 +130,7 @@
           <table class="tabla">
             <thead>
               <tr>
+                <th>Portada</th>
                 <th>Materia</th>
                 <th>Descripción</th>
                 <th>Estado</th>
@@ -91,6 +140,14 @@
             <tbody id="tbodyMaterias">
               <% materias.forEach(m => { %>
                 <tr>
+                  <td>
+                    <img
+                      src="<%= m.portada || '/imagenes/portada-default.png' %>"
+                      alt="Portada <%= m.nombre %>"
+                      class="materia-portada"
+                      onerror="this.src='/imagenes/portada-default.png'"
+                    />
+                  </td>
                   <td>
                     <div class="item-icono">
                       <div class="item-icono__circulo item-icono__circulo--azul">
@@ -108,7 +165,7 @@
                     </span>
                   </td>
                   <td>
-                    <div class="acciones-tabla" >
+                    <div class="acciones-tabla">
                       <button class="btn-icono btn-icono--editar" onclick="abrirDrawerEditarMateria('<%= m._id %>')" title="Editar">
                         <i data-lucide="pencil"></i>
                       </button>
@@ -123,7 +180,6 @@
                 </tr>
               <% }) %>
             </tbody>
-            
           </table>
         <% } %>
       </div>
@@ -143,8 +199,30 @@
 
   <!-- Template formulario materia -->
   <template id="templateFormMateria">
-    <form id="formMateria" method="POST" action="/materias" class="formulario-grupo">
+    <!-- enctype multipart para subir imagen -->
+    <form id="formMateria" method="POST" action="/materias" class="formulario-grupo" enctype="multipart/form-data">
       <input type="hidden" name="_method" id="metodoMateria" value="" />
+
+      <!-- Portada -->
+      <div class="campo portada-uploader">
+        <label class="campo__etiqueta">Foto de portada</label>
+        <div class="portada-preview-wrap" onclick="document.getElementById('inputPortada').click()">
+          <img id="previewPortada" src="/imagenes/portada-default.png" alt="Vista previa portada" />
+          <div class="portada-preview-overlay">
+            <i data-lucide="image-plus"></i>
+            <span>Cambiar imagen</span>
+          </div>
+        </div>
+        <input
+          type="file"
+          name="portada"
+          id="inputPortada"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          style="display:none"
+          onchange="previsualizarPortada(this)"
+        />
+        <span class="portada-hint">JPG, PNG o WEBP · máx. 5 MB · Si no eliges ninguna se usa la imagen predeterminada.</span>
+      </div>
 
       <div class="campo">
         <label class="campo__etiqueta">Nombre de la materia *</label>
@@ -173,6 +251,7 @@
       </div>
     </form>
   </template>
+
   <script src="/js/notificaciones.js"></script>
   <script src="/js/drawer.js"></script>
   <script src="/js/main.js"></script>

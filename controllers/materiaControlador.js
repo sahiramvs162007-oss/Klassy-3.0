@@ -1,9 +1,54 @@
 /**
  * controllers/materiaControlador.js
- * CRUD de materias. Solo admin puede gestionar materias.
+ * CRUD de materias con soporte de foto de portada.
  */
 
+const path   = require('path');
+const fs     = require('fs');
+const multer = require('multer');
 const { Materia, Grado } = require('../models');
+
+// ─── Multer para portada de materia ──────────────────────────────────────────
+const storagePortada = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '..', 'public', 'uploads', 'portadas');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `portada_${Date.now()}_${Math.round(Math.random() * 1e6)}${ext}`);
+  },
+});
+
+const filtroImagen = (req, file, cb) => {
+  const permitidos = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  if (permitidos.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Solo se permiten imágenes (JPG, PNG, WEBP, GIF)'), false);
+  }
+};
+
+const subirPortada = multer({
+  storage:    storagePortada,
+  fileFilter: filtroImagen,
+  limits:     { fileSize: 5 * 1024 * 1024 }, // 5 MB
+}).single('portada');
+
+// Middleware con manejo de errores integrado
+const manejarPortada = (req, res, next) => {
+  subirPortada(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      req.flash('error', `Error al subir imagen: ${err.message}`);
+      return res.redirect('/materias');
+    } else if (err) {
+      req.flash('error', err.message);
+      return res.redirect('/materias');
+    }
+    next();
+  });
+};
 
 // ─── LISTAR  GET /materias ────────────────────────────────────────────────────
 const listarMaterias = async (req, res) => {
@@ -50,19 +95,28 @@ const crearMateria = async (req, res) => {
       nombre: new RegExp(`^${nombre.trim()}$`, 'i'),
     });
     if (existe) {
+      // Si subieron imagen pero hay error, borrarla para no dejar archivos huérfanos
+      if (req.file) fs.unlink(req.file.path, () => {});
       req.flash('error', `Ya existe una materia llamada "${nombre.trim()}".`);
       return res.redirect('/materias');
     }
 
+    // Si se subió imagen, usar esa ruta; si no, usar la imagen predeterminada
+    const portada = req.file
+      ? `/uploads/portadas/${req.file.filename}`
+      : '/imagenes/portada-default.png';
+
     await Materia.create({
       nombre:      nombre.trim(),
       descripcion: descripcion ? descripcion.trim() : '',
+      portada,
     });
 
     req.flash('exito', `Materia "${nombre.trim()}" creada correctamente.`);
     res.redirect('/materias');
   } catch (error) {
     console.error('Error al crear materia:', error);
+    if (req.file) fs.unlink(req.file.path, () => {});
     req.flash('error', 'Error al crear la materia.');
     res.redirect('/materias');
   }
@@ -76,18 +130,33 @@ const editarMateria = async (req, res) => {
 
     const materia = await Materia.findById(id);
     if (!materia) {
+      if (req.file) fs.unlink(req.file.path, () => {});
       req.flash('error', 'Materia no encontrada.');
       return res.redirect('/materias');
     }
 
-    // Verificar nombre duplicado (excluyendo la misma materia)
     const duplicada = await Materia.findOne({
       _id:    { $ne: id },
       nombre: new RegExp(`^${nombre.trim()}$`, 'i'),
     });
     if (duplicada) {
+      if (req.file) fs.unlink(req.file.path, () => {});
       req.flash('error', `Ya existe otra materia llamada "${nombre.trim()}".`);
       return res.redirect('/materias');
+    }
+
+    // Si se subió una nueva imagen, actualizar portada y borrar la anterior
+    if (req.file) {
+      // Borrar imagen anterior solo si no es la predeterminada
+      if (
+        materia.portada &&
+        !materia.portada.includes('portada-default') &&
+        materia.portada.startsWith('/uploads/')
+      ) {
+        const rutaVieja = path.join(__dirname, '..', 'public', materia.portada);
+        fs.unlink(rutaVieja, () => {});
+      }
+      materia.portada = `/uploads/portadas/${req.file.filename}`;
     }
 
     materia.nombre      = nombre.trim();
@@ -100,6 +169,7 @@ const editarMateria = async (req, res) => {
     res.redirect('/materias');
   } catch (error) {
     console.error('Error al editar materia:', error);
+    if (req.file) fs.unlink(req.file.path, () => {});
     req.flash('error', 'Error al actualizar la materia.');
     res.redirect('/materias');
   }
@@ -116,11 +186,18 @@ const eliminarMateria = async (req, res) => {
       return res.redirect('/materias');
     }
 
+    // Borrar imagen de portada si no es la predeterminada
+    if (
+      materia.portada &&
+      !materia.portada.includes('portada-default') &&
+      materia.portada.startsWith('/uploads/')
+    ) {
+      const rutaImg = path.join(__dirname, '..', 'public', materia.portada);
+      fs.unlink(rutaImg, () => {});
+    }
+
     // Quitar la materia de todos los grados que la tengan asignada
-    await Grado.updateMany(
-      { materias: id },
-      { $pull: { materias: id } }
-    );
+    await Grado.updateMany({ materias: id }, { $pull: { materias: id } });
 
     const nombre = materia.nombre;
     await Materia.findByIdAndDelete(id);
@@ -135,6 +212,7 @@ const eliminarMateria = async (req, res) => {
 };
 
 module.exports = {
+  manejarPortada,
   listarMaterias,
   obtenerMateria,
   crearMateria,

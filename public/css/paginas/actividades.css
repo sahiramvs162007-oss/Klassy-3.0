@@ -56,14 +56,28 @@
 }
 
 .bloque-materia__cabecera {
-  padding: 20px 20px 16px;
+  position: relative;
+  min-height: 140px;
   color: #fff;
+  overflow: hidden;
+}
+
+/* Overlay oscuro sobre la imagen para legibilidad del texto */
+.bloque-materia__cabecera-overlay {
+  position: absolute;
+  inset: 0;
+  padding: 20px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 60%, transparent 100%);
 }
 
 .bloque-materia__icono {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(4px);
   border-radius: var(--radio);
   display: flex;
   align-items: center;
@@ -85,12 +99,12 @@
   line-height: 1.4;
 }
 
-/* Variantes de color */
-.bloque--azul    .bloque-materia__cabecera { background: linear-gradient(135deg, var(--azul-700), var(--azul-500)); }
-.bloque--verde   .bloque-materia__cabecera { background: linear-gradient(135deg, #15803d, var(--verde-600)); }
-.bloque--morado  .bloque-materia__cabecera { background: linear-gradient(135deg, #6d28d9, var(--morado-600)); }
-.bloque--naranja .bloque-materia__cabecera { background: linear-gradient(135deg, #c2410c, var(--naranja-600)); }
-.bloque--rojo    .bloque-materia__cabecera { background: linear-gradient(135deg, #b91c1c, var(--rojo-600)); }
+/* Fallback de color cuando no hay imagen de portada */
+.bloque--azul    .bloque-materia__cabecera { background-color: #2563eb; }
+.bloque--verde   .bloque-materia__cabecera { background-color: #16a34a; }
+.bloque--morado  .bloque-materia__cabecera { background-color: #7c3aed; }
+.bloque--naranja .bloque-materia__cabecera { background-color: #ea580c; }
+.bloque--rojo    .bloque-materia__cabecera { background-color: #dc2626; }
 
 .bloque-materia__grados {
   background: #fff;

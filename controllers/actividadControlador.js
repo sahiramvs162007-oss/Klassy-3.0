@@ -54,7 +54,7 @@ const panelDocente = async (req, res) => {
       año:    AÑO_ACTUAL,
       estado: 'activo',
     })
-      .populate('materiaId', 'nombre descripcion color')
+      .populate('materiaId', 'nombre descripcion color portada')
       .populate('gradoId',   'nombre nivel año');
 
     // Agrupar por materia para los bloques del panel
@@ -482,7 +482,7 @@ const panelEstudiante = async (req, res) => {
       año:     AÑO_ACTUAL,
       estado:  'activo',
     })
-      .populate('materiaId', 'nombre descripcion color')
+      .populate('materiaId', 'nombre descripcion color portada')
       .populate('docenteId', 'nombre apellido');
 
     // Agrupar por materia (igual que el docente) tomando la personalización

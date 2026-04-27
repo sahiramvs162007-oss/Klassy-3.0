@@ -17,11 +17,16 @@ const materiaSchema = new mongoose.Schema(
       default: true,
     },
     // Color asignado automáticamente al crear la materia
-    // Valores: 'azul' | 'verde' | 'morado' | 'naranja' | 'rojo'
     color: {
       type:    String,
       enum:    ['azul', 'verde', 'morado', 'naranja', 'rojo'],
       default: 'azul',
+    },
+    // Foto de portada de la materia.
+    // Si no se sube ninguna, se usa la imagen predeterminada.
+    portada: {
+      type:    String,
+      default: '/imagenes/portada-default.png',
     },
   },
   {
