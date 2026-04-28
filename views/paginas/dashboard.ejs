@@ -237,7 +237,7 @@
                     <div class="noticia-card__foto noticia-card__foto--vacia"><i data-lucide="image"></i></div>
                   <% } %>
                   <div class="noticia-card__cuerpo">
-                    <span class="noticia-etiqueta noticia-etiqueta--<%= (n.etiqueta||'Anuncios').toLowerCase().replace(/ /g,'-').replace(/[^a-z0-9-]/g,'') %>">
+                    <span class="noticia-etiqueta noticia-etiqueta--<%= (n.etiqueta||'Anuncios').toLowerCase().replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i').replace(/ó/g,'o').replace(/ú/g,'u').replace(/ñ/g,'n').replace(/ /g,'-').replace(/[^a-z0-9-]/g,'') %>">
                       <%= n.etiqueta || 'Anuncios' %>
                     </span>
                     <time class="noticia-card__fecha"><%= new Date(n.fechaPublicacion).toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'}) %></time>

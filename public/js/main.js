@@ -54,3 +54,36 @@ function volverNiveles(mId, nivel) {
     paso1.style.animation = 'pickerSlideIn 0.18s ease';
   }
 }
+
+// ── Opciones de entrega: toggle visual ───────────────────────────────
+function toggleOpcion(card, inputId) {
+  const input = card.querySelector('input[type="checkbox"]') || document.getElementById(inputId);
+  if (!input) return;
+  input.checked = !input.checked;
+  card.classList.toggle('activo', input.checked);
+}
+
+// ── Grados picker: toggle fila ───────────────────────────────────────
+function toggleGradoCheck(row) {
+  const input = row.querySelector('input[type="checkbox"]');
+  if (!input) return;
+  input.checked = !input.checked;
+  row.classList.toggle('marcado', input.checked);
+}
+
+// ── Filtro de grados en el picker del drawer ──────────────────────────
+function filtrarGradosPicker(input, listaId) {
+  const q = input.value.toLowerCase().trim();
+  const lista = document.getElementById(listaId);
+  if (!lista) return;
+  let visible = 0;
+  lista.querySelectorAll('.grado-check').forEach(item => {
+    const nombre = (item.querySelector('.grado-check__nombre')?.textContent || '').toLowerCase();
+    const nivel  = (item.querySelector('.grado-check__nivel')?.textContent  || '').toLowerCase();
+    const match  = nombre.includes(q) || nivel.includes(q);
+    item.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  const vacio = lista.querySelector('.grados-picker__vacio');
+  if (vacio) vacio.style.display = visible === 0 ? 'block' : 'none';
+}

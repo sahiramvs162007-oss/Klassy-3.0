@@ -45,61 +45,273 @@
 .actividad-encabezado-est__limite--excepcion svg { width: 14px; height: 14px; stroke-width: 2; }
 
 /* Checks grupo (formulario de opciones) */
+/* ══════════════════════════════════════════════════════════
+   OPCIONES DE ENTREGA — tablita horizontal
+   ══════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   OPCIONES DE ENTREGA — tarjetas toggle (sin checkbox nativo)
+   ══════════════════════════════════════════════════════════ */
 .checks-grupo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+/* Cada tarjeta de opción */
+.opcion-toggle {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.check-opcion {
-  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
+  padding: 16px 12px;
+  border-radius: var(--radio-lg);
+  border: 2px solid var(--gris-200);
+  background: var(--gris-50);
   cursor: pointer;
-  font-size: 0.85rem;
-  color: var(--gris-700);
+  text-align: center;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s, transform 0.15s;
+  user-select: none;
+  position: relative;
+}
+.opcion-toggle:hover {
+  border-color: var(--gris-300);
+  background: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.07);
 }
 
-.check-opcion input[type="checkbox"] { display: none; }
-
-.check-opcion__box {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--gris-300);
-  border-radius: 4px;
-  flex-shrink: 0;
+/* Ícono grande */
+.opcion-toggle__icono {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--gris-100);
+  color: var(--gris-500);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background var(--trans-rapida), border-color var(--trans-rapida);
+  transition: background 0.18s, color 0.18s;
+  flex-shrink: 0;
+}
+.opcion-toggle__icono svg { width: 22px; height: 22px; stroke-width: 1.75; }
+
+/* Texto */
+.opcion-toggle__nombre {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--gris-700);
+  line-height: 1.3;
+  transition: color 0.18s;
+}
+.opcion-toggle__desc {
+  font-size: 0.7rem;
+  color: var(--gris-400);
+  line-height: 1.3;
+  transition: color 0.18s;
 }
 
-.check-opcion input:checked + .check-opcion__box {
+/* Input real oculto — solo para el submit del form */
+.opcion-toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Estado ACTIVO — verde claro */
+.opcion-toggle.activo {
+  border-color: var(--verde-500);
+  background: #dcfce7;
+  box-shadow: 0 4px 14px rgba(22,163,74,0.15);
+  transform: translateY(-1px);
+}
+.opcion-toggle.activo .opcion-toggle__icono {
+  background: #bbf7d0;
+  color: #15803d;
+}
+.opcion-toggle.activo .opcion-toggle__nombre { color: #14532d; }
+.opcion-toggle.activo .opcion-toggle__desc   { color: #16a34a; }
+
+/* Marca de check en esquina */
+.opcion-toggle.activo::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--verde-600);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  background-size: 11px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Variante PELIGRO — roja al activarse */
+.opcion-toggle--peligro:hover {
+  border-color: var(--rojo-300);
+}
+.opcion-toggle--peligro .opcion-toggle__icono {
+  background: #fee2e2;
+  color: var(--rojo-500);
+}
+.opcion-toggle--peligro .opcion-toggle__nombre { color: var(--rojo-700); }
+.opcion-toggle--peligro.activo {
+  border-color: var(--rojo-500);
+  background: #fee2e2;
+  box-shadow: 0 4px 14px rgba(220,38,38,0.15);
+}
+.opcion-toggle--peligro.activo .opcion-toggle__icono {
+  background: #fecaca;
+  color: #991b1b;
+}
+.opcion-toggle--peligro.activo .opcion-toggle__nombre { color: #7f1d1d; }
+.opcion-toggle--peligro.activo .opcion-toggle__desc   { color: #b91c1c; }
+.opcion-toggle--peligro.activo::after { background-color: var(--rojo-600); }
+
+/* ══════════════════════════════════════════════════════════
+   SELECTOR DE GRADOS CON BÚSQUEDA — estilo matriculas
+   ══════════════════════════════════════════════════════════ */
+.grados-picker {
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-lg);
+  background: #fff;
+  overflow: hidden;
+  box-shadow: var(--sombra-xs);
+}
+
+/* Barra de búsqueda */
+.grados-picker__buscar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--gris-100);
+  background: var(--gris-50);
+}
+.grados-picker__buscar svg { width: 15px; height: 15px; color: var(--azul-400); flex-shrink: 0; }
+.grados-picker__input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.84rem;
+  font-family: var(--fuente-ui);
+  color: var(--gris-800);
+}
+.grados-picker__input::placeholder { color: var(--gris-400); }
+
+/* Lista */
+.grados-picker__lista {
+  display: flex;
+  flex-direction: column;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.grados-picker__lista::-webkit-scrollbar       { width: 4px; }
+.grados-picker__lista::-webkit-scrollbar-track { background: transparent; }
+.grados-picker__lista::-webkit-scrollbar-thumb { background: var(--gris-200); border-radius: 4px; }
+
+/* Fila de grado */
+.grado-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--gris-100);
+  transition: background 0.12s;
+  user-select: none;
+}
+.grado-check:last-of-type { border-bottom: none; }
+.grado-check:hover { background: #f0f9ff; }
+
+/* Input oculto */
+.grado-check input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Checkbox visual grande */
+.grado-check__box {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border: 2px solid var(--gris-300);
+  border-radius: 6px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.grado-check.marcado .grado-check__box {
   background: var(--azul-600);
   border-color: var(--azul-600);
 }
-
-.check-opcion input:checked + .check-opcion__box::after {
+.grado-check.marcado .grado-check__box::after {
   content: '';
-  width: 5px;
-  height: 9px;
-  border: 2px solid #fff;
+  width: 6px;
+  height: 10px;
+  border: 2.5px solid #fff;
   border-top: none;
   border-left: none;
   transform: rotate(45deg) translateY(-1px);
   display: block;
 }
+.grado-check.marcado { background: #eff6ff; }
+.grado-check.marcado:hover { background: #dbeafe; }
 
-.check-opcion--peligro .check-opcion__box--peligro {
-  border-color: var(--rojo-400);
+/* Avatar del grado */
+.grado-check__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #dcfce7;
+  color: #15803d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  transition: background 0.12s, color 0.12s;
+}
+.grado-check.marcado .grado-check__avatar {
+  background: var(--azul-100);
+  color: var(--azul-700);
 }
 
-.check-opcion input:checked + .check-opcion__box--peligro {
-  background: var(--rojo-600);
-  border-color: var(--rojo-600);
+.grado-check__info { flex: 1; min-width: 0; }
+.grado-check__nombre {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gris-900);
 }
+.grado-check__nivel {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--gris-400);
+  margin-top: 1px;
+}
+.grado-check.marcado .grado-check__nombre { color: var(--azul-700); font-weight: 600; }
 
-.check-opcion--peligro { color: var(--rojo-600); font-weight: 500; }
+.grados-picker__vacio {
+  font-size: 0.82rem;
+  color: var(--gris-400);
+  text-align: center;
+  padding: 20px 0;
+  font-style: italic;
+  display: none;
+}
 
 /* Panel de excepciones */
 .excepciones-lista {

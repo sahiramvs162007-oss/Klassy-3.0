@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/css/estilos.css" />
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/paginas/actividades.css" />
+  <link rel="stylesheet" href="/css/actividades.css" />
 </head>
 <body>
 
@@ -567,38 +568,56 @@
         </div>
       </div>
 
-      <!-- [NUEVO Claude] Opciones de entrega -->
+      <!-- Opciones de entrega -->
       <div class="campo">
         <label class="campo__etiqueta">Opciones de entrega</label>
         <div class="checks-grupo">
           <label class="check-opcion">
             <input type="checkbox" name="permitirMultiplesEntregas" checked />
             <span class="check-opcion__box"></span>
-            <span>Permitir múltiples entregas</span>
+            <span class="check-opcion__icono"><i data-lucide="layers"></i></span>
+            <span class="check-opcion__nombre">Múltiples entregas</span>
+            <span class="check-opcion__desc">El estudiante puede volver a entregar</span>
           </label>
           <label class="check-opcion">
             <input type="checkbox" name="permitirEntregaTardia" />
             <span class="check-opcion__box"></span>
-            <span>Permitir entrega después del plazo</span>
+            <span class="check-opcion__icono"><i data-lucide="clock"></i></span>
+            <span class="check-opcion__nombre">Entrega tardía</span>
+            <span class="check-opcion__desc">Acepta entregas fuera del plazo</span>
           </label>
         </div>
       </div>
 
-      <!-- [NUEVO Claude] Publicación en otros grados de la misma materia -->
+      <!-- Publicar en otros grados -->
       <% if (gradosMismaMateria && gradosMismaMateria.length > 0) { %>
         <div class="campo">
           <label class="campo__etiqueta">
             Publicar también en otros grados
             <span class="campo__ayuda">(misma materia)</span>
           </label>
-          <div class="checks-grupo">
-            <% gradosMismaMateria.forEach(g => { %>
-              <label class="check-opcion">
-                <input type="checkbox" name="gradosExtras" value="<%= g.grado._id %>" />
-                <span class="check-opcion__box"></span>
-                <span><%= g.grado.nombre %> (Nivel <%= g.grado.nivel %>)</span>
-              </label>
-            <% }) %>
+          <div class="grados-picker">
+            <div class="grados-picker__buscar">
+              <i data-lucide="search" class="grados-picker__buscar-icono"></i>
+              <input type="text" class="grados-picker__input"
+                placeholder="Filtrar grados..."
+                oninput="filtrarGradosPicker(this, 'listaGradosCrear')"
+                autocomplete="off" />
+            </div>
+            <div class="grados-picker__lista" id="listaGradosCrear">
+              <% gradosMismaMateria.forEach(g => { %>
+                <label class="grado-check" onclick="toggleGradoCheck(this); event.preventDefault();">
+                  <input type="checkbox" name="gradosExtras" value="<%= g.grado._id %>" />
+                  <span class="grado-check__box"></span>
+                  <span class="grado-check__icono"><i data-lucide="graduation-cap"></i></span>
+                  <span class="grado-check__info">
+                    <span class="grado-check__nombre"><%= g.grado.nombre %></span>
+                    <span class="grado-check__nivel">Nivel <%= g.grado.nivel %></span>
+                  </span>
+                </label>
+              <% }) %>
+              <p class="grados-picker__vacio" id="vacioCre">Sin resultados</p>
+            </div>
           </div>
         </div>
       <% } %>
@@ -655,24 +674,30 @@
         </div>
       </div>
 
-      <!-- [NUEVO Claude] Opciones de entrega al editar -->
+      <!-- Opciones de entrega al editar -->
       <div class="campo">
         <label class="campo__etiqueta">Opciones de entrega</label>
         <div class="checks-grupo">
           <label class="check-opcion">
             <input type="checkbox" name="permitirMultiplesEntregas" id="editMultiEntrega" />
             <span class="check-opcion__box"></span>
-            <span>Permitir múltiples entregas</span>
+            <span class="check-opcion__icono"><i data-lucide="layers"></i></span>
+            <span class="check-opcion__nombre">Múltiples entregas</span>
+            <span class="check-opcion__desc">El estudiante puede volver a entregar</span>
           </label>
           <label class="check-opcion">
             <input type="checkbox" name="permitirEntregaTardia" id="editTardiaOk" />
             <span class="check-opcion__box"></span>
-            <span>Permitir entrega después del plazo</span>
+            <span class="check-opcion__icono"><i data-lucide="clock"></i></span>
+            <span class="check-opcion__nombre">Entrega tardía</span>
+            <span class="check-opcion__desc">Acepta entregas fuera del plazo</span>
           </label>
           <label class="check-opcion check-opcion--peligro">
             <input type="checkbox" name="cerrarAhora" id="editCerrarAhora" />
-            <span class="check-opcion__box check-opcion__box--peligro"></span>
-            <span>Cerrar actividad ahora</span>
+            <span class="check-opcion__box"></span>
+            <span class="check-opcion__icono"><i data-lucide="lock"></i></span>
+            <span class="check-opcion__nombre">Cerrar actividad</span>
+            <span class="check-opcion__desc">Ya no se aceptarán nuevas entregas</span>
           </label>
         </div>
       </div>
