@@ -1,10 +1,9 @@
 /**
  * controllers/gradoControlador.js
- * CRUD de grados con asignación de materias. Solo admin.
+ * CRUD de grados + endpoint de detalle completo para el panel lateral.
  */
 
-const { Grado, Materia, Matricula } = require('../models');
-const { registrarCambio } = require('../middlewares/registrarHistorial');
+const { Grado, Materia, Matricula, AsignacionDocente, Usuario } = require('../models');
 
 // ─── LISTAR  GET /grados ──────────────────────────────────────────────────────
 const listarGrados = async (req, res) => {
@@ -12,11 +11,9 @@ const listarGrados = async (req, res) => {
     const { buscar = '', filtroNivel = '', filtroAnio = '' } = req.query;
     const filtro = {};
 
-    if (buscar.trim()) {
-      filtro.nombre = new RegExp(buscar.trim(), 'i');
-    }
-    if (filtroNivel) filtro.nivel = parseInt(filtroNivel, 10);
-    if (filtroAnio)  filtro.año   = parseInt(filtroAnio, 10);
+    if (buscar.trim())  filtro.nombre = new RegExp(buscar.trim(), 'i');
+    if (filtroNivel)    filtro.nivel  = parseInt(filtroNivel, 10);
+    if (filtroAnio)     filtro.año    = parseInt(filtroAnio, 10);
 
     const [grados, todasMaterias] = await Promise.all([
       Grado.find(filtro)
@@ -25,24 +22,22 @@ const listarGrados = async (req, res) => {
       Materia.find({ activo: true }).sort({ nombre: 1 }),
     ]);
 
-    // Contar matriculados activos por grado (para mostrar X/cupo en la tabla)
     const matriculadosPorGrado = {};
     for (const grado of grados) {
       const count = await Matricula.countDocuments({
         gradoId: grado._id,
-        año: grado.año,
-        estado: 'activa',
+        año:     grado.año,
+        estado:  'activa',
       });
       matriculadosPorGrado[grado._id.toString()] = count;
     }
 
-    // Años distintos presentes en la BD para el filtro
     const añosDisponibles = await Grado.distinct('año');
     añosDisponibles.sort((a, b) => b - a);
 
     res.render('paginas/grados', {
-      titulo:         'Gestión de Grados',
-      paginaActual:   'grados',
+      titulo:              'Gestión de Grados',
+      paginaActual:        'grados',
       grados,
       todasMaterias,
       añosDisponibles,
@@ -58,6 +53,65 @@ const listarGrados = async (req, res) => {
   }
 };
 
+// ─── DETALLE COMPLETO  GET /grados/:id/detalle ────────────────────────────────
+// Devuelve todo lo necesario para el panel lateral de detalle del grado.
+const obtenerDetalleGrado = async (req, res) => {
+  try {
+    const grado = await Grado.findById(req.params.id)
+      .populate('materias', 'nombre color portada activo');
+
+    if (!grado) return res.status(404).json({ ok: false, error: 'Grado no encontrado' });
+
+    // Estudiantes matriculados activos
+    const matriculas = await Matricula.find({
+      gradoId: grado._id,
+      año:     grado.año,
+      estado:  'activa',
+    }).populate('estudianteId', 'nombre apellido correo');
+
+    // Asignaciones docente → materia activas para este grado y año
+    const asignaciones = await AsignacionDocente.find({
+      gradoId: grado._id,
+      año:     grado.año,
+      estado:  'activo',
+    })
+      .populate('docenteId',  'nombre apellido correo')
+      .populate('materiaId',  'nombre color');
+
+    // Lider del grado: el director (primer usuario con rol director activo)
+    // En KLASSY no hay un campo "lider" en Grado, se usa el director institucional
+    const director = await Usuario.findOne({ rol: 'director', activo: true })
+      .select('nombre apellido correo');
+
+    res.json({
+      ok: true,
+      grado: {
+        _id:    grado._id,
+        nombre: grado.nombre,
+        nivel:  grado.nivel,
+        año:    grado.año,
+        cupo:   grado.cupo,
+        activo: grado.activo,
+      },
+      materias:     grado.materias,
+      estudiantes:  matriculas.map(m => m.estudianteId),
+      asignaciones: asignaciones.map(a => ({
+        docente: a.docenteId,
+        materia: a.materiaId,
+      })),
+      director,
+      totales: {
+        matriculados: matriculas.length,
+        materias:     grado.materias.length,
+        docentes:     asignaciones.length,
+      },
+    });
+  } catch (error) {
+    console.error('Error en detalle de grado:', error);
+    res.status(500).json({ ok: false, error: 'Error al obtener el detalle del grado' });
+  }
+};
+
 // ─── OBTENER UNO  GET /grados/:id/datos ──────────────────────────────────────
 const obtenerGrado = async (req, res) => {
   try {
@@ -66,8 +120,8 @@ const obtenerGrado = async (req, res) => {
 
     const matriculados = await Matricula.countDocuments({
       gradoId: grado._id,
-      año: grado.año,
-      estado: 'activa',
+      año:     grado.año,
+      estado:  'activa',
     });
 
     res.json({ ...grado.toObject(), matriculados });
@@ -137,14 +191,6 @@ const editarGrado = async (req, res) => {
       ? Array.isArray(materias) ? materias : [materias]
       : [];
 
-    const snapAntes = {
-      nombre: grado.nombre,
-      nivel:  grado.nivel,
-      año:    grado.año,
-      activo: grado.activo,
-      cupo:   grado.cupo,
-    };
-
     grado.nombre   = nombre.trim();
     grado.nivel    = parseInt(nivel, 10);
     grado.año      = parseInt(año, 10);
@@ -153,20 +199,6 @@ const editarGrado = async (req, res) => {
     grado.activo   = activo === 'true';
 
     await grado.save();
-
-    const cambios = {};
-    if (snapAntes.nombre !== grado.nombre) cambios.nombre = { antes: snapAntes.nombre, despues: grado.nombre };
-    if (snapAntes.nivel  !== grado.nivel)  cambios.nivel  = { antes: snapAntes.nivel,  despues: grado.nivel };
-    if (snapAntes.año    !== grado.año)    cambios.año    = { antes: snapAntes.año,    despues: grado.año };
-    if (snapAntes.activo !== grado.activo) cambios.activo = { antes: snapAntes.activo, despues: grado.activo };
-    if (snapAntes.cupo   !== grado.cupo)   cambios.cupo   = { antes: snapAntes.cupo,   despues: grado.cupo };
-
-    await registrarCambio(req, {
-      accion:    'EDITAR_GRADO',
-      entidad:   'Grado',
-      entidadId: grado._id,
-      cambios,
-    });
 
     req.flash('exito', `Grado "${grado.nombre}" actualizado correctamente.`);
     res.redirect('/grados');
@@ -202,6 +234,7 @@ const eliminarGrado = async (req, res) => {
 
 module.exports = {
   listarGrados,
+  obtenerDetalleGrado,
   obtenerGrado,
   crearGrado,
   editarGrado,
