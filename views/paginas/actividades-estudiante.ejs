@@ -193,11 +193,26 @@
                 <div class="act-lista">
                   <% pendientes.forEach(function(act) { %>
                     <%
-                      var vencida = act._vencida;
-                      var badgeCls   = vencida ? 'badge--inactivo' : 'badge--pendiente';
-                      var badgeLabel = vencida ? 'Vencida' : 'Pendiente';
-                      var iconoCls   = vencida ? 'act-item__icono--vencida' : 'act-item__icono--pendiente';
-                      var iconoNombre = vencida ? 'alert-circle' : 'clock';
+                      var vencida  = act._vencida;
+                      var cerrada  = act._cerrada;
+                      // FIX: prioridad cerrada > vencida > pendiente
+                      var badgeCls, badgeLabel, iconoCls, iconoNombre;
+                      if (cerrada) {
+                        badgeCls    = 'badge--cerrada';
+                        badgeLabel  = 'Cerrada';
+                        iconoCls    = 'act-item__icono--vencida';
+                        iconoNombre = 'lock';
+                      } else if (vencida) {
+                        badgeCls    = 'badge--inactivo';
+                        badgeLabel  = 'Vencida';
+                        iconoCls    = 'act-item__icono--vencida';
+                        iconoNombre = 'alert-circle';
+                      } else {
+                        badgeCls    = 'badge--pendiente';
+                        badgeLabel  = 'Pendiente';
+                        iconoCls    = 'act-item__icono--pendiente';
+                        iconoNombre = 'clock';
+                      }
                     %>
                     <a href="/actividades/estudiante/<%= act._id %>" class="act-item">
                       <div class="act-item__icono <%= iconoCls %>">
