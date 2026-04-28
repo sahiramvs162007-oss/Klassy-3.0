@@ -717,28 +717,28 @@
 
 .noticia-card:has(.noticia-etiqueta--anuncios)      { border-left: 3px solid #0ea5e9; }
 .noticia-card:has(.noticia-etiqueta--eventos)        { border-left: 3px solid #eab308; }
-.noticia-card:has(.noticia-etiqueta--acad-mico)      { border-left: 3px solid #8b5cf6; }
+.noticia-card:has(.noticia-etiqueta--academico)      { border-left: 3px solid #8b5cf6; }
 .noticia-card:has(.noticia-etiqueta--institucional)  { border-left: 3px solid #3b82f6; }
 .noticia-card:has(.noticia-etiqueta--urgente)        { border-left: 3px solid #ef4444; }
 .noticia-card:has(.noticia-etiqueta--clases)         { border-left: 3px solid #10b981; }
 .noticia-card:has(.noticia-etiqueta--proyectos)      { border-left: 3px solid #ec4899; }
 .noticia-card:has(.noticia-etiqueta--deportes)       { border-left: 3px solid #22c55e; }
 .noticia-card:has(.noticia-etiqueta--cultura)        { border-left: 3px solid #d97706; }
-.noticia-card:has(.noticia-etiqueta--arte-y-m-sica)  { border-left: 3px solid #a855f7; }
+.noticia-card:has(.noticia-etiqueta--arte-y-musica)  { border-left: 3px solid #a855f7; }
 .noticia-card:has(.noticia-etiqueta--bienestar)      { border-left: 3px solid #059669; }
 .noticia-card:has(.noticia-etiqueta--logros)         { border-left: 3px solid #f59e0b; }
 
 /* Al hacer hover, el borde se intensifica */
 .noticia-card:has(.noticia-etiqueta--anuncios):hover      { border-left-color: #0284c7; box-shadow: -2px 6px 20px rgba(14,165,233,0.15), 0 4px 16px rgba(0,0,0,0.05); }
 .noticia-card:has(.noticia-etiqueta--eventos):hover        { border-left-color: #ca8a04; box-shadow: -2px 6px 20px rgba(234,179,8,0.15), 0 4px 16px rgba(0,0,0,0.05); }
-.noticia-card:has(.noticia-etiqueta--acad-mico):hover      { border-left-color: #7c3aed; box-shadow: -2px 6px 20px rgba(139,92,246,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+.noticia-card:has(.noticia-etiqueta--academico):hover      { border-left-color: #7c3aed; box-shadow: -2px 6px 20px rgba(139,92,246,0.15), 0 4px 16px rgba(0,0,0,0.05); }
 .noticia-card:has(.noticia-etiqueta--institucional):hover  { border-left-color: #2563eb; box-shadow: -2px 6px 20px rgba(59,130,246,0.15), 0 4px 16px rgba(0,0,0,0.05); }
 .noticia-card:has(.noticia-etiqueta--urgente):hover        { border-left-color: #dc2626; box-shadow: -2px 6px 20px rgba(239,68,68,0.15), 0 4px 16px rgba(0,0,0,0.05); }
 .noticia-card:has(.noticia-etiqueta--clases):hover         { border-left-color: #059669; box-shadow: -2px 6px 20px rgba(16,185,129,0.15), 0 4px 16px rgba(0,0,0,0.05); }
 .noticia-card:has(.noticia-etiqueta--proyectos):hover      { border-left-color: #db2777; box-shadow: -2px 6px 20px rgba(236,72,153,0.15), 0 4px 16px rgba(0,0,0,0.05); }
 .noticia-card:has(.noticia-etiqueta--deportes):hover       { border-left-color: #16a34a; box-shadow: -2px 6px 20px rgba(34,197,94,0.15), 0 4px 16px rgba(0,0,0,0.05); }
 .noticia-card:has(.noticia-etiqueta--cultura):hover        { border-left-color: #b45309; box-shadow: -2px 6px 20px rgba(217,119,6,0.15), 0 4px 16px rgba(0,0,0,0.05); }
-.noticia-card:has(.noticia-etiqueta--arte-y-m-sica):hover  { border-left-color: #9333ea; box-shadow: -2px 6px 20px rgba(168,85,247,0.15), 0 4px 16px rgba(0,0,0,0.05); }
+.noticia-card:has(.noticia-etiqueta--arte-y-musica):hover  { border-left-color: #9333ea; box-shadow: -2px 6px 20px rgba(168,85,247,0.15), 0 4px 16px rgba(0,0,0,0.05); }
 .noticia-card:has(.noticia-etiqueta--bienestar):hover      { border-left-color: #047857; box-shadow: -2px 6px 20px rgba(5,150,105,0.15), 0 4px 16px rgba(0,0,0,0.05); }
 .noticia-card:has(.noticia-etiqueta--logros):hover         { border-left-color: #d97706; box-shadow: -2px 6px 20px rgba(245,158,11,0.15), 0 4px 16px rgba(0,0,0,0.05); }
 /* ══════════════════════════════════════════════════════

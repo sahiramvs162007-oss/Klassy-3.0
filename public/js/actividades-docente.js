@@ -93,8 +93,16 @@ function abrirDrawerEditar(id, titulo, desc, fechaInicio, fechaLimite, multiEntr
 
   const campoMulti  = form.querySelector('#editMultiEntrega');
   const campoTardia = form.querySelector('#editTardiaOk');
-  if (campoMulti  && multiEntrega) campoMulti.checked  = true;
-  if (campoTardia && tardiaOk)     campoTardia.checked = true;
+  if (campoMulti  && multiEntrega) {
+    campoMulti.checked = true;
+    const tog = form.querySelector('#editToggleMulti');
+    if (tog) tog.classList.add('activo');
+  }
+  if (campoTardia && tardiaOk) {
+    campoTardia.checked = true;
+    const tog = form.querySelector('#editToggleTardia');
+    if (tog) tog.classList.add('activo');
+  }
 
   document.getElementById('drawerTitulo').textContent = 'Editar actividad';
   document.getElementById('drawerCuerpo').innerHTML   = '';

@@ -99,16 +99,26 @@
               </div>
             </div>
 
-            <!-- [NUEVO Claude] Indicadores de configuración -->
-            <div class="actividad-opciones-chips">
-              <span class="opcion-chip <%= actividad.permitirMultiplesEntregas ? 'opcion-chip--activo' : 'opcion-chip--inactivo' %>">
-                <i data-lucide="<%= actividad.permitirMultiplesEntregas ? 'check' : 'x' %>"></i>
-                Múltiples entregas
-              </span>
-              <span class="opcion-chip <%= actividad.permitirEntregaTardia ? 'opcion-chip--activo' : 'opcion-chip--inactivo' %>">
-                <i data-lucide="<%= actividad.permitirEntregaTardia ? 'check' : 'x' %>"></i>
-                Entrega tardía
-              </span>
+            <!-- Indicadores de configuración — config-badges -->
+            <div class="config-badges">
+              <div class="config-badge config-badge--<%= actividad.permitirMultiplesEntregas ? 'ok' : 'off' %>">
+                <div class="config-badge__icono">
+                  <i data-lucide="layers"></i>
+                </div>
+                <div class="config-badge__texto">
+                  <span class="config-badge__label">Múltiples entregas</span>
+                  <span class="config-badge__estado"><%= actividad.permitirMultiplesEntregas ? 'Permitido' : 'No permitido' %></span>
+                </div>
+              </div>
+              <div class="config-badge config-badge--<%= actividad.permitirEntregaTardia ? 'warn' : 'off' %>">
+                <div class="config-badge__icono">
+                  <i data-lucide="clock"></i>
+                </div>
+                <div class="config-badge__texto">
+                  <span class="config-badge__label">Entrega tardía</span>
+                  <span class="config-badge__estado"><%= actividad.permitirEntregaTardia ? 'Permitida' : 'No permitida' %></span>
+                </div>
+              </div>
             </div>
 
             <% if (actividad.descripcion) { %>
